@@ -469,7 +469,7 @@ screen battle_screen(bm):
     if bm.selected_skill or bm.selected_intent:
         if bm.selected_skill:
             frame:
-                background Solid("#222")
+                background Solid("#222d")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
@@ -497,7 +497,7 @@ screen battle_screen(bm):
 
         if bm.selected_intent:
             frame:
-                background Solid("#300")
+                background Solid("#300d")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
@@ -590,6 +590,7 @@ label generic_battle(bm, is_chaos=False):
                 $ bm.dodge_active = True
             elif skill.type == "buff":
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
+                "[skill.name] activated!"
 
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
@@ -606,7 +607,10 @@ label generic_battle(bm, is_chaos=False):
             else:
                 $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                 $ bm.take_damage(damage, target="player")
-                "[enemy.name] attacks! Took [damage] damage!"
+                if damage > 0:
+                    "[enemy.name] attacks! Took [damage] damage!"
+                else:
+                    "[enemy.name] performs [action.name]!"
 
         if all(e.is_dead for e in bm.enemies):
             jump .victory
@@ -1023,6 +1027,7 @@ label butter_ava_battle:
                 $ bm.dodge_active = True
             elif skill.type == 'buff':
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
+                "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
             if action.animation:
@@ -1035,7 +1040,10 @@ label butter_ava_battle:
             else:
                 $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                 $ bm.take_damage(damage, target='player')
-                "[enemy.name] attacks! Took [damage] damage!"
+                if damage > 0:
+                    "[enemy.name] attacks! Took [damage] damage!"
+                else:
+                    "[enemy.name] performs [action.name]!"
         if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
@@ -1145,6 +1153,7 @@ label butter_ava_battle2:
                 $ bm.dodge_active = True
             elif skill.type == 'buff':
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
+                "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
             if action.name == "Heal Butter" and not bm.enemies[0].is_dead:
@@ -1161,7 +1170,10 @@ label butter_ava_battle2:
                 else:
                     $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target='player')
-                    "[enemy.name] attacks! Took [damage] damage!"
+                    if damage > 0:
+                        "[enemy.name] attacks! Took [damage] damage!"
+                    else:
+                        "[enemy.name] performs [action.name]!"
         if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
