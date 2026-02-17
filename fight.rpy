@@ -1,6 +1,4 @@
 init python:
-    import random
-
     class Skill:
         def __init__(self, name, cost=0, damage=0, mana_regen=0, cooldown=0, type="attack", desc="", animation=None):
             self.name = name
@@ -40,6 +38,10 @@ init python:
             self.dodge_active = False
             self.player_skills = []
             self.turn_count = 0
+            self.selected_skill = None
+
+        def select_skill(self, skill):
+            self.selected_skill = skill
 
         def add_to_queue(self, skill):
             if self.player_mana >= skill.cost and skill.current_cooldown == 0:
@@ -181,33 +183,66 @@ screen battle_screen(bm):
 
     # Queue display (Selected Cards)
     frame:
-        background Solid("#0004")
+        background Solid("#0006")
         xalign 0.5 yalign 0.15
-        padding (10, 10)
-        hbox:
-            spacing 10
-            text "Queue:" size 18 color "#fff" yalign 0.5
-            for i, skill in enumerate(bm.queue):
-                textbutton "[skill.name]":
-                    action Function(bm.remove_from_queue, i)
-                    text_size 20
-                    background Solid("#666")
-                    padding (5, 2)
-            if not bm.queue:
-                text "None" size 18 color "#888" yalign 0.5
+        padding (15, 15)
+        vbox:
+            spacing 5
+            text "Queue (Select a card below, then click an empty slot):" size 16 color "#aaa" xalign 0.5
+            hbox:
+                spacing 15
+                xalign 0.5
+                for i in range(5): # Max 5 slots
+                    if i < len(bm.queue):
+                        $ skill = bm.queue[i]
+                        button:
+                            action Function(bm.remove_from_queue, i)
+                            background Solid("#666")
+                            padding (10, 5)
+                            xminimum 100
+                            text "[skill.name]" size 18 color "#fff" xalign 0.5
+                    else:
+                        $ can_add = bm.selected_skill is not None and bm.player_mana >= bm.selected_skill.cost
+                        button:
+                            action If(can_add, Function(bm.add_to_queue, bm.selected_skill))
+                            background Solid("#333")
+                            padding (10, 5)
+                            xminimum 100
+                            yminimum 30
+                            text "EMPTY" size 18 color "#555" xalign 0.5
+
+    # Description Popup (if a skill is selected)
+    if bm.selected_skill:
+        frame:
+            background Solid("#000c")
+            xalign 0.5 yalign 0.5
+            padding (30, 30)
+            xminimum 400
+            vbox:
+                spacing 15
+                text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
+                text "Cost: [bm.selected_skill.cost] Mana" size 20 color "#44ff44" xalign 0.5
+                text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
+                if bm.selected_skill.cooldown > 0:
+                    text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
+
+                textbutton "CLOSE":
+                    action SetField(bm, "selected_skill", None)
+                    xalign 0.5
+                    background Solid("#444")
+                    padding (10, 5)
 
     # Card selection (Available Skills)
     hbox:
         xalign 0.5 yalign 0.95
         spacing 15
         for skill in bm.player_skills:
-            $ can_use = bm.player_mana >= skill.cost and skill.current_cooldown == 0
-            $ in_queue_count = bm.queue.count(skill)
+            $ is_selected = bm.selected_skill == skill
+            $ can_use = skill.current_cooldown == 0
 
             button:
-                action If(can_use, Function(bm.add_to_queue, skill))
-                sensitive can_use
-                background Frame(Solid("#333e") if can_use else Solid("#111e"), 4, 4)
+                action Function(bm.select_skill, skill)
+                background Frame(Solid("#555") if is_selected else (Solid("#333e") if can_use else Solid("#111e")), 4, 4)
                 padding (10, 10)
                 xminimum 140
                 yminimum 180
@@ -215,8 +250,6 @@ screen battle_screen(bm):
                     spacing 5
                     text "[skill.name]" size 22 color ("#fff" if can_use else "#666") xalign 0.5 bold True
                     text "Cost: [skill.cost]" size 16 color "#44ff44" xalign 0.5
-                    null height 5
-                    text "[skill.desc]" size 14 xmaximum 120 xalign 0.5 text_align 0.5
                     if skill.current_cooldown > 0:
                         null height 10
                         text "CD: [skill.current_cooldown]" size 18 color "#ff4444" xalign 0.5 bold True
@@ -255,6 +288,7 @@ label generic_battle(bm):
 
     label .turn_start:
         $ bm.turn_count += 1
+        $ bm.selected_skill = None
 
         # Determine Enemy Intent
         if not bm.enemy_intents:
@@ -325,7 +359,6 @@ label generic_battle(bm):
         if bm.player_hp <= 0:
             jump .defeat
 
-        $ bm.reduce_cooldowns()
         $ bm.reduce_cooldowns()
         jump .turn_start
 
@@ -834,6 +867,7 @@ label butter_ava_battle:
 
     label .turn_start:
         $ bm.turn_count += 1
+        $ bm.selected_skill = None
         $ bm.enemy_intent = renpy.random.choice(bm.enemy_intents)
         $ bm.player_mana = min(bm.player_max_mana, bm.player_mana + 2)
         show screen battle_screen(bm)
@@ -955,6 +989,7 @@ label butter_ava_battle2:
 
     label .turn_start:
         $ bm.turn_count += 1
+        $ bm.selected_skill = None
         $ bm.enemy_intent = renpy.random.choice(bm.enemy_intents)
         $ bm.player_mana = min(bm.player_max_mana, bm.player_mana + 2)
         show screen battle_screen(bm)
