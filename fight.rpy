@@ -39,6 +39,11 @@ image chaos_dodge_pose = Solid("#440044", xsize=250, ysize=450)
 image kare_meditate_pose = Solid("#4444ff", xsize=250, ysize=450)
 image chaos_meditate_pose = Solid("#440044", xsize=250, ysize=450)
 image enemy_glare_sprite = Solid("#ffffff", xsize=100, ysize=100)
+image enemy_buff_sprite = Solid("#00ff00", xsize=100, ysize=100)
+image enemy_heavy_attack_sprite = Solid("#ff0000", xsize=150, ysize=150)
+image enemy_preparing_sprite = Solid("#ffff00", xsize=80, ysize=80)
+image enemy_spark_sprite = Solid("#ffa500", xsize=50, ysize=50)
+
 
 image card_attack = Solid("#880000", xsize=140, ysize=180)
 image card_barrier = Solid("#000088", xsize=140, ysize=180)
@@ -304,12 +309,13 @@ init python:
         ]
 
 screen battle_screen(bm):
+    $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
     # ── Player stats: top left ──
     vbox:
         xalign 0.05 yalign 0.05
         spacing 5
         xmaximum 400
-        text "Chaos: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#ff4444" outlines [(2, "#000")]
+        text "[p_name]: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#ff4444" outlines [(2, "#000")]
         bar value bm.player_hp range bm.player_max_hp xmaximum 300
 
         hbox:
@@ -705,6 +711,7 @@ label player_meditate_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_meditate_pose"
     show expression sprite as player at fight_left
+    play sound "audio/meditate-sound.mp3" volume 1.0
     "You focus your mind..."
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -783,6 +790,50 @@ label enemy_glare_anim(bm):
     $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     return
 
+
+label enemy_buff_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    $ renpy.show("enemy_buff_sprite", at_list=[fight_right], tag="enemy_effect")
+    play sound "audio/item-pickup-37089.mp3" volume 1.0
+    "[enemy.name] is powering up!"
+    $ renpy.pause(1.0)
+    $ renpy.hide("enemy_effect")
+    return
+
+label enemy_heavy_attack_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    $ renpy.show("enemy_heavy_attack_sprite", at_list=[fight_right, enemy_charge_right], tag="enemy_effect")
+    show expression bm.player_sprites["hit"] as player at fight_left
+    camera:
+        ease 0.3 xpos -0.2 ypos -0.2 zoom 1.4
+        ease 0.3 xpos 0.0 ypos 0.0 zoom 1.0
+    play sound "Berserk Clang Sound Effect.mp3" volume 2.0
+    $ renpy.pause(1.0)
+    $ renpy.hide("enemy_effect")
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label enemy_preparing_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    $ renpy.show("enemy_preparing_sprite", at_list=[fight_right], tag="enemy_effect")
+    play sound "audio/meditate-sound.mp3" volume 1.0
+    "[enemy.name] is focusing intensely..."
+    $ renpy.pause(1.0)
+    $ renpy.hide("enemy_effect")
+    return
+
+label enemy_spark_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    $ renpy.show("enemy_spark_sprite", at_list=[fight_right], tag="enemy_effect")
+    if bm.dodge_active:
+        "EVADE!"
+    else:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    play sound "audio/magic-spark.mp3" volume 1.0
+    $ renpy.pause(0.5)
+    $ renpy.hide("enemy_effect")
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
 label enemy_attack_anim(bm):
     $ enemy = bm.enemies[e_idx]
     $ renpy.show(enemy.sprites["attack"], at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
@@ -824,7 +875,7 @@ label simple_battle_graphics:
     $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
     $ butter_intents = [
         EnemyIntent('Blade Strike', damage=2, desc='Butter strikes with a swift blade.', animation='enemy_butter_blade_anim'),
-        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
+        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation='enemy_preparing_anim')
     ]
     $ butter = Enemy('Butter', 15, enemy_sprites, butter_intents)
     $ bm = BattleManager(10, [butter], starting_slots=2, player_sprites=player_sprites)
@@ -920,10 +971,10 @@ label newenemy_battle:
         perspective False
         gl_depth False
     scene bg at truecenter
-    show chaos_idle as player at fight_left
+    show kare_idle as player at fight_left
     show newenemy_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
-    $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
+    $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
     $ butter_intents = [
         EnemyIntent('Sword Slash', damage=4, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
@@ -932,7 +983,7 @@ label newenemy_battle:
     ]
     $ butter = Enemy('Butter', 100, enemy_sprites, butter_intents)
     $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
-    call generic_battle(bm, is_chaos=True) from _call_generic_battle_newenemy
+    call generic_battle(bm, is_chaos=False) from _call_generic_battle_newenemy
     if _return == 'win':
         jump .newenemy_wins
     else:
@@ -962,8 +1013,8 @@ label butter_ava_battle:
     ]
     $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
     $ ava_intents = [
-        EnemyIntent('Stare', damage=0, desc='Ava is watching intently.', animation=None),
-        EnemyIntent('Magic Spark', damage=3, desc='A small burst of magic.', animation='enemy_attack_anim')
+        EnemyIntent('Stare', damage=0, desc='Ava is watching intently.', animation='enemy_preparing_anim'),
+        EnemyIntent('Magic Spark', damage=3, desc='A small burst of magic.', animation='enemy_spark_anim')
     ]
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
@@ -1089,8 +1140,8 @@ label butter_ava_battle2:
     ]
     $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
     $ ava_intents = [
-        EnemyIntent('Magic Blast', damage=10, desc='Ava unleashes magic.', animation='enemy_attack_anim'),
-        EnemyIntent('Heal Butter', damage=0, desc='Ava heals Butter.', animation=None)
+        EnemyIntent('Magic Blast', damage=10, desc='Ava unleashes magic.', animation='enemy_heavy_attack_anim'),
+        EnemyIntent('Heal Butter', damage=0, desc='Ava heals Butter.', animation='enemy_buff_anim')
     ]
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
@@ -1157,6 +1208,8 @@ label butter_ava_battle2:
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
             if action.name == "Heal Butter" and not bm.enemies[0].is_dead:
+                if action.animation:
+                    call expression action.animation pass (bm) from _call_intent_anim_ava_butter_heal
                 $ bm.enemies[0].hp = min(bm.enemies[0].max_hp, bm.enemies[0].hp + 50)
                 "Ava heals Butter for 50 HP!"
             else:
