@@ -400,55 +400,11 @@ screen battle_screen(bm):
                                             text "YOU" size 12 color "#aaaaff" xalign 0.5
                                             text "[action.name]" size 16 color "#fff" xalign 0.5
 
-    # ── Skill description popup: shows when a card is selected.
-    # Positioned center-screen but does NOT use a full-screen blocking button overlay.
-    # The slots above are still fully clickable through this popup.
-    if bm.selected_skill:
-        frame:
-            background Solid("#000c")
-            xalign 0.5 yalign 0.5
-            padding (30, 30)
-            xminimum 400
-            vbox:
-                spacing 15
-                text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
-                text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#44ff44" xalign 0.5
-                if bm.selected_skill.damage > 0:
-                    text "Damage: [bm.selected_skill.damage]" size 20 color "#ff4444" xalign 0.5
-                text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
-                if bm.selected_skill.cooldown > 0:
-                    text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
 
-                if bm.selected_skill in bm.used_skills_this_turn:
-                    $ e_idx, s_idx = bm.get_skill_slot_info(bm.selected_skill)
-                    if e_idx != -1:
-                        textbutton "REMOVE FROM SLOT":
-                            action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                            xalign 0.5
-                            background Solid("#622")
-                            padding (10, 5)
-
-                $ pass
-
-    # ── Enemy intent popup ──
-    if bm.selected_intent:
-        frame:
-            background Solid("#300c")
-            xalign 0.5 yalign 0.5
-            padding (30, 30)
-            xminimum 400
-            vbox:
-                spacing 15
-                text "[bm.enemies[bm.selected_enemy_index].name] ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
-                if bm.selected_intent.damage > 0:
-                    text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
-                text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
-
-                $ pass
 
     # ── Skill cards: bottom ──
     vbox:
-        xalign 0.5 ypos 0.96 yanchor 1.0
+        xalign 0.5 yalign 0.96
         spacing 5
 
         hbox:
@@ -507,6 +463,60 @@ screen battle_screen(bm):
             text_size 20
             text_color "#fff"
             action Function(bm.clear_queue)
+
+
+    # ── POPUPS ──
+    if bm.selected_skill or bm.selected_intent:
+        # Full screen shadow only when viewing a skill already in a slot or an enemy intent.
+        # This allows clicking slots when selecting a card from hand.
+        $ show_shadow = (bm.selected_skill and bm.selected_skill in bm.used_skills_this_turn) or bm.selected_intent
+
+        if show_shadow:
+            button:
+                action [SetField(bm, "selected_skill", None), SetField(bm, "selected_intent", None)]
+                background Solid("#000c")
+                xfill True yfill True
+
+        if bm.selected_skill:
+            frame:
+                background Solid("#222e")
+                xalign 0.5 yalign 0.5
+                padding (30, 30)
+                xminimum 400
+                vbox:
+                    spacing 15
+                    text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
+                    text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#44ff44" xalign 0.5
+                    if bm.selected_skill.damage > 0:
+                        text "Damage: [bm.selected_skill.damage]" size 20 color "#ff4444" xalign 0.5
+                    text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
+                    if bm.selected_skill.cooldown > 0:
+                        text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
+
+                    if bm.selected_skill in bm.used_skills_this_turn:
+                        $ e_idx, s_idx = bm.get_skill_slot_info(bm.selected_skill)
+                        if e_idx != -1:
+                            null height 20
+                            textbutton "REMOVE FROM SLOT":
+                                action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
+                                xalign 0.5
+                                background Solid("#622")
+                                padding (15, 10)
+                                text_size 24
+                                text_bold True
+
+        if bm.selected_intent:
+            frame:
+                background Solid("#300e")
+                xalign 0.5 yalign 0.5
+                padding (30, 30)
+                xminimum 400
+                vbox:
+                    spacing 15
+                    text "[bm.enemies[bm.selected_enemy_index].name] ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
+                    if bm.selected_intent.damage > 0:
+                        text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
+                    text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
 
 label reset_camera:
     camera:
