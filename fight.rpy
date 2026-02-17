@@ -44,9 +44,18 @@ init python:
             self.used_skills_this_turn = set()
             self.turn_count = 0
             self.selected_skill = None
+            self.selected_intent = None
+            self.selected_slot_index = -1
 
         def select_skill(self, skill):
             self.selected_skill = skill
+            self.selected_intent = None
+            self.selected_slot_index = -1
+
+        def select_intent(self, intent, index):
+            self.selected_intent = intent
+            self.selected_skill = None
+            self.selected_slot_index = index
 
         def add_to_slot(self, skill, index):
             if skill in self.used_skills_this_turn:
@@ -80,6 +89,8 @@ init python:
             self.slots = [None] * self.current_max_slots
             self.used_skills_this_turn = set()
             self.selected_skill = None
+            self.selected_intent = None
+            self.selected_slot_index = -1
             self.player_mana = min(self.player_max_mana, self.player_mana + 2)
 
             # Fill enemy slots (roughly half)
@@ -226,7 +237,8 @@ screen battle_screen(bm):
                             yminimum 40
                             text "EMPTY" size 16 color "#555" xalign 0.5
                     elif isinstance(action, EnemyIntent):
-                        frame:
+                        button:
+                            action Function(bm.select_intent, action, i)
                             background Solid("#622")
                             padding (10, 5)
                             xminimum 80
@@ -236,7 +248,7 @@ screen battle_screen(bm):
                                 text "[action.name]" size 16 color "#fff" xalign 0.5
                     elif isinstance(action, Skill):
                         button:
-                            action Function(bm.remove_from_slot, i)
+                            action Function(bm.select_skill, action)
                             background Solid("#226")
                             padding (10, 5)
                             xminimum 80
@@ -256,9 +268,51 @@ screen battle_screen(bm):
                 spacing 15
                 text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
                 text "Cost: [bm.selected_skill.cost] Mana" size 20 color "#44ff44" xalign 0.5
+                if bm.selected_skill.damage > 0:
+                    text "Damage: [bm.selected_skill.damage]" size 20 color "#ff4444" xalign 0.5
                 text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
                 if bm.selected_skill.cooldown > 0:
                     text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
+
+                if bm.selected_skill in bm.used_skills_this_turn:
+                    textbutton "REMOVE FROM SLOT":
+                        # Find which slot it is in
+                        $ slot_idx = -1
+                        for idx, s in enumerate(bm.slots):
+                            if s == bm.selected_skill:
+                                slot_idx = idx
+                                break
+                        action [Function(bm.remove_from_slot, slot_idx), SetField(bm, "selected_skill", None)]
+                        xalign 0.5
+                        background Solid("#622")
+                        padding (10, 5)
+
+                if bm.selected_skill in bm.used_skills_this_turn:
+                    textbutton "CLOSE":
+                        action SetField(bm, "selected_skill", None)
+                        xalign 0.5
+                        background Solid("#444")
+                        padding (10, 5)
+
+    # Enemy Intent Popup
+    if bm.selected_intent:
+        frame:
+            background Solid("#300c")
+            xalign 0.5 yalign 0.5
+            padding (30, 30)
+            xminimum 400
+            vbox:
+                spacing 15
+                text "ENEMY ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
+                if bm.selected_intent.damage > 0:
+                    text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
+                text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
+
+                textbutton "CLOSE":
+                    action SetField(bm, "selected_intent", None)
+                    xalign 0.5
+                    background Solid("#444")
+                    padding (10, 5)
 
     # Card selection (Available Skills)
     hbox:
@@ -357,6 +411,7 @@ label generic_battle(bm):
                     $ damage *= 2
                     $ bm.dodge_active = False # Use up dodge bonus
                 $ bm.take_damage(damage, target="enemy")
+                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
             elif skill.type == "barrier":
                 $ bm.add_barrier(5)
             elif skill.type == "dodge":
@@ -372,6 +427,7 @@ label generic_battle(bm):
                 else:
                     call enemy_attack_anim(bm) from _call_intent_anim_default
                 $ bm.take_damage(action.damage, target="player")
+                "[action.name]! Took [action.damage] damage! (Your HP: [bm.player_hp])"
 
         # Check Win/Loss
         if bm.enemy_hp <= 0:
@@ -479,8 +535,8 @@ label simple_battle_graphics:
     $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
     $ bm = BattleManager(10, 15, 'Butter', starting_slots=2, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Nudge', damage=2, desc='A weak nudge.', animation='enemy_attack_anim'),
-        EnemyIntent('Double Hit', damage=5, desc='Butter attacks twice! (Total 5 damage)', animation='enemy_attack_anim')
+        EnemyIntent('Nudge', damage=2, desc='A weak nudge. Butter moves a bit.', animation='enemy_attack_anim'),
+        EnemyIntent('Double Hit', damage=5, desc='Butter attacks twice! Watch out!', animation='enemy_attack_anim')
     ]
     call generic_battle(bm) from _call_generic_battle_butter
     if _return == 'win':
@@ -536,8 +592,8 @@ label lumpi_battle:
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
     $ bm = BattleManager(15, 25, 'Lumpi', starting_slots=4, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Sword Slash', damage=3, desc='Lumpi slashes with his sword.', animation='enemy_attack_anim'),
-        EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn.', animation='lumpi_back_pain_anim')
+        EnemyIntent('Sword Slash', damage=3, desc='Lumpi slashes with his legendary (broken) sword.', animation='enemy_attack_anim'),
+        EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn. This is your chance!', animation='lumpi_back_pain_anim')
     ]
     call generic_battle(bm) from _call_generic_battle_lumpi
     if _return == 'win':
@@ -583,8 +639,8 @@ label lumpiwheelchair_battle:
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
     $ bm = BattleManager(20, 40, 'Lumpi (Wheelchair)', starting_slots=6, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Ram', damage=5, desc='Lumpi rams you with his wheelchair.', animation='enemy_attack_anim'),
-        EnemyIntent('Glare', damage=2, desc='Lumpi glares at you.', animation='enemy_attack_anim')
+        EnemyIntent('Ram', damage=5, desc='Lumpi rams you with his high-speed wheelchair.', animation='enemy_attack_anim'),
+        EnemyIntent('Glare', damage=2, desc='Lumpi glares at you intensely. Ouch.', animation='enemy_attack_anim')
     ]
     call generic_battle(bm) from _call_generic_battle_wheelchair
     if _return == 'win':
@@ -632,9 +688,9 @@ label newenemy_battle:
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
     $ bm = BattleManager(50, 100, 'Butter', starting_slots=8, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Sword Slash', damage=4, desc='A quick slash.', animation='enemy_attack_anim'),
-        EnemyIntent('Heavy Strike', damage=6, desc='A heavy hit.', animation='enemy_attack_anim'),
-        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something.', animation=None)
+        EnemyIntent('Sword Slash', damage=4, desc='A quick, precise slash from Butter.', animation='enemy_attack_anim'),
+        EnemyIntent('Heavy Strike', damage=6, desc='A heavy hit that carries Butter\'s full weight.', animation='enemy_attack_anim'),
+        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
     call generic_battle(bm) from _call_generic_battle_newenemy
     if _return == 'win':
@@ -701,7 +757,7 @@ label butter_ava_battle:
     $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
     $ bm = BattleManager(500, 999999999999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.player_skills = get_default_skills()
-    $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=5, desc='Butter attacks.', animation='enemy_attack_anim')]
+    $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=5, desc='Butter attacks with precise intent.', animation='enemy_attack_anim')]
     $ ava_on_player_side = True
     $ ava_attacked_once = False
 
@@ -739,6 +795,7 @@ label butter_ava_battle:
                     $ damage *= 2
                     $ bm.dodge_active = False
                 $ bm.take_damage(damage, target='enemy')
+                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
             elif skill.type == 'barrier':
                 $ bm.add_barrier(5)
             elif skill.type == 'dodge':
@@ -751,6 +808,7 @@ label butter_ava_battle:
             else:
                 call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_v2
                 $ bm.take_damage(bm.enemy_intent.damage, target='player')
+                "[bm.enemy_intent.name]! Took [bm.enemy_intent.damage] damage! (Your HP: [bm.player_hp])"
         if bm.enemy_hp <= 0:
             jump .victory
         if bm.player_hp <= 0:
@@ -767,7 +825,7 @@ label butter_ava_battle:
             play sound 'punch-140236.mp3' volume 2.0
             $ renpy.pause(1.5)
             $ bm.take_damage(5, target='enemy')
-            'ava attacks butter for 5 damage'
+            'ava attacks butter for 5 damage! (Butter HP: [bm.enemy_hp])'
             show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
             'butter' 'HOLD ON why are you attacking me?'
             'ava' 'oh wait i forgot you are my ally'
@@ -783,7 +841,7 @@ label butter_ava_battle:
             $ renpy.pause(1.5)
             show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
             $ bm.take_damage(60, target='player')
-            'ava attacks for 60 damage'
+            'ava attacks for 60 damage! (Your HP: [bm.player_hp])'
         call enemy_attack_anim(bm) from _call_enemy_anim_ava_butter_final
         $ bm.take_damage(bm.enemy_intent.damage, target='player')
         if bm.player_hp <= 0:
@@ -810,7 +868,7 @@ label butter_ava_battle2:
     $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
     $ bm = BattleManager(500, 999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.player_skills = get_default_skills()
-    $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=10, desc='Butter attacks.', animation='enemy_attack_anim')]
+    $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=10, desc='Butter attacks with overwhelming force.', animation='enemy_attack_anim')]
     label .turn_start:
         $ bm.turn_count += 1
         $ bm.prepare_turn()
@@ -845,6 +903,7 @@ label butter_ava_battle2:
                     $ damage *= 2
                     $ bm.dodge_active = False
                 $ bm.take_damage(damage, target='enemy')
+                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
             elif skill.type == 'barrier':
                 $ bm.add_barrier(5)
             elif skill.type == 'dodge':
@@ -857,6 +916,7 @@ label butter_ava_battle2:
             else:
                 call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_v22
                 $ bm.take_damage(bm.enemy_intent.damage, target='player')
+                "[bm.enemy_intent.name]! Took [bm.enemy_intent.damage] damage! (Your HP: [bm.player_hp])"
         if bm.enemy_hp <= 0:
             jump .victory
         if bm.player_hp <= 0:
@@ -872,7 +932,7 @@ label butter_ava_battle2:
         $ renpy.pause(1.5)
         show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
         $ bm.take_damage(50, target='player')
-        'ava attacks for 50 damage!'
+        'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         call enemy_attack_anim(bm) from _call_enemy_anim_ava_butter2_final
         $ bm.take_damage(bm.enemy_intent.damage, target='player')
         if bm.player_hp <= 0:
