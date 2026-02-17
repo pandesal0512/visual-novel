@@ -404,6 +404,26 @@ label enemy_attack_anim(bm):
     hide expression player_hit
     show expression enemy_idle at fight_right
     show expression player_idle at fight_left
+
+    if bm.enemy_name == "Butter":
+        if bm.player_barrier > 0:
+            "kare" "haha i blocked"
+        else:
+            "kare" "OWWWWW"
+        if bm.enemy_intent.name == "Double Hit":
+            "kare" "YOU ATTACKED TWICE THATS NOT FAIR!!"
+            "butter" "whats not fair is you blocking"
+    elif bm.enemy_name == "Lumpi":
+        if bm.player_barrier > 0:
+            "lumpi" "You think you can block my sword?!"
+        else:
+            "lumpi" "HYAAA!!"
+            "kare" "OWWWWW"
+
+    return
+
+label lumpi_back_pain_anim(bm):
+    "lumpi" "thats it im gonna get serious im locki- ow MY BACK!!!"
     return
 
 label simple_battle_graphics:
@@ -501,7 +521,7 @@ label lumpi_battle:
     $ bm = BattleManager(15, 25, 'Lumpi', player_sprites, enemy_sprites)
     $ bm.enemy_intents = [
         EnemyIntent('Sword Slash', damage=3, desc='Lumpi slashes with his sword.', animation='enemy_attack_anim'),
-        EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn.', animation=None)
+        EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn.', animation='lumpi_back_pain_anim')
     ]
 
     call generic_battle(bm) from _call_generic_battle_lumpi
