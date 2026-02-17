@@ -81,6 +81,12 @@ init python:
                 if isinstance(self.slots[i], Skill):
                     self.remove_from_slot(i)
 
+        def get_skill_slot_index(self, skill):
+            for idx, s in enumerate(self.slots):
+                if s == skill:
+                    return idx
+            return -1
+
         def prepare_turn(self):
             # Increase slots each turn
             if self.turn_count > 1:
@@ -275,13 +281,8 @@ screen battle_screen(bm):
                     text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
 
                 if bm.selected_skill in bm.used_skills_this_turn:
+                    $ slot_idx = bm.get_skill_slot_index(bm.selected_skill)
                     textbutton "REMOVE FROM SLOT":
-                        # Find which slot it is in
-                        $ slot_idx = -1
-                        for idx, s in enumerate(bm.slots):
-                            if s == bm.selected_skill:
-                                slot_idx = idx
-                                break
                         action [Function(bm.remove_from_slot, slot_idx), SetField(bm, "selected_skill", None)]
                         xalign 0.5
                         background Solid("#622")
