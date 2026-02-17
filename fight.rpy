@@ -162,12 +162,20 @@ init python:
             self.hp = max_hp
             self.max_hp = max_hp
             self.sprites = sprites
-            self.intents = intents
+            self.full_intent_pool = intents
+            self.unlocked_intents_count = 2
+            self.skill_exp = 0
+            self.skill_exp_max = 100
             self.slots = []
             self.barrier = 0
             self.buffs = []
             self.dodge_active = False
             self.is_dead = False
+
+        @property
+        def intents(self):
+            # Returns only the currently unlocked intents
+            return self.full_intent_pool[:self.unlocked_intents_count]
 
     class BattleManager:
         def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None):
@@ -277,14 +285,6 @@ init python:
             self.selected_enemy_index = -1
             self.selected_slot_index = -1
 
-            if self.turn_count >= 1:
-                self.skill_exp += 50
-                if self.skill_exp >= self.skill_exp_max:
-                    self.skill_exp = 0
-                    if len(self.player_skills) < len(self.full_skill_pool):
-                        new_skill = self.full_skill_pool[len(self.player_skills)]
-                        self.player_skills.append(new_skill)
-
             # REGENERATE PLAYER ENERGY PER TURN
             # Change the value below (currently 2) to increase/decrease energy gain per turn
             self.player_energy = min(self.player_max_energy, self.player_energy + 2)
@@ -355,6 +355,30 @@ init python:
             for skill in self.player_skills:
                 if skill.current_cooldown > 0:
                     skill.current_cooldown -= 1
+
+        def gain_exp(self, amount, character_type="player", enemy_idx=0):
+            # CONVERSION RATE: 1 damage = 5 EXP
+            # Change the multiplier in the labels if you want faster/slower progression
+            if character_type == "player":
+                self.skill_exp += amount
+                while self.skill_exp >= self.skill_exp_max:
+                    if len(self.player_skills) < len(self.full_skill_pool):
+                        self.skill_exp -= self.skill_exp_max
+                        new_skill = self.full_skill_pool[len(self.player_skills)]
+                        self.player_skills.append(new_skill)
+                    else:
+                        self.skill_exp = min(self.skill_exp, self.skill_exp_max)
+                        break
+            else:
+                enemy = self.enemies[enemy_idx]
+                enemy.skill_exp += amount
+                while enemy.skill_exp >= enemy.skill_exp_max:
+                    if enemy.unlocked_intents_count < len(enemy.full_intent_pool):
+                        enemy.skill_exp -= enemy.skill_exp_max
+                        enemy.unlocked_intents_count += 1
+                    else:
+                        enemy.skill_exp = min(enemy.skill_exp, enemy.skill_exp_max)
+                        break
 
     def get_character_skills(name):
         """
@@ -480,6 +504,14 @@ screen battle_screen(bm):
                     bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
                     if enemy.barrier > 0:
                         text "Barrier: [enemy.barrier]" size 14 color "#4444ff" xalign 1.0
+
+                    # ENEMY SKILL PROGRESS BAR
+                    hbox:
+                        xalign 1.0
+                        spacing 4
+                        text "Skill Unlock: " size 12 color "#3cff00"
+                        bar value enemy.skill_exp range enemy.skill_exp_max xmaximum 150 ysize 6 yalign 0.5
+
                     hbox:
                         xalign 1.0
                         spacing 5
@@ -732,6 +764,7 @@ label generic_battle(bm, is_chaos=False):
                         $ damage *= 2
                         $ bm.dodge_active = False
                     $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
+                    $ bm.gain_exp(damage * 5, character_type="player")
                     "[skill.name] deals [damage] damage to [enemy.name]!"
                     if enemy.is_dead:
                         "[enemy.name] has been defeated!"
@@ -763,6 +796,7 @@ label generic_battle(bm, is_chaos=False):
                 else:
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target="player")
+                    $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
@@ -1215,6 +1249,7 @@ label butter_ava_battle:
                         $ damage *= 2
                         $ bm.dodge_active = False
                     $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    $ bm.gain_exp(damage * 5, character_type="player")
                     "[skill.name] deals [damage] damage to [enemy.name]!"
                     if enemy.is_dead:
                         "[enemy.name] has been defeated!"
@@ -1243,6 +1278,7 @@ label butter_ava_battle:
                 else:
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target='player')
+                    $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
@@ -1269,6 +1305,7 @@ label butter_ava_battle:
             play sound 'punch-140236.mp3' volume 2.0
             $ renpy.pause(0.5)
             $ bm.take_damage(5, target='enemy', enemy_idx=0)
+            $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
             'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
             if not ava_attacked_once:
                 $ ava_attacked_once = True
@@ -1287,6 +1324,7 @@ label butter_ava_battle:
         hide screen battle_screen
         return
 
+# --- BUTTER AVA BATTLE 2 ---
 label butter_ava_battle2:
     camera:
         perspective False
@@ -1352,6 +1390,7 @@ label butter_ava_battle2:
                         $ damage *= 2
                         $ bm.dodge_active = False
                     $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    $ bm.gain_exp(damage * 5, character_type="player")
                     "[skill.name] deals [damage] damage to [enemy.name]!"
                     if enemy.is_dead:
                         "[enemy.name] has been defeated!"
@@ -1381,6 +1420,7 @@ label butter_ava_battle2:
                 else:
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target='player')
+                    $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
@@ -1409,6 +1449,7 @@ label butter_ava_battle2:
         $ renpy.pause(1.0)
         show ava_idle as enemy_1 at Position(xalign=0.85, yalign=0.5)
         $ bm.take_damage(50, target='player')
+        $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
         'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
             jump .defeat
