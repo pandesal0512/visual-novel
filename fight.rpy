@@ -404,7 +404,7 @@ screen battle_screen(bm):
 
     # ── Skill cards: bottom ──
     vbox:
-        xalign 0.5 yalign 0.96
+        xalign 0.5 ypos 0.98 yanchor 1.0
         spacing 5
 
         hbox:
@@ -467,19 +467,9 @@ screen battle_screen(bm):
 
     # ── POPUPS ──
     if bm.selected_skill or bm.selected_intent:
-        # Full screen shadow only when viewing a skill already in a slot or an enemy intent.
-        # This allows clicking slots when selecting a card from hand.
-        $ show_shadow = (bm.selected_skill and bm.selected_skill in bm.used_skills_this_turn) or bm.selected_intent
-
-        if show_shadow:
-            button:
-                action [SetField(bm, "selected_skill", None), SetField(bm, "selected_intent", None)]
-                background Solid("#000c")
-                xfill True yfill True
-
         if bm.selected_skill:
             frame:
-                background Solid("#222e")
+                background Solid("#222c")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
@@ -504,10 +494,17 @@ screen battle_screen(bm):
                                 padding (15, 10)
                                 text_size 24
                                 text_bold True
+                    else:
+                        # If selecting from hand, add a close button or just instructions
+                        textbutton "CLOSE":
+                            action SetField(bm, "selected_skill", None)
+                            xalign 0.5
+                            background Solid("#444")
+                            padding (10, 5)
 
         if bm.selected_intent:
             frame:
-                background Solid("#300e")
+                background Solid("#300c")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
