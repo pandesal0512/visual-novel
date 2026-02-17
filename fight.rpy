@@ -7,26 +7,29 @@ image chaos_attack = Solid("#660066", xsize=200, ysize=400)
 image chaos_hit = Solid("#ff0000", xsize=200, ysize=400)
 
 image butter_idle = Solid("#ffcc00", xsize=200, ysize=400)
+image butter_attack = Solid("#ffff00", xsize=200, ysize=400)
+image butter_hit = Solid("#ff4444", xsize=200, ysize=400)
+
+# Also keeping these for specific animations if needed
 image butter_attack1 = Solid("#ffff00", xsize=200, ysize=400)
 image butter_attack2 = Solid("#ffaa00", xsize=200, ysize=400)
 image butter_attack3 = Solid("#ffffff", xsize=200, ysize=400)
-image butter_hit = Solid("#ff4444", xsize=200, ysize=400)
 
-image ava_idle = Solid("#ff8888", xsize=200, ysize=400)
-image ava_attack = Solid("#ffaaaa", xsize=200, ysize=400)
-image ava_hit = Solid("#ff0000", xsize=200, ysize=400)
+image seriousbutter_idle = Solid("#ffaa00", xsize=200, ysize=400)
+image seriousbutter_attack = Solid("#ff7700", xsize=200, ysize=400)
+image seriousbutter_hit = Solid("#ff0000", xsize=200, ysize=400)
 
 image lumpi_idle = Solid("#88ff88", xsize=200, ysize=400)
 image lumpi_attack = Solid("#aaffaa", xsize=200, ysize=400)
 image lumpi_hit = Solid("#ff0000", xsize=200, ysize=400)
 
-image normalbutter_idle = Solid("#ffcc00", xsize=200, ysize=400)
-image normalbutter_attack = Solid("#ffff00", xsize=200, ysize=400)
-image normalbutter_hit = Solid("#ff4444", xsize=200, ysize=400)
+image lumpiwheelchair_idle = Solid("#117a65", xsize=200, ysize=400)
+image lumpiwheelchair_attack = Solid("#1abc9c", xsize=200, ysize=400)
+image lumpiwheelchair_hit = Solid("#ff0000", xsize=200, ysize=400)
 
-image newenemy_idle = Solid("#555", xsize=200, ysize=400)
-image newenemy_attack1 = Solid("#777", xsize=200, ysize=400)
-image newenemy_hit = Solid("#ff0000", xsize=200, ysize=400)
+image ava_idle = Solid("#ff8888", xsize=200, ysize=400)
+image ava_attack = Solid("#ffaaaa", xsize=200, ysize=400)
+image ava_hit = Solid("#ff0000", xsize=200, ysize=400)
 
 image kare_strike_sprite = Solid("#4444ff", xsize=250, ysize=450)
 image chaos_strike_sprite = Solid("#440044", xsize=250, ysize=450)
@@ -45,12 +48,68 @@ image enemy_preparing_sprite = Solid("#ffff00", xsize=80, ysize=80)
 image enemy_spark_sprite = Solid("#ffa500", xsize=50, ysize=50)
 
 
-image card_attack = Solid("#880000", xsize=140, ysize=180)
-image card_barrier = Solid("#000088", xsize=140, ysize=180)
-image card_dodge = Solid("#888800", xsize=140, ysize=180)
-image card_buff = Solid("#008800", xsize=140, ysize=180)
-image card_energy = Solid("#008888", xsize=140, ysize=180)
-image card_ultimate = Solid("#444444", xsize=140, ysize=180)
+# --- Kare's Cards ---
+image card_kare_normal = Solid("#3498db", xsize=140, ysize=180)
+image card_kare_hard = Solid("#2980b9", xsize=140, ysize=180)
+image card_kare_block = Solid("#5dade2", xsize=140, ysize=180)
+image card_kare_dodge = Solid("#f1c40f", xsize=140, ysize=180)
+image card_kare_buff = Solid("#2ecc71", xsize=140, ysize=180)
+image card_kare_ultimate = Solid("#2c3e50", xsize=140, ysize=180)
+image card_kare_energy = Solid("#1abc9c", xsize=140, ysize=180)
+
+# --- Chaos's Cards ---
+image card_chaos_normal = Solid("#8e44ad", xsize=140, ysize=180)
+image card_chaos_hard = Solid("#7d3c98", xsize=140, ysize=180)
+image card_chaos_block = Solid("#a569bd", xsize=140, ysize=180)
+image card_chaos_dodge = Solid("#f39c12", xsize=140, ysize=180)
+image card_chaos_buff = Solid("#27ae60", xsize=140, ysize=180)
+image card_chaos_ultimate = Solid("#1a1a1a", xsize=140, ysize=180)
+image card_chaos_energy = Solid("#16a085", xsize=140, ysize=180)
+
+# --- Butter's Cards ---
+image card_butter_normal = Solid("#f1c40f", xsize=140, ysize=180)
+image card_butter_hard = Solid("#f39c12", xsize=140, ysize=180)
+image card_butter_block = Solid("#f7dc6f", xsize=140, ysize=180)
+image card_butter_dodge = Solid("#d4ac0d", xsize=140, ysize=180)
+image card_butter_buff = Solid("#d35400", xsize=140, ysize=180)
+image card_butter_ultimate = Solid("#e67e22", xsize=140, ysize=180)
+image card_butter_energy = Solid("#f39c12", xsize=140, ysize=180)
+
+# --- Serious Butter's Cards ---
+image card_serious_butter_normal = Solid("#e67e22", xsize=140, ysize=180)
+image card_serious_butter_hard = Solid("#d35400", xsize=140, ysize=180)
+image card_serious_butter_block = Solid("#eb984e", xsize=140, ysize=180)
+image card_serious_butter_dodge = Solid("#ca6f1e", xsize=140, ysize=180)
+image card_serious_butter_buff = Solid("#a04000", xsize=140, ysize=180)
+image card_serious_butter_ultimate = Solid("#873600", xsize=140, ysize=180)
+image card_serious_butter_energy = Solid("#d35400", xsize=140, ysize=180)
+
+# --- Lumpi's Cards ---
+image card_lumpi_normal = Solid("#2ecc71", xsize=140, ysize=180)
+image card_lumpi_hard = Solid("#27ae60", xsize=140, ysize=180)
+image card_lumpi_block = Solid("#58d68d", xsize=140, ysize=180)
+image card_lumpi_dodge = Solid("#1e8449", xsize=140, ysize=180)
+image card_lumpi_buff = Solid("#145a32", xsize=140, ysize=180)
+image card_lumpi_ultimate = Solid("#0b5345", xsize=140, ysize=180)
+image card_lumpi_energy = Solid("#27ae60", xsize=140, ysize=180)
+
+# --- Lumpi Wheelchair's Cards ---
+image card_lumpi_wheelchair_normal = Solid("#16a085", xsize=140, ysize=180)
+image card_lumpi_wheelchair_hard = Solid("#117a65", xsize=140, ysize=180)
+image card_lumpi_wheelchair_block = Solid("#45b39d", xsize=140, ysize=180)
+image card_lumpi_wheelchair_dodge = Solid("#0e6251", xsize=140, ysize=180)
+image card_lumpi_wheelchair_buff = Solid("#0b5345", xsize=140, ysize=180)
+image card_lumpi_wheelchair_ultimate = Solid("#17202a", xsize=140, ysize=180)
+image card_lumpi_wheelchair_energy = Solid("#117a65", xsize=140, ysize=180)
+
+# --- Ava's Cards ---
+image card_ava_normal = Solid("#e91e63", xsize=140, ysize=180)
+image card_ava_hard = Solid("#c2185b", xsize=140, ysize=180)
+image card_ava_block = Solid("#f06292", xsize=140, ysize=180)
+image card_ava_dodge = Solid("#880e4f", xsize=140, ysize=180)
+image card_ava_buff = Solid("#9c27b0", xsize=140, ysize=180)
+image card_ava_ultimate = Solid("#4a148c", xsize=140, ysize=180)
+image card_ava_energy = Solid("#c2185b", xsize=140, ysize=180)
 
 transform fight_left:
     xpos 0.35
@@ -87,11 +146,15 @@ init python:
             self.card_image = card_image
 
     class EnemyIntent:
-        def __init__(self, name, damage=0, desc="", animation=None):
+        def __init__(self, name, damage=0, desc="", animation=None, type="attack", buff_type=None, buff_duration=0, card_image=None):
             self.name = name
             self.damage = damage
             self.desc = desc
             self.animation = animation
+            self.type = type
+            self.buff_type = buff_type
+            self.buff_duration = buff_duration
+            self.card_image = card_image
 
     class Enemy:
         def __init__(self, name, max_hp, sprites, intents):
@@ -103,6 +166,7 @@ init python:
             self.slots = []
             self.barrier = 0
             self.buffs = []
+            self.dodge_active = False
             self.is_dead = False
 
     class BattleManager:
@@ -139,9 +203,12 @@ init python:
             self.selected_enemy_index = -1
 
         def initialize_skills(self, is_chaos):
+            # INITIAL PLAYER ENERGY
+            # Change these values to set starting/max energy for Kare and Chaos
             self.player_max_energy = 50 if is_chaos else 10
             self.player_energy = self.player_max_energy
-            self.full_skill_pool = get_default_skills(is_chaos)
+            char_name = "chaos" if is_chaos else "kare"
+            self.full_skill_pool = get_character_skills(char_name)
             self.player_skills = self.full_skill_pool[:2]
             self.skill_exp = 0
 
@@ -218,7 +285,9 @@ init python:
                         new_skill = self.full_skill_pool[len(self.player_skills)]
                         self.player_skills.append(new_skill)
 
-            self.player_energy = min(self.player_max_energy, self.player_energy + 10)
+            # REGENERATE PLAYER ENERGY PER TURN
+            # Change the value below (currently 2) to increase/decrease energy gain per turn
+            self.player_energy = min(self.player_max_energy, self.player_energy + 2)
 
             for enemy in self.enemies:
                 if not enemy.is_dead:
@@ -287,26 +356,89 @@ init python:
                 if skill.current_cooldown > 0:
                     skill.current_cooldown -= 1
 
-    def get_default_skills(is_chaos=False):
-        if is_chaos:
+    def get_character_skills(name):
+        """
+        Returns a list of 7 skills for a playable character.
+        """
+        # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
+        if name.lower() == "kare":
             return [
-                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", card_image="card_attack"),
-                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", card_image="card_barrier"),
-                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", card_image="card_dodge"),
-                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", card_image="card_attack"),
-                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", card_image="card_buff"),
-                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", card_image="card_energy"),
-                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", card_image="card_attack"),
-                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, card_image="card_energy"),
-                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", card_image="card_ultimate")
+                Skill("Blue Strike", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="player_strike_anim", card_image="card_kare_normal"),
+                Skill("Iron Guard", cost=3, damage=8, type="barrier", desc="Brace for impact.", cooldown=1, animation="player_block_anim", card_image="card_kare_block"),
+                Skill("Swift Step", cost=4, type="dodge", desc="Prepare to evade.", cooldown=2, animation="player_dodge_anim", card_image="card_kare_dodge"),
+                Skill("Heavy Slash", cost=5, damage=12, cooldown=2, desc="Powerful swing.", animation="player_power_slash_anim", card_image="card_kare_hard"),
+                Skill("Focus", cost=3, damage=3, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Concentrate for more damage.", animation="player_meditate_anim", card_image="card_kare_buff"),
+                Skill("Breathe", cost=0, energy_regen=5, desc="Recover energy.", animation="player_meditate_anim", card_image="card_kare_energy"),
+                Skill("Heroic Finisher", cost=15, damage=40, cooldown=5, desc="ULTIMATE: A hero's final blow.", animation="player_power_slash_anim", card_image="card_kare_ultimate")
             ]
-        return [
-            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", card_image="card_attack"),
-            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", card_image="card_barrier"),
-            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", card_image="card_dodge"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", card_image="card_attack"),
-            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", card_image="card_energy")
-        ]
+        elif name.lower() == "chaos":
+            return [
+                Skill("Chaos Bolt", cost=3, damage=8, energy_regen=2, desc="Hurl chaotic energy.", animation="player_strike_anim", card_image="card_chaos_normal"),
+                Skill("Void Shield", cost=5, damage=15, type="barrier", desc="Envelop in void.", cooldown=1, animation="player_block_anim", card_image="card_chaos_block"),
+                Skill("Phase Shift", cost=6, type="dodge", desc="Shift out of reality.", cooldown=2, animation="player_dodge_anim", card_image="card_chaos_dodge"),
+                Skill("Abyssal Crush", cost=7, damage=18, cooldown=2, desc="Crush with gravity.", animation="player_power_slash_anim", card_image="card_chaos_hard"),
+                Skill("Unstable Power", cost=5, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Unleash inner chaos.", animation="player_meditate_anim", card_image="card_chaos_buff"),
+                Skill("Consume Soul", cost=0, energy_regen=12, desc="Tear energy from the void.", animation="player_meditate_anim", card_image="card_chaos_energy"),
+                Skill("Cataclysm", cost=25, damage=100, cooldown=5, desc="ULTIMATE: End of all things.", animation="player_power_slash_anim", card_image="card_chaos_ultimate")
+            ]
+        return []
+
+    def get_enemy_intents(name):
+        """
+        Returns a list of 7 intents for an enemy character.
+        """
+        # EDIT THESE VALUES TO CHANGE ENEMY INTENTS
+        if name.lower() == "butter":
+            return [
+                EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="enemy_butter_blade_anim", type="attack", card_image="card_butter_normal"),
+                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="enemy_butter_slash_anim", type="attack", card_image="card_butter_hard"),
+                EnemyIntent("Hard Shell", damage=6, desc="Hardens its surface.", animation="enemy_preparing_anim", type="barrier", card_image="card_butter_block"),
+                EnemyIntent("Slippery", desc="Tries to dodge.", animation="enemy_preparing_anim", type="dodge", card_image="card_butter_dodge"),
+                EnemyIntent("Salting", damage=2, desc="Seasoning for power.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_butter_buff"),
+                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="enemy_butter_gun_anim", type="attack", card_image="card_butter_ultimate"),
+                EnemyIntent("Rest", damage=0, desc="Chilling out.", animation="enemy_preparing_anim", type="energy", card_image="card_butter_energy")
+            ]
+        elif name.lower() == "serious butter":
+            return [
+                EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="enemy_butter_blade_anim", type="attack", card_image="card_serious_butter_normal"),
+                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="enemy_butter_slash_anim", type="attack", card_image="card_serious_butter_hard"),
+                EnemyIntent("Armor of the Serious", damage=20, desc="Professional defense.", animation="enemy_preparing_anim", type="barrier", card_image="card_serious_butter_block"),
+                EnemyIntent("Calculated Move", desc="Anticipates you.", animation="enemy_preparing_anim", type="dodge", card_image="card_serious_butter_dodge"),
+                EnemyIntent("Focus on Quality", damage=8, desc="Increased efficiency.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_serious_butter_buff"),
+                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="enemy_butter_gun_anim", type="attack", card_image="card_serious_butter_ultimate"),
+                EnemyIntent("Recuperate", damage=0, desc="Filing paperwork.", animation="enemy_preparing_anim", type="energy", card_image="card_serious_butter_energy")
+            ]
+        elif name.lower() == "lumpi":
+            return [
+                EnemyIntent("Lump Kick", damage=3, desc="A weak kick.", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_normal"),
+                EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_hard"),
+                EnemyIntent("Lumpy Guard", damage=5, desc="Tries to stay solid.", animation="enemy_preparing_anim", type="barrier", card_image="card_lumpi_block"),
+                EnemyIntent("Bounce", desc="Boing!", animation="enemy_preparing_anim", type="dodge", card_image="card_lumpi_dodge"),
+                EnemyIntent("Grow", damage=2, desc="Getting bigger.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_buff"),
+                EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_ultimate"),
+                EnemyIntent("Inhale", damage=0, desc="Taking a breath.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_energy")
+            ]
+        elif name.lower() == "lumpi wheelchair":
+            return [
+                EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_normal"),
+                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_hard"),
+                EnemyIntent("Reinforced Frame", damage=12, desc="Metal plates.", animation="enemy_preparing_anim", type="barrier", card_image="card_lumpi_wheelchair_block"),
+                EnemyIntent("Drift", desc="Fast turns.", animation="enemy_preparing_anim", type="dodge", card_image="card_lumpi_wheelchair_dodge"),
+                EnemyIntent("Nitro Boost", damage=5, desc="Engine roaring.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_wheelchair_buff"),
+                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_ultimate"),
+                EnemyIntent("Refuel", damage=0, desc="Gas station stop.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_wheelchair_energy")
+            ]
+        elif name.lower() == "ava":
+            return [
+                EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="enemy_spark_anim", type="attack", card_image="card_ava_normal"),
+                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_ava_hard"),
+                EnemyIntent("Mana Veil", damage=10, desc="Shield of stars.", animation="enemy_preparing_anim", type="barrier", card_image="card_ava_block"),
+                EnemyIntent("Blink", desc="Short teleport.", animation="enemy_preparing_anim", type="dodge", card_image="card_ava_dodge"),
+                EnemyIntent("Spell Power", damage=4, desc="Magic resonance.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_ava_buff"),
+                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_ava_ultimate"),
+                EnemyIntent("Meditate", damage=0, desc="Gathering mana.", animation="enemy_preparing_anim", type="energy", card_image="card_ava_energy")
+            ]
+        return []
 
 screen battle_screen(bm):
     $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
@@ -389,12 +521,17 @@ screen battle_screen(bm):
                                     button:
                                         action Function(bm.select_intent, action, e_idx, s_idx)
                                         background Solid("#622")
-                                        padding (10, 5)
+                                        padding (5, 5)
                                         xminimum 80
                                         yminimum 40
-                                        vbox:
-                                            text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
-                                            text "[action.name]" size 16 color "#fff" xalign 0.5
+                                        if action.card_image:
+                                            # Show a tiny version of the card image
+                                            add action.card_image:
+                                                xsize 70 ysize 90
+                                        else:
+                                            vbox:
+                                                text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
+                                                text "[action.name]" size 16 color "#fff" xalign 0.5
                                 elif isinstance(action, Skill):
                                     button:
                                         action Function(bm.select_skill, action)
@@ -509,9 +646,14 @@ screen battle_screen(bm):
                 xminimum 400
                 vbox:
                     spacing 15
-                    text "[bm.enemies[bm.selected_enemy_index].name] ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
+                    if bm.selected_intent.card_image:
+                        add bm.selected_intent.card_image xalign 0.5
+                    text "[bm.enemies[bm.selected_enemy_index].name]'s Intent: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
                     if bm.selected_intent.damage > 0:
-                        text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
+                        if bm.selected_intent.type == "attack":
+                            text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
+                        elif bm.selected_intent.type == "barrier":
+                            text "Projected Block: [bm.selected_intent.damage]" size 20 color "#4444ff" xalign 0.5
                     text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
 
 label reset_camera:
@@ -581,42 +723,58 @@ label generic_battle(bm, is_chaos=False):
                 call expression skill.animation pass (bm) from _call_skill_anim_generic
 
             if skill.type == "attack":
-                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                if bm.dodge_active == "success":
-                    $ damage *= 2
-                    $ bm.dodge_active = False
-                $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
-                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
-                if enemy.is_dead:
-                    "[enemy.name] has been defeated!"
-                    $ renpy.hide("enemy_" + str(e_idx))
+                if enemy.dodge_active:
+                    "[enemy.name] dodged the attack!"
+                    $ enemy.dodge_active = False
+                else:
+                    $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
+                    if bm.dodge_active == "success":
+                        $ damage *= 2
+                        $ bm.dodge_active = False
+                    $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
+                    "[skill.name] deals [damage] damage to [enemy.name]!"
+                    if enemy.is_dead:
+                        "[enemy.name] has been defeated!"
+                        $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
+                "You gain [skill.damage] Block!"
             elif skill.type == "dodge":
                 $ bm.dodge_active = True
+                "You prepare to dodge!"
             elif skill.type == "buff":
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated!"
 
         elif isinstance(action, EnemyIntent):
-            $ bm.enemy_intent = action
+            $ intent = action
+            $ bm.enemy_intent = intent
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
-            if action.animation:
-                call expression action.animation pass (bm) from _call_intent_anim_generic
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_anim_generic
             else:
                 call enemy_attack_anim(bm) from _call_intent_anim_default
 
-            if bm.dodge_active:
-                "DODGED!"
-                $ bm.dodge_active = "success"
-            else:
-                $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                $ bm.take_damage(damage, target="player")
-                if damage > 0:
-                    "[enemy.name] attacks! Took [damage] damage!"
+            if intent.type == "attack":
+                if bm.dodge_active:
+                    "DODGED!"
+                    $ bm.dodge_active = "success"
                 else:
-                    "[enemy.name] performs [action.name]!"
+                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target="player")
+                    "[enemy.name] deals [damage] damage with [intent.name]!"
+            elif intent.type == "barrier":
+                $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] gains [intent.damage] Block!"
+            elif intent.type == "dodge":
+                $ enemy.dodge_active = True
+                "[enemy.name] is preparing to dodge!"
+            elif intent.type == "buff":
+                $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] activated [intent.name]!"
+            elif intent.type == "energy":
+                "[enemy.name] is recovering."
 
         if all(e.is_dead for e in bm.enemies):
             jump .victory
@@ -869,14 +1027,12 @@ label simple_battle_graphics:
         gl_depth False
     scene bg at truecenter
     show kare_idle as player at fight_left
-    show normalbutter_idle as enemy_0 at fight_right
+    show butter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
-    $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
-    $ butter_intents = [
-        EnemyIntent('Blade Strike', damage=2, desc='Butter strikes with a swift blade.', animation='enemy_butter_blade_anim'),
-        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation='enemy_preparing_anim')
-    ]
+    $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
+    # USES THE NEW UNIQUE INTENT SET FOR BUTTER
+    $ butter_intents = get_enemy_intents("butter")
     $ butter = Enemy('Butter', 15, enemy_sprites, butter_intents)
     $ bm = BattleManager(10, [butter], starting_slots=2, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_butter
@@ -908,10 +1064,8 @@ label lumpi_battle:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
-    $ lumpi_intents = [
-        EnemyIntent('Sword Slash', damage=3, desc='Lumpi slashes with his legendary (broken) sword.', animation='enemy_attack_anim'),
-        EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn. This is your chance!', animation='lumpi_back_pain_anim')
-    ]
+    # USES THE NEW UNIQUE INTENT SET FOR LUMPI
+    $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
     $ bm = BattleManager(15, [lumpi], starting_slots=4, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_lumpi
@@ -942,10 +1096,8 @@ label lumpiwheelchair_battle:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
-    $ lumpi_intents = [
-        EnemyIntent('Ram', damage=5, desc='Lumpi rams you with his high-speed wheelchair.', animation='enemy_attack_anim'),
-        EnemyIntent('Glare', damage=0, desc='Lumpi glares at you intensely. He is getting focused!', animation='enemy_glare_anim')
-    ]
+    # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
+    $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
     $ bm = BattleManager(20, [lumpi], starting_slots=6, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_wheelchair
@@ -972,16 +1124,13 @@ label newenemy_battle:
         gl_depth False
     scene bg at truecenter
     show kare_idle as player at fight_left
-    show newenemy_idle as enemy_0 at fight_right
+    show seriousbutter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
-    $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
-    $ butter_intents = [
-        EnemyIntent('Sword Slash', damage=4, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
-        EnemyIntent('Gun Shot', damage=6, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
-        EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
-    ]
-    $ butter = Enemy('Butter', 100, enemy_sprites, butter_intents)
+    $ enemy_sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
+    # USES THE NEW UNIQUE INTENT SET FOR SERIOUS BUTTER
+    $ butter_intents = get_enemy_intents("serious butter")
+    $ butter = Enemy('Serious Butter', 100, enemy_sprites, butter_intents)
     $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
     call generic_battle(bm, is_chaos=False) from _call_generic_battle_newenemy
     if _return == 'win':
@@ -1006,16 +1155,10 @@ label butter_ava_battle:
         gl_depth False
     scene bg at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    $ butter_intents = [
-        EnemyIntent('Sword Slash', damage=4, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
-        EnemyIntent('Gun Shot', damage=6, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
-        EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
-    ]
+    # USES UNIQUE INTENTS FOR BUTTER AND AVA
+    $ butter_intents = get_enemy_intents("butter")
     $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
-    $ ava_intents = [
-        EnemyIntent('Stare', damage=0, desc='Ava is watching intently.', animation='enemy_preparing_anim'),
-        EnemyIntent('Magic Spark', damage=3, desc='A small burst of magic.', animation='enemy_spark_anim')
-    ]
+    $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
@@ -1063,38 +1206,55 @@ label butter_ava_battle:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_anim_ava
             if skill.type == 'attack':
-                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                if bm.dodge_active == "success":
-                    $ damage *= 2
-                    $ bm.dodge_active = False
-                $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
-                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
-                if enemy.is_dead:
-                    "[enemy.name] has been defeated!"
-                    $ renpy.hide("enemy_" + str(e_idx))
+                if enemy.dodge_active:
+                    "[enemy.name] dodged the attack!"
+                    $ enemy.dodge_active = False
+                else:
+                    $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
+                    if bm.dodge_active == "success":
+                        $ damage *= 2
+                        $ bm.dodge_active = False
+                    $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    "[skill.name] deals [damage] damage to [enemy.name]!"
+                    if enemy.is_dead:
+                        "[enemy.name] has been defeated!"
+                        $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
+                "You gain [skill.damage] Block!"
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
+                "You prepare to dodge!"
             elif skill.type == 'buff':
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
-            $ bm.enemy_intent = action
-            if action.animation:
-                call expression action.animation pass (bm) from _call_intent_anim_ava_butter
+            $ intent = action
+            $ bm.enemy_intent = intent
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter
             else:
                 call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default
-            if bm.dodge_active:
-                "DODGED!"
-                $ bm.dodge_active = "success"
-            else:
-                $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                $ bm.take_damage(damage, target='player')
-                if damage > 0:
-                    "[enemy.name] attacks! Took [damage] damage!"
+
+            if intent.type == "attack":
+                if bm.dodge_active:
+                    "DODGED!"
+                    $ bm.dodge_active = "success"
                 else:
-                    "[enemy.name] performs [action.name]!"
+                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target='player')
+                    "[enemy.name] deals [damage] damage with [intent.name]!"
+            elif intent.type == "barrier":
+                $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] gains [intent.damage] Block!"
+            elif intent.type == "dodge":
+                $ enemy.dodge_active = True
+                "[enemy.name] is preparing to dodge!"
+            elif intent.type == "buff":
+                $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] activated [intent.name]!"
+            elif intent.type == "energy":
+                "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
@@ -1133,16 +1293,10 @@ label butter_ava_battle2:
         gl_depth False
     scene bg at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    $ butter_intents = [
-        EnemyIntent('Sword Slash', damage=8, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
-        EnemyIntent('Gun Shot', damage=12, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
-        EnemyIntent('Blade Strike', damage=8, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
-    ]
-    $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
-    $ ava_intents = [
-        EnemyIntent('Magic Blast', damage=10, desc='Ava unleashes magic.', animation='enemy_heavy_attack_anim'),
-        EnemyIntent('Heal Butter', damage=0, desc='Ava heals Butter.', animation='enemy_buff_anim')
-    ]
+    # USES UNIQUE INTENTS FOR SERIOUS BUTTER AND AVA
+    $ butter_intents = get_enemy_intents("serious butter")
+    $ butter = Enemy('Serious Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
+    $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
@@ -1189,44 +1343,56 @@ label butter_ava_battle2:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_anim_ava2
             if skill.type == 'attack':
-                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                if bm.dodge_active == "success":
-                    $ damage *= 2
-                    $ bm.dodge_active = False
-                $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
-                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
-                if enemy.is_dead:
-                    "[enemy.name] has been defeated!"
-                    $ renpy.hide("enemy_" + str(e_idx))
+                if enemy.dodge_active:
+                    "[enemy.name] dodged the attack!"
+                    $ enemy.dodge_active = False
+                else:
+                    $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
+                    if bm.dodge_active == "success":
+                        $ damage *= 2
+                        $ bm.dodge_active = False
+                    $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    "[skill.name] deals [damage] damage to [enemy.name]!"
+                    if enemy.is_dead:
+                        "[enemy.name] has been defeated!"
+                        $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
+                "You gain [skill.damage] Block!"
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
+                "You prepare to dodge!"
             elif skill.type == 'buff':
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
-            $ bm.enemy_intent = action
-            if action.name == "Heal Butter" and not bm.enemies[0].is_dead:
-                if action.animation:
-                    call expression action.animation pass (bm) from _call_intent_anim_ava_butter_heal
-                $ bm.enemies[0].hp = min(bm.enemies[0].max_hp, bm.enemies[0].hp + 50)
-                "Ava heals Butter for 50 HP!"
+            $ intent = action
+            $ bm.enemy_intent = intent
+            # Special logic for unique intent names can still be here if needed
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter2
             else:
-                if action.animation:
-                    call expression action.animation pass (bm) from _call_intent_anim_ava_butter2
-                else:
-                    call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2
+                call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2
+
+            if intent.type == "attack":
                 if bm.dodge_active:
                     "DODGED!"
                     $ bm.dodge_active = "success"
                 else:
-                    $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target='player')
-                    if damage > 0:
-                        "[enemy.name] attacks! Took [damage] damage!"
-                    else:
-                        "[enemy.name] performs [action.name]!"
+                    "[enemy.name] deals [damage] damage with [intent.name]!"
+            elif intent.type == "barrier":
+                $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] gains [intent.damage] Block!"
+            elif intent.type == "dodge":
+                $ enemy.dodge_active = True
+                "[enemy.name] is preparing to dodge!"
+            elif intent.type == "buff":
+                $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] activated [intent.name]!"
+            elif intent.type == "energy":
+                "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
