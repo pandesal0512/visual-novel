@@ -47,16 +47,18 @@ init python:
     import random
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, mana_regen=0, cooldown=0, type="attack", desc="", animation=None):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0):
             self.name = name
             self.cost = cost
             self.damage = damage
-            self.mana_regen = mana_regen
+            self.energy_regen = energy_regen
             self.cooldown = cooldown
             self.current_cooldown = 0
-            self.type = type # "attack", "barrier", "dodge"
+            self.type = type # "attack", "barrier", "dodge", "buff"
             self.desc = desc
             self.animation = animation # Label to call for animation
+            self.buff_type = buff_type
+            self.buff_duration = buff_duration
 
     class EnemyIntent:
         def __init__(self, name, damage=0, desc="", animation=None):
@@ -65,25 +67,45 @@ init python:
             self.desc = desc
             self.animation = animation
 
+    class Enemy:
+        def __init__(self, name, max_hp, sprites, intents):
+            self.name = name
+            self.hp = max_hp
+            self.max_hp = max_hp
+            self.sprites = sprites
+            self.intents = intents
+            self.slots = []
+            self.barrier = 0
+            self.buffs = [] # list of [type, value, duration]
+            self.is_dead = False
+
     class BattleManager:
-        def __init__(self, player_max_hp, enemy_max_hp, enemy_name, starting_slots=2, player_sprites=None, enemy_sprites=None):
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
-            self.player_mana = 10
-            self.player_max_mana = 10
+            self.player_energy = 50
+            self.player_max_energy = 50
             self.player_barrier = 0
-            self.enemy_hp = enemy_max_hp
-            self.enemy_max_hp = enemy_max_hp
-            self.enemy_name = enemy_name
+            self.player_buffs = [] # list of [type, value, duration]
+
+            # Compatibility for single-enemy calls
+            if isinstance(enemies, list):
+                self.enemies = enemies
+            else:
+                # Fallback for old calls: BattleManager(hp, enemy_hp, name, slots, p_sprites, e_sprites)
+                # This is tricky because of the signature change.
+                # I will handle it by checking the types of arguments if possible.
+                self.enemies = []
 
             self.player_sprites = player_sprites or {"idle": "kare_idle", "attack": "kare_attack", "hit": "kare_hit"}
-            self.enemy_sprites = enemy_sprites or {"idle": "enemy_idle", "attack": "enemy_attack", "hit": "enemy_hit"}
 
             self.starting_slots = starting_slots
             self.current_max_slots = starting_slots
-            self.slots = [None] * self.current_max_slots # None, Skill, or EnemyIntent
+            # In multi-enemy mode, slots are managed by the Enemy objects.
+            # self.slots will be removed or repurposed.
+            # I'll keep it for single enemy compatibility but prefer self.enemies[x].slots.
+            self.slots = []
 
-            self.enemy_intents = []
             self.dodge_active = False
             self.player_skills = []
             self.used_skills_this_turn = []
@@ -91,6 +113,7 @@ init python:
             self.selected_skill = None
             self.selected_intent = None
             self.selected_slot_index = -1
+            self.selected_enemy_index = -1
 
         def select_skill(self, skill):
             if self.selected_skill == skill:
@@ -100,69 +123,79 @@ init python:
             self.selected_intent = None
             self.selected_slot_index = -1
 
-        def select_intent(self, intent, index):
-            if self.selected_intent == intent and self.selected_slot_index == index:
+        def select_intent(self, intent, enemy_idx, slot_idx):
+            if self.selected_intent == intent and self.selected_enemy_index == enemy_idx and self.selected_slot_index == slot_idx:
                 self.selected_intent = None
+                self.selected_enemy_index = -1
                 self.selected_slot_index = -1
             else:
                 self.selected_intent = intent
-                self.selected_slot_index = index
+                self.selected_enemy_index = enemy_idx
+                self.selected_slot_index = slot_idx
             self.selected_skill = None
 
-        def add_to_slot(self, skill, index):
+        def add_to_slot(self, skill, enemy_idx, slot_idx):
             if skill in self.used_skills_this_turn:
                 return False
-            if self.player_mana >= skill.cost and skill.current_cooldown == 0:
-                if self.slots[index] is None:
-                    self.slots[index] = skill
-                    self.player_mana -= skill.cost
+            if self.player_energy >= skill.cost and skill.current_cooldown == 0:
+                enemy = self.enemies[enemy_idx]
+                if enemy.slots[slot_idx] is None:
+                    enemy.slots[slot_idx] = skill
+                    self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None # Close description after putting in slot
                     return True
             return False
 
-        def remove_from_slot(self, index):
-            action = self.slots[index]
+        def remove_from_slot(self, enemy_idx, slot_idx):
+            enemy = self.enemies[enemy_idx]
+            action = enemy.slots[slot_idx]
             if isinstance(action, Skill):
-                self.player_mana += action.cost
+                self.player_energy += action.cost
                 if action in self.used_skills_this_turn:
                     self.used_skills_this_turn.remove(action)
-                self.slots[index] = None
+                enemy.slots[slot_idx] = None
 
         def clear_queue(self):
-            for i in range(len(self.slots)):
-                if isinstance(self.slots[i], Skill):
-                    self.remove_from_slot(i)
+            for e_idx, enemy in enumerate(self.enemies):
+                for s_idx in range(len(enemy.slots)):
+                    if isinstance(enemy.slots[s_idx], Skill):
+                        self.remove_from_slot(e_idx, s_idx)
 
-        def get_skill_slot_index(self, skill):
-            for idx, s in enumerate(self.slots):
-                if s == skill:
-                    return idx
-            return -1
+        def get_skill_slot_info(self, skill):
+            for e_idx, enemy in enumerate(self.enemies):
+                for s_idx, s in enumerate(enemy.slots):
+                    if s == skill:
+                        return e_idx, s_idx
+            return -1, -1
 
         def prepare_turn(self):
             # Increase slots each turn
             if self.turn_count > 1:
-                self.current_max_slots = min(10, self.current_max_slots + 1)
+                self.current_max_slots = min(5, self.current_max_slots + 1)
 
-            self.slots = [None] * self.current_max_slots
             self.used_skills_this_turn = []
             self.selected_skill = None
             self.selected_intent = None
+            self.selected_enemy_index = -1
             self.selected_slot_index = -1
-            self.player_mana = min(self.player_max_mana, self.player_mana + 2)
 
-            # Fill enemy slots (roughly half)
-            num_enemy_slots = max(1, self.current_max_slots // 2)
-            available_indices = list(range(self.current_max_slots))
-            renpy.random.shuffle(available_indices)
+            # Regen energy depends on turn
+            self.player_energy = min(self.player_max_energy, self.player_energy + 10)
 
-            for _ in range(num_enemy_slots):
-                idx = available_indices.pop()
-                if self.enemy_intents:
-                    self.slots[idx] = renpy.random.choice(self.enemy_intents)
+            for enemy in self.enemies:
+                if not enemy.is_dead:
+                    enemy.slots = [None] * self.current_max_slots
+                    # Fill enemy intents
+                    num_enemy_slots = max(1, self.current_max_slots // 2)
+                    available_indices = list(range(self.current_max_slots))
+                    renpy.random.shuffle(available_indices)
+                    for _ in range(num_enemy_slots):
+                        idx = available_indices.pop()
+                        if enemy.intents:
+                            enemy.slots[idx] = renpy.random.choice(enemy.intents)
 
-        def take_damage(self, amount, target="player"):
+        def take_damage(self, amount, target="player", enemy_idx=0):
             if target == "player":
                 if self.player_barrier > 0:
                     absorbed = min(self.player_barrier, amount)
@@ -171,13 +204,51 @@ init python:
 
                 self.player_hp = max(0, self.player_hp - amount)
             else:
-                self.enemy_hp = max(0, self.enemy_hp - amount)
+                enemy = self.enemies[enemy_idx]
+                if enemy.barrier > 0:
+                    absorbed = min(enemy.barrier, amount)
+                    enemy.barrier -= absorbed
+                    amount -= absorbed
+
+                enemy.hp = max(0, enemy.hp - amount)
+                if enemy.hp <= 0:
+                    enemy.is_dead = True
 
         def heal_player(self, amount):
             self.player_hp = min(self.player_max_hp, self.player_hp + amount)
 
-        def add_barrier(self, amount):
-            self.player_barrier += amount
+        def add_barrier(self, amount, target="player", enemy_idx=0):
+            if target == "player":
+                self.player_barrier += amount
+            else:
+                self.enemies[enemy_idx].barrier += amount
+
+        def add_buff(self, type, value, duration, target="player", enemy_idx=0):
+            if target == "player":
+                self.player_buffs.append([type, value, duration])
+            else:
+                self.enemies[enemy_idx].buffs.append([type, value, duration])
+
+        def update_buffs(self):
+            # Player buffs
+            for b in self.player_buffs[:]:
+                b[2] -= 1
+                if b[2] <= 0:
+                    self.player_buffs.remove(b)
+            # Enemy buffs
+            for enemy in self.enemies:
+                for b in enemy.buffs[:]:
+                    b[2] -= 1
+                    if b[2] <= 0:
+                        enemy.buffs.remove(b)
+
+        def get_total_buff_value(self, type, target="player", enemy_idx=0):
+            total = 0
+            buffs = self.player_buffs if target == "player" else self.enemies[enemy_idx].buffs
+            for b in buffs:
+                if b[0] == type:
+                    total += b[1]
+            return total
 
         def reduce_cooldowns(self):
             for skill in self.player_skills:
@@ -187,18 +258,23 @@ init python:
     def get_default_skills(is_chaos=False):
         if is_chaos:
             return [
-                Skill("Chaos Strike", cost=2, damage=15, mana_regen=2, desc="Powerful chaos strike. Regens 2 mana.", animation="player_strike_anim"),
-                Skill("Void Slash", cost=5, damage=30, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
-                Skill("Chaos Block", cost=3, damage=10, type="barrier", desc="Gain 10 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
-                Skill("Chaos Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
-                Skill("Entropy", cost=0, mana_regen=6, desc="Regen 6 mana. Concept of chaos.", animation="player_meditate_anim")
+                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim"),
+                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
+                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
+                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim"),
+                # Placeholders for new skills
+                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim"),
+                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", None),
+                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim"),
+                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim")
             ]
         return [
-            Skill("Strike", cost=2, damage=3, mana_regen=1, desc="Basic attack. Regens 1 mana.", animation="player_strike_anim"),
+            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim"),
             Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
             Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
             Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
-            Skill("Meditate", cost=0, mana_regen=4, desc="Regen 4 mana. No damage.", animation="player_meditate_anim")
+            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim")
         ]
 
 transform fight_left:
@@ -223,69 +299,97 @@ screen battle_screen(bm):
         xalign 0.05 yalign 0.05
         spacing 5
         xmaximum 400
-        text "You: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#ff4444" outlines [(2, "#000")]
+        text "Chaos: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#ff4444" outlines [(2, "#000")]
         bar value bm.player_hp range bm.player_max_hp xmaximum 300
 
         hbox:
             spacing 20
             vbox:
-                text "Mana: [bm.player_mana]/[bm.player_max_mana]" size 20 color "#44ff44" outlines [(1, "#000")]
-                bar value bm.player_mana range bm.player_max_mana xmaximum 200
+                text "Energy: [bm.player_energy]/[bm.player_max_energy]" size 20 color "#44ff44" outlines [(1, "#000")]
+                bar value bm.player_energy range bm.player_max_energy xmaximum 200
             if bm.player_barrier > 0:
                 vbox:
                     text "Barrier: [bm.player_barrier]" size 20 color "#4444ff" outlines [(1, "#000")]
                     bar value bm.player_barrier range max(20, bm.player_barrier) xmaximum 100
 
-    # Enemy Stats
+        # Player Buffs
+        hbox:
+            spacing 5
+            for buff in bm.player_buffs:
+                frame:
+                    background Solid("#660")
+                    padding (5, 2)
+                    text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 12 color "#fff"
+
+    # Enemy Stats (Multiple)
     vbox:
         xalign 0.95 yalign 0.05
-        spacing 5
-        xmaximum 400
-        text "[bm.enemy_name]: [bm.enemy_hp]/[bm.enemy_max_hp]" size 24 color "#ff4444" xalign 1.0 outlines [(2, "#000")]
-        bar value bm.enemy_hp range bm.enemy_max_hp xmaximum 300 xalign 1.0
+        spacing 10
+        for e_idx, enemy in enumerate(bm.enemies):
+            if not enemy.is_dead:
+                vbox:
+                    spacing 2
+                    text "[enemy.name]: [enemy.hp]/[enemy.max_hp]" size 20 color "#ff4444" xalign 1.0 outlines [(2, "#000")]
+                    bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
+                    if enemy.barrier > 0:
+                        text "Barrier: [enemy.barrier]" size 14 color "#4444ff" xalign 1.0
+                    hbox:
+                        xalign 1.0
+                        spacing 5
+                        for buff in enemy.buffs:
+                            frame:
+                                background Solid("#622")
+                                padding (3, 1)
+                                text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
 
     # Slots
-    frame:
-        background Solid("#0006")
-        xalign 0.5 yalign 0.15
-        padding (15, 15)
-        vbox:
-            spacing 5
-            text "Battle Slots (Select a card below, then click an empty slot):" size 16 color "#aaa" xalign 0.5
-            hbox:
-                spacing 10
-                xalign 0.5
-                for i in range(bm.current_max_slots):
-                    $ action = bm.slots[i]
-                    if action is None:
-                        $ can_add = bm.selected_skill is not None and bm.player_mana >= bm.selected_skill.cost
-                        button:
-                            action If(can_add, Function(bm.add_to_slot, bm.selected_skill, i))
-                            background Solid("#333")
-                            padding (10, 5)
-                            xminimum 80
-                            yminimum 40
-                            text "EMPTY" size 16 color "#555" xalign 0.5
-                    elif isinstance(action, EnemyIntent):
-                        button:
-                            action Function(bm.select_intent, action, i)
-                            background Solid("#622")
-                            padding (10, 5)
-                            xminimum 80
-                            yminimum 40
-                            vbox:
-                                text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
-                                text "[action.name]" size 16 color "#fff" xalign 0.5
-                    elif isinstance(action, Skill):
-                        button:
-                            action If(bm.selected_skill == action, [Function(bm.remove_from_slot, i), SetField(bm, "selected_skill", None)], Function(bm.select_skill, action))
-                            background Solid("#226")
-                            padding (10, 5)
-                            xminimum 80
-                            yminimum 40
-                            vbox:
-                                text "YOU" size 12 color "#aaaaff" xalign 0.5
-                                text "[action.name]" size 16 color "#fff" xalign 0.5
+    vbox:
+        xalign 0.5 yalign 0.2
+        spacing 10
+        text "Battle Slots (Select a card, then click an ENEMY slot row):" size 16 color "#aaa" xalign 0.5
+
+        for e_idx, enemy in enumerate(bm.enemies):
+            if not enemy.is_dead:
+                frame:
+                    background Solid("#0006")
+                    padding (10, 10)
+                    xalign 0.5
+                    vbox:
+                        spacing 5
+                        text "[enemy.name]'s Row" size 14 color "#ccc" xalign 0.0
+                        hbox:
+                            spacing 10
+                            for s_idx in range(bm.current_max_slots):
+                                $ action = enemy.slots[s_idx]
+                                if action is None:
+                                    $ can_add = bm.selected_skill is not None and bm.player_energy >= bm.selected_skill.cost
+                                    button:
+                                        action If(can_add, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
+                                        background Solid("#333")
+                                        padding (10, 5)
+                                        xminimum 80
+                                        yminimum 40
+                                        text "EMPTY" size 16 color "#555" xalign 0.5
+                                elif isinstance(action, EnemyIntent):
+                                    button:
+                                        action Function(bm.select_intent, action, e_idx, s_idx)
+                                        background Solid("#622")
+                                        padding (10, 5)
+                                        xminimum 80
+                                        yminimum 40
+                                        vbox:
+                                            text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
+                                            text "[action.name]" size 16 color "#fff" xalign 0.5
+                                elif isinstance(action, Skill):
+                                    button:
+                                        action If(bm.selected_skill == action, [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)], Function(bm.select_skill, action))
+                                        background Solid("#226")
+                                        padding (10, 5)
+                                        xminimum 80
+                                        yminimum 40
+                                        vbox:
+                                            text "YOU" size 12 color "#aaaaff" xalign 0.5
+                                            text "[action.name]" size 16 color "#fff" xalign 0.5
 
     # Description Popup (if a skill is selected)
     if bm.selected_skill:
@@ -297,7 +401,7 @@ screen battle_screen(bm):
             vbox:
                 spacing 15
                 text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
-                text "Cost: [bm.selected_skill.cost] Mana" size 20 color "#44ff44" xalign 0.5
+                text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#44ff44" xalign 0.5
                 if bm.selected_skill.damage > 0:
                     text "Damage: [bm.selected_skill.damage]" size 20 color "#ff4444" xalign 0.5
                 text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
@@ -305,9 +409,9 @@ screen battle_screen(bm):
                     text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#ff4444" xalign 0.5
 
                 if bm.selected_skill in bm.used_skills_this_turn:
-                    $ slot_idx = bm.get_skill_slot_index(bm.selected_skill)
+                    $ e_idx, s_idx = bm.get_skill_slot_info(bm.selected_skill)
                     textbutton "REMOVE FROM SLOT":
-                        action [Function(bm.remove_from_slot, slot_idx), SetField(bm, "selected_skill", None)]
+                        action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
                         xalign 0.5
                         background Solid("#622")
                         padding (10, 5)
@@ -323,7 +427,7 @@ screen battle_screen(bm):
             xminimum 400
             vbox:
                 spacing 15
-                text "ENEMY ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
+                text "[bm.enemies[bm.selected_enemy_index].name] ATTACK: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
                 if bm.selected_intent.damage > 0:
                     text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#ff4444" xalign 0.5
                 text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
@@ -357,7 +461,7 @@ screen battle_screen(bm):
                         text "USED" size 18 color "#888" xalign 0.5 bold True
 
     # Controls
-    $ has_player_action = any(isinstance(s, Skill) for s in bm.slots)
+    $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
     textbutton "CONFIRM":
             xalign 0.95 yalign 0.8
             background Solid("#f00")
@@ -392,7 +496,21 @@ label generic_battle(bm, is_chaos=False):
         $ bm.prepare_turn()
 
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
+        # Show all alive enemies
+        $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
+        python:
+            for i, enemy in enumerate(bm.enemies):
+                if not enemy.is_dead:
+                    tag = "enemy_" + str(i)
+                    # Positions based on count?
+                    # For now just spread them a bit
+                    pos = fight_right
+                    if e_count > 1:
+                        pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
+                    renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
+                else:
+                    renpy.hide("enemy_" + str(i))
+
         show screen battle_screen(bm)
 
     label .selection_phase:
@@ -404,35 +522,58 @@ label generic_battle(bm, is_chaos=False):
     label .execution_phase:
         hide screen battle_screen
         $ current_slot_idx = 0
-        $ bm.dodge_active = False # Reset dodge status at start of turn execution
+        $ bm.dodge_active = False
 
     label .execution_loop:
         if current_slot_idx >= bm.current_max_slots:
             jump .turn_end
 
-        $ action = bm.slots[current_slot_idx]
+        $ e_idx = 0
+    label .interleaved_loop:
+        if e_idx >= len(bm.enemies):
+            $ current_slot_idx += 1
+            jump .execution_loop
 
+        $ enemy = bm.enemies[e_idx]
+        if enemy.is_dead:
+            $ e_idx += 1
+            jump .interleaved_loop
+
+        $ action = enemy.slots[current_slot_idx]
         if action is None:
             $ pass
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_mana = min(bm.player_max_mana, bm.player_mana + skill.mana_regen)
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+
+            # Setup current enemy tag for animations
+            $ current_enemy_tag = "enemy_" + str(e_idx)
+
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_anim_generic
+
             if skill.type == "attack":
-                $ damage = skill.damage
+                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                 if bm.dodge_active == "success":
                     $ damage *= 2
-                    $ bm.dodge_active = False # Use up dodge bonus
-                $ bm.take_damage(damage, target="enemy")
-                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
+                    $ bm.dodge_active = False
+                $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
+                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
+                if enemy.is_dead:
+                    "[enemy.name] has been defeated!"
+                    hide expression "enemy_" + str(e_idx)
             elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
             elif skill.type == "dodge":
                 $ bm.dodge_active = True
+            elif skill.type == "buff":
+                $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
+
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
+            $ current_enemy_tag = "enemy_" + str(e_idx)
+
             if action.animation:
                 call expression action.animation pass (bm) from _call_intent_anim_generic
             else:
@@ -440,33 +581,47 @@ label generic_battle(bm, is_chaos=False):
 
             if bm.dodge_active:
                 "DODGED!"
-                $ bm.dodge_active = "success" # Mark as successful dodge for next attack bonus
+                $ bm.dodge_active = "success"
             else:
-                $ bm.take_damage(action.damage, target="player")
-                "[action.name]! Took [action.damage] damage! (Your HP: [bm.player_hp])"
+                $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] attacks! Took [damage] damage!"
 
         # Check Win/Loss
-        if bm.enemy_hp <= 0:
+        if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
             jump .defeat
 
         $ renpy.pause(0.5)
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
-        $ current_slot_idx += 1
-        jump .execution_loop
+        # Redraw alive enemies
+        python:
+            for i, e in enumerate(bm.enemies):
+                if not e.is_dead:
+                    tag = "enemy_" + str(i)
+                    renpy.show(e.sprites["idle"], tag=tag)
+
+        $ e_idx += 1
+        jump .interleaved_loop
 
     label .turn_end:
         $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
         jump .turn_start
 
     label .victory:
         hide screen battle_screen
+        python:
+            for i in range(len(bm.enemies)):
+                renpy.hide("enemy_" + str(i))
         return "win"
 
     label .defeat:
         hide screen battle_screen
+        python:
+            for i in range(len(bm.enemies)):
+                renpy.hide("enemy_" + str(i))
         return "lose"
 
 # --- Player Skill Animations ---
@@ -474,8 +629,9 @@ label generic_battle(bm, is_chaos=False):
 label player_strike_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_strike_sprite"
+    $ enemy = bm.enemies[e_idx]
     show expression sprite as player at fight_left
-    show expression bm.enemy_sprites["hit"] as enemy at fight_right
+    show expression enemy.sprites["hit"] as expression current_enemy_tag
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -485,14 +641,15 @@ label player_strike_anim(bm):
     play sound "punch-140236.mp3" volume 1.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression enemy.sprites["idle"] as expression current_enemy_tag
     return
 
 label player_power_slash_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_power_slash_sprite"
+    $ enemy = bm.enemies[e_idx]
     show expression sprite as player at fight_left
-    show expression bm.enemy_sprites["hit"] as enemy at fight_right
+    show expression enemy.sprites["hit"] as expression current_enemy_tag
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -502,7 +659,7 @@ label player_power_slash_anim(bm):
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression enemy.sprites["idle"] as expression current_enemy_tag
     return
 
 label player_block_anim(bm):
@@ -536,13 +693,13 @@ label player_meditate_anim(bm):
 # --- Enemy Intent Animations ---
 
 label enemy_butter_slash_anim(bm):
-    show expression "butter_attack1" as enemy at fight_right
+    show expression "butter_attack1" as expression current_enemy_tag
     if bm.dodge_active:
         show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack1" as enemy at fight_right:
+    show expression "butter_attack1" as expression current_enemy_tag:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.65
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
@@ -550,7 +707,7 @@ label enemy_butter_slash_anim(bm):
     return
 
 label enemy_butter_gun_anim(bm):
-    show expression "butter_attack3" as enemy at fight_right
+    show expression "butter_attack3" as expression current_enemy_tag
     if bm.dodge_active:
         show evade_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
@@ -564,13 +721,13 @@ label enemy_butter_gun_anim(bm):
     return
 
 label enemy_butter_blade_anim(bm):
-    show expression "butter_attack2" as enemy at fight_right
+    show expression "butter_attack2" as expression current_enemy_tag
     if bm.dodge_active:
         show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack2" as enemy at fight_right:
+    show expression "butter_attack2" as expression current_enemy_tag:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.65
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
@@ -578,13 +735,14 @@ label enemy_butter_blade_anim(bm):
     return
 
 label enemy_sword_anim(bm):
-    show expression "butter_attack1" as enemy at fight_right
+    $ enemy = bm.enemies[e_idx]
+    show expression "butter_attack1" as expression current_enemy_tag
     if bm.dodge_active:
         show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack1" as enemy at fight_right:
+    show expression "butter_attack1" as expression current_enemy_tag:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.65
     camera:
@@ -592,12 +750,13 @@ label enemy_sword_anim(bm):
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
-    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression enemy.sprites["idle"] as expression current_enemy_tag
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_gun_anim(bm):
-    show expression "butter_attack3" as enemy at fight_right
+    $ enemy = bm.enemies[e_idx]
+    show expression "butter_attack3" as expression current_enemy_tag
     if bm.dodge_active:
         show evade_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
@@ -608,23 +767,25 @@ label enemy_gun_anim(bm):
         ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/single-gunshot-62-hp-37188.mp3" volume 2.0
     $ renpy.pause(1.0)
-    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression enemy.sprites["idle"] as expression current_enemy_tag
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_glare_anim(bm):
-    show expression "enemy_glare_sprite" as enemy at fight_right
-    "Lumpi glares at you intensely!"
+    show expression "enemy_glare_sprite" as expression current_enemy_tag
+    "Someone glares at you intensely!"
     $ renpy.pause(1.0)
-    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    $ enemy = bm.enemies[e_idx]
+    show expression enemy.sprites["idle"] as expression current_enemy_tag
     return
 
 label enemy_attack_anim(bm):
-    $ enemy_attack = bm.enemy_sprites["attack"]
+    $ enemy = bm.enemies[e_idx]
+    $ enemy_attack = enemy.sprites["attack"]
     $ player_hit = bm.player_sprites["hit"]
-    show expression enemy_attack as enemy at fight_right
+    show expression enemy_attack as expression current_enemy_tag
     show expression player_hit as player at fight_left
-    show expression enemy_attack as enemy at fight_right:
+    show expression enemy_attack as expression current_enemy_tag:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.65
     camera:
@@ -632,9 +793,9 @@ label enemy_attack_anim(bm):
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
     $ renpy.pause(1.0)
-    $ enemy_idle = bm.enemy_sprites["idle"]
+    $ enemy_idle = enemy.sprites["idle"]
     $ player_idle = bm.player_sprites["idle"]
-    show expression enemy_idle as enemy at fight_right
+    show expression enemy_idle as expression current_enemy_tag
     show expression player_idle as player at fight_left
 
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
@@ -665,11 +826,12 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
-    $ bm = BattleManager(10, 15, 'Butter', starting_slots=2, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.enemy_intents = [
+    $ butter_intents = [
         EnemyIntent('Blade Strike', damage=2, desc='Butter strikes with a swift blade.', animation='enemy_butter_blade_anim'),
         EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
+    $ butter = Enemy('Butter', 15, enemy_sprites, butter_intents)
+    $ bm = BattleManager(10, [butter], starting_slots=2, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_butter
     if _return == 'win':
         jump .player_wins
@@ -703,11 +865,12 @@ label lumpi_battle:
     $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
-    $ bm = BattleManager(15, 25, 'Lumpi', starting_slots=4, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.enemy_intents = [
+    $ lumpi_intents = [
         EnemyIntent('Sword Slash', damage=3, desc='Lumpi slashes with his legendary (broken) sword.', animation='enemy_attack_anim'),
         EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn. This is your chance!', animation='lumpi_back_pain_anim')
     ]
+    $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
+    $ bm = BattleManager(15, [lumpi], starting_slots=4, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -739,11 +902,12 @@ label lumpiwheelchair_battle:
     $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
-    $ bm = BattleManager(20, 40, 'Lumpi (Wheelchair)', starting_slots=6, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.enemy_intents = [
+    $ lumpi_intents = [
         EnemyIntent('Ram', damage=5, desc='Lumpi rams you with his high-speed wheelchair.', animation='enemy_attack_anim'),
         EnemyIntent('Glare', damage=0, desc='Lumpi glares at you intensely. He is getting focused!', animation='enemy_glare_anim')
     ]
+    $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
+    $ bm = BattleManager(20, [lumpi], starting_slots=6, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -775,12 +939,13 @@ label newenemy_battle:
     $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
-    $ bm = BattleManager(50, 100, 'Butter', starting_slots=8, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.enemy_intents = [
+    $ butter_intents = [
         EnemyIntent('Sword Slash', damage=4, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
         EnemyIntent('Gun Shot', damage=6, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
         EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
     ]
+    $ butter = Enemy('Butter', 100, enemy_sprites, butter_intents)
+    $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
     call generic_battle(bm, is_chaos=True) from _call_generic_battle_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -806,29 +971,41 @@ label butter_ava_battle:
         perspective False
         gl_depth False
     scene bg at truecenter
-    show chaos_idle as player at fight_left
-    show butter_idle as enemy at fight_right
-    show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
-    $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
-    $ bm = BattleManager(500, 999999999999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.player_skills = get_default_skills(True)
-    $ bm.enemy_intents = [
+    $ butter_intents = [
         EnemyIntent('Sword Slash', damage=4, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
         EnemyIntent('Gun Shot', damage=6, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
         EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
     ]
+    $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
+
+    $ ava_intents = [
+        EnemyIntent('Stare', damage=0, desc='Ava is watching intently.', animation=None),
+        EnemyIntent('Magic Spark', damage=3, desc='A small burst of magic.', animation='enemy_attack_anim')
+    ]
+    $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
+
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
+    $ bm.player_skills = get_default_skills(True)
+
     $ ava_on_player_side = True
     $ ava_attacked_once = False
 
     label .turn_start:
         $ bm.turn_count += 1
         $ bm.prepare_turn()
-        $ bm.enemy_intent = renpy.random.choice(bm.enemy_intents)
+
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
-        show expression 'ava_idle' as ava at Position(xalign=0.5 if ava_on_player_side else 0.85, yalign=0.5)
+        python:
+            for i, enemy in enumerate(bm.enemies):
+                if not enemy.is_dead:
+                    tag = "enemy_" + str(i)
+                    pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
+                    # Custom position for Ava if on player side
+                    if i == 1 and ava_on_player_side:
+                        pos = Position(xalign=0.5, yalign=0.5)
+                    renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
+
         show screen battle_screen(bm)
     label .selection_phase:
         $ result = ui.interact()
@@ -842,26 +1019,45 @@ label butter_ava_battle:
     label .execution_loop:
         if current_slot_idx >= bm.current_max_slots:
             jump .ava_turn
-        $ action = bm.slots[current_slot_idx]
+
+        $ e_idx = 0
+    label .interleaved_loop:
+        if e_idx >= len(bm.enemies):
+            $ current_slot_idx += 1
+            jump .execution_loop
+
+        $ enemy = bm.enemies[e_idx]
+        if enemy.is_dead:
+            $ e_idx += 1
+            jump .interleaved_loop
+
+        $ action = enemy.slots[current_slot_idx]
+        $ current_enemy_tag = "enemy_" + str(e_idx)
+
         if action is None:
             $ pass
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_mana = min(bm.player_max_mana, bm.player_mana + skill.mana_regen)
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_anim_ava
             if skill.type == 'attack':
-                $ damage = skill.damage
+                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                 if bm.dodge_active == "success":
                     $ damage *= 2
                     $ bm.dodge_active = False
-                $ bm.take_damage(damage, target='enemy')
-                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
+                $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
+                if enemy.is_dead:
+                    "[enemy.name] has been defeated!"
+                    hide expression "enemy_" + str(e_idx)
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
+            elif skill.type == 'buff':
+                $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
             if action.animation:
@@ -873,17 +1069,19 @@ label butter_ava_battle:
                 "DODGED!"
                 $ bm.dodge_active = "success"
             else:
-                $ bm.take_damage(bm.enemy_intent.damage, target='player')
-                "[bm.enemy_intent.name]! Took [bm.enemy_intent.damage] damage! (Your HP: [bm.player_hp])"
-        if bm.enemy_hp <= 0:
+                $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                $ bm.take_damage(damage, target='player')
+                "[enemy.name] attacks! Took [damage] damage!"
+
+        if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
             jump .defeat
+
         $ renpy.pause(0.5)
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
-        $ current_slot_idx += 1
-        jump .execution_loop
+        $ e_idx += 1
+        jump .interleaved_loop
     label .ava_turn:
         if not ava_attacked_once:
             $ ava_attacked_once = True
@@ -892,8 +1090,8 @@ label butter_ava_battle:
                 ease 0.2 xpos 0.5
             play sound 'punch-140236.mp3' volume 2.0
             $ renpy.pause(1.0)
-            $ bm.take_damage(5, target='enemy')
-            'ava attacks butter for 5 damage! (Butter HP: [bm.enemy_hp])'
+            $ bm.take_damage(5, target='enemy', enemy_idx=0)
+            'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
             show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
             'butter' 'HOLD ON why are you attacking me?'
             'ava' 'oh wait i forgot you are my ally'
@@ -926,26 +1124,35 @@ label butter_ava_battle2:
         perspective False
         gl_depth False
     scene bg at truecenter
-    show chaos_idle as player at fight_left
-    show butter_idle as enemy at fight_right
-    show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
-    $ renpy.pause(0.5, hard='True')
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
-    $ bm = BattleManager(500, 999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.player_skills = get_default_skills(True)
-    $ bm.enemy_intents = [
-        EnemyIntent('Sword Slash', damage=6, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
-        EnemyIntent('Gun Shot', damage=10, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
-        EnemyIntent('Blade Strike', damage=6, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
+    $ butter_intents = [
+        EnemyIntent('Sword Slash', damage=8, desc='Butter strikes with a swift sword slash.', animation='enemy_butter_slash_anim'),
+        EnemyIntent('Gun Shot', damage=12, desc='Butter fires his weapon! high damage.', animation='enemy_butter_gun_anim'),
+        EnemyIntent('Blade Strike', damage=8, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
     ]
+    $ butter = Enemy('Butter', 500, {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}, butter_intents)
+
+    $ ava_intents = [
+        EnemyIntent('Magic Blast', damage=10, desc='Ava unleashes magic.', animation='enemy_attack_anim'),
+        EnemyIntent('Heal Butter', damage=0, desc='Ava heals Butter.', animation=None)
+    ]
+    $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
+
+    $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
+    $ bm.player_skills = get_default_skills(True)
+
     label .turn_start:
         $ bm.turn_count += 1
         $ bm.prepare_turn()
-        $ bm.enemy_intent = renpy.random.choice(bm.enemy_intents)
+
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
-        show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
+        python:
+            for i, enemy in enumerate(bm.enemies):
+                if not enemy.is_dead:
+                    tag = "enemy_" + str(i)
+                    pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
+                    renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
+
         show screen battle_screen(bm)
     label .selection_phase:
         $ result = ui.interact()
@@ -959,48 +1166,75 @@ label butter_ava_battle2:
     label .execution_loop:
         if current_slot_idx >= bm.current_max_slots:
             jump .ava_turn
-        $ action = bm.slots[current_slot_idx]
+
+        $ e_idx = 0
+    label .interleaved_loop:
+        if e_idx >= len(bm.enemies):
+            $ current_slot_idx += 1
+            jump .execution_loop
+
+        $ enemy = bm.enemies[e_idx]
+        if enemy.is_dead:
+            $ e_idx += 1
+            jump .interleaved_loop
+
+        $ action = enemy.slots[current_slot_idx]
+        $ current_enemy_tag = "enemy_" + str(e_idx)
+
         if action is None:
             $ pass
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_mana = min(bm.player_max_mana, bm.player_mana + skill.mana_regen)
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_anim_ava2
             if skill.type == 'attack':
-                $ damage = skill.damage
+                $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                 if bm.dodge_active == "success":
                     $ damage *= 2
                     $ bm.dodge_active = False
-                $ bm.take_damage(damage, target='enemy')
-                "[skill.name]! Dealt [damage] damage! (Enemy HP: [bm.enemy_hp])"
+                $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
+                if enemy.is_dead:
+                    "[enemy.name] has been defeated!"
+                    hide expression "enemy_" + str(e_idx)
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
+            elif skill.type == 'buff':
+                $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
-            if action.animation:
-                call expression action.animation pass (bm) from _call_intent_anim_ava_butter2
-            else:
-                call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2
 
-            if bm.dodge_active:
-                "DODGED!"
-                $ bm.dodge_active = "success"
+            # Special case for "Heal Butter"
+            if action.name == "Heal Butter" and not bm.enemies[0].is_dead:
+                $ bm.enemies[0].hp = min(bm.enemies[0].max_hp, bm.enemies[0].hp + 50)
+                "Ava heals Butter for 50 HP!"
             else:
-                $ bm.take_damage(bm.enemy_intent.damage, target='player')
-                "[bm.enemy_intent.name]! Took [bm.enemy_intent.damage] damage! (Your HP: [bm.player_hp])"
-        if bm.enemy_hp <= 0:
+                if action.animation:
+                    call expression action.animation pass (bm) from _call_intent_anim_ava_butter2
+                else:
+                    call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2
+
+                if bm.dodge_active:
+                    "DODGED!"
+                    $ bm.dodge_active = "success"
+                else:
+                    $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target='player')
+                    "[enemy.name] attacks! Took [damage] damage!"
+
+        if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
             jump .defeat
+
         $ renpy.pause(0.5)
         show expression bm.player_sprites["idle"] as player at fight_left
-        show expression bm.enemy_sprites["idle"] as enemy at fight_right
-        $ current_slot_idx += 1
-        jump .execution_loop
+        $ e_idx += 1
+        jump .interleaved_loop
     label .ava_turn:
         show ava_attack as ava at Position(xalign=0.85, yalign=0.5):
             ease 0.2 xpos 0.35
