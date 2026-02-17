@@ -551,19 +551,14 @@ screen battle_screen(bm):
                                         text "EMPTY" size 16 color "#555" xalign 0.5
                                 elif isinstance(action, EnemyIntent):
                                     button:
-                                        action Function(bm.select_intent, action, e_idx, s_idx)
+                                        action [Function(bm.select_intent, action, e_idx, s_idx), SetField(bm, "selected_skill", None)]
                                         background Solid("#622")
-                                        padding (5, 5)
+                                        padding (10, 5)
                                         xminimum 80
                                         yminimum 40
-                                        if action.card_image:
-                                            # Show a tiny version of the card image
-                                            add action.card_image:
-                                                xsize 70 ysize 90
-                                        else:
-                                            vbox:
-                                                text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
-                                                text "[action.name]" size 16 color "#fff" xalign 0.5
+                                        vbox:
+                                            text "ENEMY" size 12 color "#ffaaaa" xalign 0.5
+                                            text "[action.name]" size 16 color "#fff" xalign 0.5
                                 elif isinstance(action, Skill):
                                     button:
                                         action Function(bm.select_skill, action)
@@ -601,18 +596,12 @@ screen battle_screen(bm):
                     action Function(bm.select_skill, skill)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
                     background card_bg
-                    padding (5, 5)
+                    padding (0, 0)
                     xsize 140
                     ysize 180
 
                     if skill.card_image:
                         add skill.card_image
-                    else:
-                        vbox:
-                            spacing 5
-                            xalign 0.5 yalign 0.5
-                            text "[skill.name]" size 18 color name_col xalign 0.5 bold True
-                            text "Cost: [skill.cost]" size 14 color "#44ff44" xalign 0.5
 
                     if skill.current_cooldown > 0:
                         text "[skill.current_cooldown]" size 40 color "#ff4444" xalign 0.5 yalign 0.5 bold True outlines [(2, "#000")]
@@ -678,8 +667,6 @@ screen battle_screen(bm):
                 xminimum 400
                 vbox:
                     spacing 15
-                    if bm.selected_intent.card_image:
-                        add bm.selected_intent.card_image xalign 0.5
                     text "[bm.enemies[bm.selected_enemy_index].name]'s Intent: [bm.selected_intent.name]" size 30 color "#ffaaaa" xalign 0.5 bold True
                     if bm.selected_intent.damage > 0:
                         if bm.selected_intent.type == "attack":
