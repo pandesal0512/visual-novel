@@ -206,7 +206,7 @@ init python:
             self.selected_slot_index = -1
 
             # Progress skill bar
-            if self.turn_count > 1:
+            if self.turn_count >= 1:
                 self.skill_exp += 100 # Fills every turn
                 if self.skill_exp >= self.skill_exp_max:
                     self.skill_exp = 0
@@ -433,13 +433,20 @@ screen battle_screen(bm):
 
     # Description Popup (if a skill is selected)
     if bm.selected_skill:
+        button:
+            action SetField(bm, "selected_skill", None)
+            background Solid("#0008")
+            xfill True yfill True
+
         frame:
-            background Solid("#000c")
+            background Solid("#222e")
             xalign 0.5 yalign 0.5
             padding (30, 30)
-            xminimum 400
+            xminimum 500
             vbox:
                 spacing 15
+                if bm.selected_skill.card_image:
+                    add bm.selected_skill.card_image xalign 0.5
                 text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
                 text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#44ff44" xalign 0.5
                 if bm.selected_skill.damage > 0:
@@ -450,18 +457,28 @@ screen battle_screen(bm):
 
                 if bm.selected_skill in bm.used_skills_this_turn:
                     $ e_idx, s_idx = bm.get_skill_slot_info(bm.selected_skill)
-                    textbutton "REMOVE FROM SLOT":
-                        action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                        xalign 0.5
-                        background Solid("#622")
-                        padding (10, 5)
+                    if e_idx != -1:
+                        textbutton "REMOVE FROM SLOT":
+                            action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
+                            xalign 0.5
+                            background Solid("#622")
+                            padding (10, 5)
 
-                $ pass
+                textbutton "CLOSE":
+                    action SetField(bm, "selected_skill", None)
+                    xalign 0.5
+                    background Solid("#444")
+                    padding (10, 5)
 
     # Enemy Intent Popup
     if bm.selected_intent:
+        button:
+            action SetField(bm, "selected_intent", None)
+            background Solid("#0008")
+            xfill True yfill True
+
         frame:
-            background Solid("#300c")
+            background Solid("#311e")
             xalign 0.5 yalign 0.5
             padding (30, 30)
             xminimum 400
@@ -476,7 +493,7 @@ screen battle_screen(bm):
 
     # Card selection (Available Skills) & Skill Progress
     vbox:
-        xalign 0.5 yalign 0.98
+        xalign 0.5 ypos 0.88 yanchor 1.0
         spacing 5
 
         # Skill Bar (Minecraft-style)
