@@ -40,6 +40,9 @@ image kare_meditate_pose = Solid("#4444ff", xsize=250, ysize=450)
 image chaos_meditate_pose = Solid("#440044", xsize=250, ysize=450)
 image enemy_glare_sprite = Solid("#ffffff", xsize=100, ysize=100)
 
+image miss_text = Text("MISS!", color="#fff", size=60)
+image evade_text = Text("EVADE!", color="#fff", size=60)
+
 init python:
     import random
 
@@ -535,9 +538,7 @@ label player_meditate_anim(bm):
 label enemy_butter_slash_anim(bm):
     show expression "butter_attack1" as enemy at fight_right
     if bm.dodge_active:
-        show text "MISS!" at fight_left:
-            color "#fff"
-            size 60
+        show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -551,9 +552,7 @@ label enemy_butter_slash_anim(bm):
 label enemy_butter_gun_anim(bm):
     show expression "butter_attack3" as enemy at fight_right
     if bm.dodge_active:
-        show text "EVADE!" at fight_left:
-            color "#fff"
-            size 60
+        show evade_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -567,9 +566,7 @@ label enemy_butter_gun_anim(bm):
 label enemy_butter_blade_anim(bm):
     show expression "butter_attack2" as enemy at fight_right
     if bm.dodge_active:
-        show text "MISS!" at fight_left:
-            color "#fff"
-            size 60
+        show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -583,9 +580,7 @@ label enemy_butter_blade_anim(bm):
 label enemy_sword_anim(bm):
     show expression "butter_attack1" as enemy at fight_right
     if bm.dodge_active:
-        show text "MISS!" at fight_left:
-            color "#fff"
-            size 60
+        show miss_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -604,9 +599,7 @@ label enemy_sword_anim(bm):
 label enemy_gun_anim(bm):
     show expression "butter_attack3" as enemy at fight_right
     if bm.dodge_active:
-        show text "EVADE!" at fight_left:
-            color "#fff"
-            size 60
+        show evade_text at fight_left:
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
