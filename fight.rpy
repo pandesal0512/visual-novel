@@ -43,11 +43,19 @@ image enemy_glare_sprite = Solid("#ffffff", xsize=100, ysize=100)
 image miss_text = Text("MISS!", color="#fff", size=60)
 image evade_text = Text("EVADE!", color="#fff", size=60)
 
+# Skill Icons Placeholders
+image icon_attack = Solid("#ff4444", xsize=60, ysize=60)
+image icon_barrier = Solid("#4444ff", xsize=60, ysize=60)
+image icon_dodge = Solid("#ffff44", xsize=60, ysize=60)
+image icon_buff = Solid("#44ff44", xsize=60, ysize=60)
+image icon_energy = Solid("#44ffff", xsize=60, ysize=60)
+image icon_ultimate = Solid("#ffffff", xsize=60, ysize=60)
+
 init python:
     import random
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, icon=None):
             self.name = name
             self.cost = cost
             self.damage = damage
@@ -59,6 +67,7 @@ init python:
             self.animation = animation # Label to call for animation
             self.buff_type = buff_type
             self.buff_duration = buff_duration
+            self.icon = icon
 
     class EnemyIntent:
         def __init__(self, name, damage=0, desc="", animation=None):
@@ -274,27 +283,27 @@ init python:
         if is_chaos:
             return [
                 # Starting skills (Index 0, 1)
-                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim"),
-                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", icon="icon_attack"),
+                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier"),
 
                 # Unlocked skills (Progressively stronger)
-                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
-                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
-                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim"),
-                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim"),
-                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim"),
-                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None),
-                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim")
+                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge"),
+                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack"),
+                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", icon="icon_buff"),
+                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", icon="icon_energy"),
+                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", icon="icon_attack"),
+                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, icon="icon_energy"),
+                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", icon="icon_ultimate")
             ]
         return [
             # Starting skills
-            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim"),
-            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", icon="icon_attack"),
+            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier"),
 
             # Unlocked skills
-            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
-            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim")
+            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge"),
+            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack"),
+            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", icon="icon_energy")
         ]
 
 transform fight_left:
@@ -331,12 +340,6 @@ screen battle_screen(bm):
                 vbox:
                     text "Barrier: [bm.player_barrier]" size 20 color "#4444ff" outlines [(1, "#000")]
                     bar value bm.player_barrier range max(20, bm.player_barrier) xmaximum 100
-
-        # Skill Bar
-        vbox:
-            spacing 2
-            text "Skill Unlock Progress" size 14 color "#aaa"
-            bar value bm.skill_exp range bm.skill_exp_max xmaximum 300 ysize 10
 
         # Player Buffs
         hbox:
@@ -460,31 +463,52 @@ screen battle_screen(bm):
 
                 $ pass
 
-    # Card selection (Available Skills)
-    hbox:
-        xalign 0.5 yalign 0.95
-        spacing 15
-        for skill in bm.player_skills:
-            $ is_selected = bm.selected_skill == skill
-            $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+    # Card selection (Available Skills) & Skill Progress
+    vbox:
+        xalign 0.5 yalign 0.98
+        spacing 5
 
-            button:
-                action Function(bm.select_skill, skill)
-                sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                background Frame(Solid("#555") if is_selected else (Solid("#333e") if can_use else Solid("#111e")), 4, 4)
-                padding (10, 10)
-                xminimum 140
-                yminimum 180
-                vbox:
-                    spacing 5
-                    text "[skill.name]" size 22 color ("#fff" if can_use else "#666") xalign 0.5 bold True
-                    text "Cost: [skill.cost]" size 16 color "#44ff44" xalign 0.5
-                    if skill.current_cooldown > 0:
-                        null height 10
-                        text "CD: [skill.current_cooldown]" size 18 color "#ff4444" xalign 0.5 bold True
-                    elif skill in bm.used_skills_this_turn:
-                        null height 10
-                        text "USED" size 18 color "#888" xalign 0.5 bold True
+        # Skill Bar (Minecraft-style)
+        vbox:
+            xalign 0.5
+            spacing 0
+            text "Skill Unlock Progress" size 12 color "#3cff00" xalign 0.5 outlines [(1, "#000")]
+            bar value bm.skill_exp range bm.skill_exp_max xmaximum 800 ysize 8 xalign 0.5
+
+        hbox:
+            xalign 0.5
+            spacing 15
+            for skill in bm.player_skills:
+                $ is_selected = bm.selected_skill == skill
+                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+
+                button:
+                    action Function(bm.select_skill, skill)
+                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
+                    background Frame(Solid("#555") if is_selected else (Solid("#333e") if can_use else Solid("#111e")), 4, 4)
+                    padding (10, 10)
+                    xminimum 140
+                    yminimum 180
+                    vbox:
+                        spacing 5
+                        if skill.icon:
+                            add skill.icon xalign 0.5
+                        else:
+                            # Placeholder for icon if missing
+                            frame:
+                                xsize 60 ysize 60
+                                background Solid("#ffffff22")
+                                xalign 0.5
+                                text "?" align (0.5, 0.5) color "#666"
+
+                        text "[skill.name]" size 22 color ("#fff" if can_use else "#666") xalign 0.5 bold True
+                        text "Cost: [skill.cost]" size 16 color "#44ff44" xalign 0.5
+                        if skill.current_cooldown > 0:
+                            null height 10
+                            text "CD: [skill.current_cooldown]" size 18 color "#ff4444" xalign 0.5 bold True
+                        elif skill in bm.used_skills_this_turn:
+                            null height 10
+                            text "USED" size 18 color "#888" xalign 0.5 bold True
 
     # Controls
     $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
