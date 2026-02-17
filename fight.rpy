@@ -536,7 +536,8 @@ label enemy_butter_slash_anim(bm):
     show expression "butter_attack1" as enemy at fight_right
     if bm.dodge_active:
         show text "MISS!" at fight_left:
-            color "#fff" size 60
+            color "#fff"
+            size 60
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -551,7 +552,8 @@ label enemy_butter_gun_anim(bm):
     show expression "butter_attack3" as enemy at fight_right
     if bm.dodge_active:
         show text "EVADE!" at fight_left:
-            color "#fff" size 60
+            color "#fff"
+            size 60
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -566,7 +568,8 @@ label enemy_butter_blade_anim(bm):
     show expression "butter_attack2" as enemy at fight_right
     if bm.dodge_active:
         show text "MISS!" at fight_left:
-            color "#fff" size 60
+            color "#fff"
+            size 60
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -581,7 +584,8 @@ label enemy_sword_anim(bm):
     show expression "butter_attack1" as enemy at fight_right
     if bm.dodge_active:
         show text "MISS!" at fight_left:
-            color "#fff" size 60
+            color "#fff"
+            size 60
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
@@ -601,7 +605,8 @@ label enemy_gun_anim(bm):
     show expression "butter_attack3" as enemy at fight_right
     if bm.dodge_active:
         show text "EVADE!" at fight_left:
-            color "#fff" size 60
+            color "#fff"
+            size 60
             linear 0.5 yoffset -100 alpha 0.0
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
