@@ -379,7 +379,7 @@ label generic_battle(bm):
         if bm.player_hp <= 0:
             jump .defeat
 
-        $ renpy.pause(0.5)
+        $ renpy.pause(1.5)
         $ current_slot_idx += 1
         jump .execution_loop
 
@@ -403,13 +403,13 @@ label player_attack_anim(bm):
     show expression player_attack as player at fight_left
     show expression enemy_hit as enemy at fight_right
     show expression player_attack as player at fight_left:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.35
+        ease 0.5 xpos 0.5
+        ease 0.5 xpos 0.35
     camera:
-        ease 0.2 xpos 0.1 ypos -0.1 zoom 1.2
-        ease 0.3 xpos 0.0 ypos 0.0 zoom 1.0
+        ease 0.5 xpos 0.1 ypos -0.1 zoom 1.2
+        ease 0.5 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "punch-140236.mp3" volume 1.0
-    $ renpy.pause(0.5)
+    $ renpy.pause(1.5)
     $ player_idle = bm.player_sprites["idle"]
     $ enemy_idle = bm.enemy_sprites["idle"]
     show expression player_idle as player at fight_left
@@ -435,13 +435,13 @@ label enemy_attack_anim(bm):
     show expression enemy_attack as enemy at fight_right
     show expression player_hit as player at fight_left
     show expression enemy_attack as enemy at fight_right:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.65
+        ease 0.5 xpos 0.5
+        ease 0.5 xpos 0.65
     camera:
-        ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
-        ease 0.3 xpos 0.0 ypos 0.0 zoom 1.0
+        ease 0.5 xpos -0.1 ypos -0.1 zoom 1.2
+        ease 0.5 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
-    $ renpy.pause(0.5)
+    $ renpy.pause(1.5)
     $ enemy_idle = bm.enemy_sprites["idle"]
     $ player_idle = bm.player_sprites["idle"]
     show expression enemy_idle as enemy at fight_right
@@ -755,17 +755,17 @@ label butter_ava_battle:
             jump .victory
         if bm.player_hp <= 0:
             jump .defeat
-        $ renpy.pause(0.5)
+        $ renpy.pause(1.5)
         $ current_slot_idx += 1
         jump .execution_loop
     label .ava_turn:
         if not ava_attacked_once:
             $ ava_attacked_once = True
             show ava_attack as ava at Position(xalign=0.5, yalign=0.5):
-                ease 0.2 xpos 0.65
-                ease 0.2 xpos 0.5
+                ease 0.5 xpos 0.65
+                ease 0.5 xpos 0.5
             play sound 'punch-140236.mp3' volume 2.0
-            $ renpy.pause(1.0)
+            $ renpy.pause(1.5)
             $ bm.take_damage(5, target='enemy')
             'ava attacks butter for 5 damage'
             show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
@@ -777,10 +777,10 @@ label butter_ava_battle:
             $ renpy.pause(0.7)
         elif not ava_on_player_side:
             show ava_attack as ava at Position(xalign=0.85, yalign=0.5):
-                ease 0.2 xpos 0.35
-                ease 0.2 xpos 0.85
+                ease 0.5 xpos 0.35
+                ease 0.5 xpos 0.85
             play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-            $ renpy.pause(1.0)
+            $ renpy.pause(1.5)
             show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
             $ bm.take_damage(60, target='player')
             'ava attacks for 60 damage'
@@ -861,15 +861,15 @@ label butter_ava_battle2:
             jump .victory
         if bm.player_hp <= 0:
             jump .defeat
-        $ renpy.pause(0.5)
+        $ renpy.pause(1.5)
         $ current_slot_idx += 1
         jump .execution_loop
     label .ava_turn:
         show ava_attack as ava at Position(xalign=0.85, yalign=0.5):
-            ease 0.2 xpos 0.35
-            ease 0.2 xpos 0.85
+            ease 0.5 xpos 0.35
+            ease 0.5 xpos 0.85
         play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-        $ renpy.pause(1.0)
+        $ renpy.pause(1.5)
         show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
         $ bm.take_damage(50, target='player')
         'ava attacks for 50 damage!'
