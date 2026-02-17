@@ -261,7 +261,7 @@ screen battle_screen(bm):
                                 text "[action.name]" size 16 color "#fff" xalign 0.5
                     elif isinstance(action, Skill):
                         button:
-                            action Function(bm.select_skill, action)
+                            action If(bm.selected_skill == action, [Function(bm.remove_from_slot, i), SetField(bm, "selected_skill", None)], Function(bm.select_skill, action))
                             background Solid("#226")
                             padding (10, 5)
                             xminimum 80
@@ -462,9 +462,11 @@ label generic_battle(bm):
 # --- Player Skill Animations ---
 
 label player_strike_anim(bm):
-    show expression "kare_strike_sprite" as player at fight_left
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    $ sprite = p_tag + "_strike_sprite"
+    show expression sprite as player at fight_left
     show expression bm.enemy_sprites["hit"] as enemy at fight_right
-    show expression "kare_strike_sprite" as player at fight_left:
+    show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
     camera:
@@ -477,9 +479,11 @@ label player_strike_anim(bm):
     return
 
 label player_power_slash_anim(bm):
-    show expression "kare_power_slash_sprite" as player at fight_left
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    $ sprite = p_tag + "_power_slash_sprite"
+    show expression sprite as player at fight_left
     show expression bm.enemy_sprites["hit"] as enemy at fight_right
-    show expression "kare_power_slash_sprite" as player at fight_left:
+    show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
     camera:
@@ -492,7 +496,9 @@ label player_power_slash_anim(bm):
     return
 
 label player_barrier_anim(bm):
-    show expression "kare_barrier_pose" as player at fight_left
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    $ sprite = p_tag + "_barrier_pose"
+    show expression sprite as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
     "You brace yourself! (+5 Barrier)"
     $ renpy.pause(1.0)
@@ -500,14 +506,18 @@ label player_barrier_anim(bm):
     return
 
 label player_dodge_anim(bm):
-    show expression "kare_dodge_pose" as player at fight_left
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    $ sprite = p_tag + "_dodge_pose"
+    show expression sprite as player at fight_left
     "You prepare to dodge! (Avoid next attack & x2 Damage)"
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label player_meditate_anim(bm):
-    show expression "kare_meditate_pose" as player at fight_left
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    $ sprite = p_tag + "_meditate_pose"
+    show expression sprite as player at fight_left
     "You focus your mind... (+4 Mana)"
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -515,10 +525,48 @@ label player_meditate_anim(bm):
 
 # --- Enemy Intent Animations ---
 
+label enemy_varied_attack_anim(bm):
+    $ variant = renpy.random.randint(1, 3)
+
+    if variant == 1:
+        $ bm.enemy_intent.name = "Sword Slash"
+        $ bm.enemy_intent.damage = 4
+        show expression "butter_attack1" as enemy at fight_right
+        show expression bm.player_sprites["hit"] as player at fight_left
+        show expression "butter_attack1" as enemy at fight_right:
+            ease 0.2 xpos 0.5
+            ease 0.2 xpos 0.65
+        play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
+    elif variant == 2:
+        $ bm.enemy_intent.name = "Blade Strike"
+        $ bm.enemy_intent.damage = 4
+        show expression "butter_attack2" as enemy at fight_right
+        show expression bm.player_sprites["hit"] as player at fight_left
+        show expression "butter_attack2" as enemy at fight_right:
+            ease 0.2 xpos 0.5
+            ease 0.2 xpos 0.65
+        play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
+    else:
+        $ bm.enemy_intent.name = "Gun Shot"
+        $ bm.enemy_intent.damage = 6
+        show expression "butter_attack3" as enemy at fight_right
+        show expression bm.player_sprites["hit"] as player at fight_left
+        camera:
+            ease 0.1 xpos -0.05 ypos -0.05 zoom 1.1
+            ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
+        play sound "audio/single-gunshot-62-hp-37188.mp3" volume 3.0
+
+    $ renpy.pause(1.0)
+    $ enemy_idle = bm.enemy_sprites["idle"]
+    $ player_idle = bm.player_sprites["idle"]
+    show expression enemy_idle as enemy at fight_right
+    show expression player_idle as player at fight_left
+    return
+
 label enemy_sword_anim(bm):
-    show expression "enemy_sword_sprite" as enemy at fight_right
+    show expression "butter_attack1" as enemy at fight_right
     show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "enemy_sword_sprite" as enemy at fight_right:
+    show expression "butter_attack1" as enemy at fight_right:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.65
     camera:
@@ -531,7 +579,7 @@ label enemy_sword_anim(bm):
     return
 
 label enemy_gun_anim(bm):
-    show expression "enemy_gun_sprite" as enemy at fight_right
+    show expression "butter_attack3" as enemy at fight_right
     show expression bm.player_sprites["hit"] as player at fight_left
     camera:
         ease 0.1 xpos -0.05 ypos -0.05 zoom 1.1
@@ -597,7 +645,7 @@ label simple_battle_graphics:
     $ bm = BattleManager(10, 15, 'Butter', starting_slots=2, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
         EnemyIntent('Nudge', damage=2, desc='A weak nudge. Butter moves a bit.', animation='enemy_attack_anim'),
-        EnemyIntent('Double Hit', damage=5, desc='Butter attacks twice! Watch out!', animation='enemy_attack_anim')
+        EnemyIntent('Quick Strike', damage=5, desc='Butter strikes quickly! Watch out!', animation='enemy_attack_anim')
     ]
     call generic_battle(bm) from _call_generic_battle_butter
     if _return == 'win':
@@ -742,15 +790,14 @@ label newenemy_battle:
         perspective False
         gl_depth False
     scene bg at truecenter
-    show kare_idle as player at fight_left
+    show chaos_idle as player at fight_left
     show newenemy_idle as enemy at fight_right
     $ renpy.pause(0.5, hard='True')
-    $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
+    $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
     $ bm = BattleManager(50, 100, 'Butter', starting_slots=8, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Sword Slash', damage=4, desc='A quick, precise slash from Butter.', animation='enemy_sword_anim'),
-        EnemyIntent('Gun Shot', damage=6, desc='Butter pulls out a gun?! Watch out!', animation='enemy_gun_anim'),
+        EnemyIntent('Incoming Attack', damage=4, desc='Butter strikes with randomized precision.', animation='enemy_varied_attack_anim'),
         EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
     call generic_battle(bm) from _call_generic_battle_newenemy
