@@ -138,12 +138,20 @@ init python:
                 if skill.current_cooldown > 0:
                     skill.current_cooldown -= 1
 
-    def get_default_skills():
+    def get_default_skills(is_chaos=False):
+        if is_chaos:
+            return [
+                Skill("Chaos Strike", cost=2, damage=15, mana_regen=2, desc="Powerful chaos strike. Regens 2 mana.", animation="player_strike_anim"),
+                Skill("Void Slash", cost=5, damage=30, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
+                Skill("Chaos Block", cost=3, type="barrier", desc="Gain 10 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+                Skill("Chaos Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
+                Skill("Entropy", cost=0, mana_regen=6, desc="Regen 6 mana. Concept of chaos.", animation="player_meditate_anim")
+            ]
         return [
             Skill("Strike", cost=2, damage=3, mana_regen=1, desc="Basic attack. Regens 1 mana.", animation="player_strike_anim"),
             Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
-            Skill("Barrier", cost=3, type="barrier", desc="Gain 5 Barrier. 1 turn cooldown.", cooldown=1, animation="player_barrier_anim"),
-            Skill("Dodge", cost=4, type="dodge", desc="Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
+            Skill("Block", cost=3, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
             Skill("Meditate", cost=0, mana_regen=4, desc="Regen 4 mana. No damage.", animation="player_meditate_anim")
         ]
 
@@ -377,8 +385,8 @@ label reset_camera:
     return
 
 # GENERIC BATTLE ENGINE
-label generic_battle(bm):
-    $ bm.player_skills = get_default_skills()
+label generic_battle(bm, is_chaos=False):
+    $ bm.player_skills = get_default_skills(is_chaos)
 
     label .turn_start:
         $ bm.turn_count += 1
@@ -495,7 +503,7 @@ label player_power_slash_anim(bm):
     show expression bm.enemy_sprites["idle"] as enemy at fight_right
     return
 
-label player_barrier_anim(bm):
+label player_block_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_barrier_pose"
     show expression sprite as player at fight_left
@@ -538,15 +546,6 @@ label enemy_varied_attack_anim(bm):
             ease 0.2 xpos 0.65
         play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     elif variant == 2:
-        $ bm.enemy_intent.name = "Blade Strike"
-        $ bm.enemy_intent.damage = 4
-        show expression "butter_attack2" as enemy at fight_right
-        show expression bm.player_sprites["hit"] as player at fight_left
-        show expression "butter_attack2" as enemy at fight_right:
-            ease 0.2 xpos 0.5
-            ease 0.2 xpos 0.65
-        play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
-    else:
         $ bm.enemy_intent.name = "Gun Shot"
         $ bm.enemy_intent.damage = 6
         show expression "butter_attack3" as enemy at fight_right
@@ -555,6 +554,15 @@ label enemy_varied_attack_anim(bm):
             ease 0.1 xpos -0.05 ypos -0.05 zoom 1.1
             ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
         play sound "audio/single-gunshot-62-hp-37188.mp3" volume 3.0
+    else:
+        $ bm.enemy_intent.name = "Blade Strike"
+        $ bm.enemy_intent.damage = 4
+        show expression "butter_attack2" as enemy at fight_right
+        show expression bm.player_sprites["hit"] as player at fight_left
+        show expression "butter_attack2" as enemy at fight_right:
+            ease 0.2 xpos 0.5
+            ease 0.2 xpos 0.65
+        play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
 
     $ renpy.pause(1.0)
     $ enemy_idle = bm.enemy_sprites["idle"]
@@ -615,17 +623,18 @@ label enemy_attack_anim(bm):
     show expression enemy_idle as enemy at fight_right
     show expression player_idle as player at fight_left
 
+    $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     if bm.enemy_name == "Butter":
         if bm.player_barrier > 0:
-            "kare" "haha i blocked"
+            "[p_tag]" "haha i blocked"
         else:
-            "kare" "OWWWWW"
+            "[p_tag]" "OWWWWW"
     elif bm.enemy_name == "Lumpi":
         if bm.player_barrier > 0:
             "lumpi" "You think you can block my sword?!"
         else:
             "lumpi" "HYAAA!!"
-            "kare" "OWWWWW"
+            "[p_tag]" "OWWWWW"
     return
 
 label lumpi_back_pain_anim(bm):
@@ -644,8 +653,8 @@ label simple_battle_graphics:
     $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
     $ bm = BattleManager(10, 15, 'Butter', starting_slots=2, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Nudge', damage=2, desc='A weak nudge. Butter moves a bit.', animation='enemy_attack_anim'),
-        EnemyIntent('Quick Strike', damage=5, desc='Butter strikes quickly! Watch out!', animation='enemy_attack_anim')
+        EnemyIntent('Incoming Attack', damage=2, desc='Butter strikes with randomized precision.', animation='enemy_varied_attack_anim'),
+        EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
     call generic_battle(bm) from _call_generic_battle_butter
     if _return == 'win':
@@ -800,7 +809,7 @@ label newenemy_battle:
         EnemyIntent('Incoming Attack', damage=4, desc='Butter strikes with randomized precision.', animation='enemy_varied_attack_anim'),
         EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
-    call generic_battle(bm) from _call_generic_battle_newenemy
+    call generic_battle(bm, is_chaos=True) from _call_generic_battle_newenemy
     if _return == 'win':
         jump .newenemy_wins
     else:
@@ -864,7 +873,7 @@ label butter_ava_battle:
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
     $ bm = BattleManager(500, 999999999999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.player_skills = get_default_skills()
+    $ bm.player_skills = get_default_skills(True)
     $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=5, desc='Butter attacks with precise intent.', animation='enemy_attack_anim')]
     $ ava_on_player_side = True
     $ ava_attacked_once = False
@@ -975,7 +984,7 @@ label butter_ava_battle2:
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack1', 'hit': 'butter_hit'}
     $ bm = BattleManager(500, 999, 'Butter and Ava', starting_slots=10, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
-    $ bm.player_skills = get_default_skills()
+    $ bm.player_skills = get_default_skills(True)
     $ bm.enemy_intents = [EnemyIntent('Butter Attack', damage=10, desc='Butter attacks with overwhelming force.', animation='enemy_attack_anim')]
     label .turn_start:
         $ bm.turn_count += 1
