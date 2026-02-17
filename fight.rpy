@@ -425,10 +425,10 @@ screen battle_screen(bm):
                 button:
                     action Function(bm.select_skill, skill)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                    background Frame(card_bg, 4, 4)
+                    background card_bg
                     padding (5, 5)
-                    xminimum 140
-                    yminimum 180
+                    xsize 140
+                    ysize 180
 
                     if skill.card_image:
                         add skill.card_image
@@ -440,9 +440,9 @@ screen battle_screen(bm):
                             text "Cost: [skill.cost]" size 14 color "#44ff44" xalign 0.5
 
                     if skill.current_cooldown > 0:
-                        text "[skill.current_cooldown]" size 40 color "#ff4444" align (0.5, 0.5) bold True outlines [(2, "#000")]
+                        text "[skill.current_cooldown]" size 40 color "#ff4444" xalign 0.5 yalign 0.5 bold True outlines [(2, "#000")]
                     elif skill in bm.used_skills_this_turn:
-                        text "USED" size 20 color "#888" align (0.5, 0.5) bold True outlines [(1, "#000")]
+                        text "USED" size 20 color "#888" xalign 0.5 yalign 0.5 bold True outlines [(1, "#000")]
 
     # ── Confirm / Clear buttons ──
     $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
@@ -469,7 +469,7 @@ screen battle_screen(bm):
     if bm.selected_skill or bm.selected_intent:
         if bm.selected_skill:
             frame:
-                background Solid("#222c")
+                background Solid("#222")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
@@ -494,17 +494,10 @@ screen battle_screen(bm):
                                 padding (15, 10)
                                 text_size 24
                                 text_bold True
-                    else:
-                        # If selecting from hand, add a close button or just instructions
-                        textbutton "CLOSE":
-                            action SetField(bm, "selected_skill", None)
-                            xalign 0.5
-                            background Solid("#444")
-                            padding (10, 5)
 
         if bm.selected_intent:
             frame:
-                background Solid("#300c")
+                background Solid("#300")
                 xalign 0.5 yalign 0.5
                 padding (30, 30)
                 xminimum 400
