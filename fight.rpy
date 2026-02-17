@@ -56,9 +56,13 @@ init python:
             self.selected_slot_index = -1
 
         def select_intent(self, intent, index):
-            self.selected_intent = intent
+            if self.selected_intent == intent and self.selected_slot_index == index:
+                self.selected_intent = None
+                self.selected_slot_index = -1
+            else:
+                self.selected_intent = intent
+                self.selected_slot_index = index
             self.selected_skill = None
-            self.selected_slot_index = index
 
         def add_to_slot(self, skill, index):
             if skill in self.used_skills_this_turn:
@@ -136,9 +140,9 @@ init python:
 
     def get_default_skills():
         return [
-            Skill("Strike", cost=2, damage=3, mana_regen=1, desc="Basic attack. Regens 1 mana.", animation="player_attack_anim"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_attack_anim"),
-            Skill("Barrier", cost=3, type="barrier", desc="Gain 5 Barrier. 1 turn cooldown.", cooldown=1, animation="player_defend_anim"),
+            Skill("Strike", cost=2, damage=3, mana_regen=1, desc="Basic attack. Regens 1 mana.", animation="player_strike_anim"),
+            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
+            Skill("Barrier", cost=3, type="barrier", desc="Gain 5 Barrier. 1 turn cooldown.", cooldown=1, animation="player_barrier_anim"),
             Skill("Dodge", cost=4, type="dodge", desc="Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
             Skill("Meditate", cost=0, mana_regen=4, desc="Regen 4 mana. No damage.", animation="player_meditate_anim")
         ]
@@ -455,14 +459,12 @@ label generic_battle(bm):
         hide screen battle_screen
         return "lose"
 
-# --- Generic Animations ---
+# --- Player Skill Animations ---
 
-label player_attack_anim(bm):
-    $ player_attack = bm.player_sprites["attack"]
-    $ enemy_hit = bm.enemy_sprites["hit"]
-    show expression player_attack as player at fight_left
-    show expression enemy_hit as enemy at fight_right
-    show expression player_attack as player at fight_left:
+label player_strike_anim(bm):
+    show expression "kare_strike_sprite" as player at fight_left
+    show expression bm.enemy_sprites["hit"] as enemy at fight_right
+    show expression "kare_strike_sprite" as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
     camera:
@@ -470,23 +472,81 @@ label player_attack_anim(bm):
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "punch-140236.mp3" volume 1.0
     $ renpy.pause(1.0)
-    $ player_idle = bm.player_sprites["idle"]
-    $ enemy_idle = bm.enemy_sprites["idle"]
-    show expression player_idle as player at fight_left
-    show expression enemy_idle as enemy at fight_right
+    show expression bm.player_sprites["idle"] as player at fight_left
+    show expression bm.enemy_sprites["idle"] as enemy at fight_right
     return
 
-label player_defend_anim(bm):
+label player_power_slash_anim(bm):
+    show expression "kare_power_slash_sprite" as player at fight_left
+    show expression bm.enemy_sprites["hit"] as enemy at fight_right
+    show expression "kare_power_slash_sprite" as player at fight_left:
+        ease 0.2 xpos 0.5
+        ease 0.2 xpos 0.35
+    camera:
+        ease 0.2 xpos 0.1 ypos -0.1 zoom 1.2
+        ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
+    play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
+    $ renpy.pause(1.0)
+    show expression bm.player_sprites["idle"] as player at fight_left
+    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    return
+
+label player_barrier_anim(bm):
+    show expression "kare_barrier_pose" as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
     "You brace yourself! (+5 Barrier)"
+    $ renpy.pause(1.0)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label player_dodge_anim(bm):
+    show expression "kare_dodge_pose" as player at fight_left
     "You prepare to dodge! (Avoid next attack & x2 Damage)"
+    $ renpy.pause(1.0)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label player_meditate_anim(bm):
+    show expression "kare_meditate_pose" as player at fight_left
     "You focus your mind... (+4 Mana)"
+    $ renpy.pause(1.0)
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+# --- Enemy Intent Animations ---
+
+label enemy_sword_anim(bm):
+    show expression "enemy_sword_sprite" as enemy at fight_right
+    show expression bm.player_sprites["hit"] as player at fight_left
+    show expression "enemy_sword_sprite" as enemy at fight_right:
+        ease 0.2 xpos 0.5
+        ease 0.2 xpos 0.65
+    camera:
+        ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
+        ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
+    play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
+    $ renpy.pause(1.0)
+    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label enemy_gun_anim(bm):
+    show expression "enemy_gun_sprite" as enemy at fight_right
+    show expression bm.player_sprites["hit"] as player at fight_left
+    camera:
+        ease 0.1 xpos -0.05 ypos -0.05 zoom 1.1
+        ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
+    play sound "audio/single-gunshot-62-hp-37188.mp3" volume 2.0
+    $ renpy.pause(1.0)
+    show expression bm.enemy_sprites["idle"] as enemy at fight_right
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label enemy_glare_anim(bm):
+    show expression "enemy_glare_sprite" as enemy at fight_right
+    "Lumpi glares at you intensely!"
+    $ renpy.pause(1.0)
+    show expression bm.enemy_sprites["idle"] as enemy at fight_right
     return
 
 label enemy_attack_anim(bm):
@@ -512,9 +572,6 @@ label enemy_attack_anim(bm):
             "kare" "haha i blocked"
         else:
             "kare" "OWWWWW"
-        if hasattr(bm, 'enemy_intent') and bm.enemy_intent and bm.enemy_intent.name == "Double Hit":
-            "kare" "YOU ATTACKED TWICE THATS NOT FAIR!!"
-            "butter" "whats not fair is you blocking"
     elif bm.enemy_name == "Lumpi":
         if bm.player_barrier > 0:
             "lumpi" "You think you can block my sword?!"
@@ -644,7 +701,7 @@ label lumpiwheelchair_battle:
     $ bm = BattleManager(20, 40, 'Lumpi (Wheelchair)', starting_slots=6, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
         EnemyIntent('Ram', damage=5, desc='Lumpi rams you with his high-speed wheelchair.', animation='enemy_attack_anim'),
-        EnemyIntent('Glare', damage=2, desc='Lumpi glares at you intensely. Ouch.', animation='enemy_attack_anim')
+        EnemyIntent('Glare', damage=0, desc='Lumpi glares at you intensely. He is getting focused!', animation='enemy_glare_anim')
     ]
     call generic_battle(bm) from _call_generic_battle_wheelchair
     if _return == 'win':
@@ -692,8 +749,8 @@ label newenemy_battle:
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
     $ bm = BattleManager(50, 100, 'Butter', starting_slots=8, player_sprites=player_sprites, enemy_sprites=enemy_sprites)
     $ bm.enemy_intents = [
-        EnemyIntent('Sword Slash', damage=4, desc='A quick, precise slash from Butter.', animation='enemy_attack_anim'),
-        EnemyIntent('Heavy Strike', damage=6, desc='A heavy hit that carries Butter\'s full weight.', animation='enemy_attack_anim'),
+        EnemyIntent('Sword Slash', damage=4, desc='A quick, precise slash from Butter.', animation='enemy_sword_anim'),
+        EnemyIntent('Gun Shot', damage=6, desc='Butter pulls out a gun?! Watch out!', animation='enemy_gun_anim'),
         EnemyIntent('Gaze', damage=0, desc='Butter is preparing something... wait for it.', animation=None)
     ]
     call generic_battle(bm) from _call_generic_battle_newenemy
