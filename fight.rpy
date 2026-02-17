@@ -174,6 +174,7 @@ init python:
             return -1, -1
 
         def prepare_turn(self):
+            self.turn_count += 1
             # Increase slots each turn
             if self.turn_count > 1:
                 self.current_max_slots = min(5, self.current_max_slots + 1)
@@ -186,7 +187,7 @@ init python:
 
             # Progress skill bar
             if self.turn_count > 1:
-                self.skill_exp += 50 # Half the bar each turn? Or depends on speed?
+                self.skill_exp += 100 # Fills every turn
                 if self.skill_exp >= self.skill_exp_max:
                     self.skill_exp = 0
                     if len(self.player_skills) < len(self.full_skill_pool):
@@ -282,7 +283,7 @@ init python:
                 Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim"),
                 Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim"),
                 Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim"),
-                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", None),
+                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None),
                 Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim")
             ]
         return [
@@ -369,7 +370,7 @@ screen battle_screen(bm):
 
     # Slots
     vbox:
-        xalign 0.5 yalign 0.2
+        xalign 0.5 yalign 0.05
         spacing 10
         text "Battle Slots (Select a card, then click an ENEMY slot row):" size 16 color "#aaa" xalign 0.5
 
@@ -517,7 +518,6 @@ label generic_battle(bm, is_chaos=False):
     $ bm.initialize_skills(is_chaos)
 
     label .turn_start:
-        $ bm.turn_count += 1
         $ bm.prepare_turn()
 
         show expression bm.player_sprites["idle"] as player at fight_left
@@ -656,7 +656,7 @@ label player_strike_anim(bm):
     $ sprite = p_tag + "_strike_sprite"
     $ enemy = bm.enemies[e_idx]
     show expression sprite as player at fight_left
-    show expression enemy.sprites["hit"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -666,7 +666,7 @@ label player_strike_anim(bm):
     play sound "punch-140236.mp3" volume 1.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    show expression enemy.sprites["idle"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     return
 
 label player_power_slash_anim(bm):
@@ -674,7 +674,7 @@ label player_power_slash_anim(bm):
     $ sprite = p_tag + "_power_slash_sprite"
     $ enemy = bm.enemies[e_idx]
     show expression sprite as player at fight_left
-    show expression enemy.sprites["hit"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -684,7 +684,7 @@ label player_power_slash_anim(bm):
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    show expression enemy.sprites["idle"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     return
 
 label player_block_anim(bm):
@@ -718,24 +718,21 @@ label player_meditate_anim(bm):
 # --- Enemy Intent Animations ---
 
 label enemy_butter_slash_anim(bm):
-    show expression "butter_attack1" as expression current_enemy_tag
+    $ renpy.show("butter_attack1", tag=current_enemy_tag)
     if bm.dodge_active:
-        show miss_text at fight_left:
-            linear 0.5 yoffset -100 alpha 0.0
+        "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack1" as expression current_enemy_tag:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.65
+    $ renpy.show("butter_attack1", tag=current_enemy_tag, at_list=[fight_right])
+    # For movement we can use a small python block if needed or just pause
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(0.5)
     return
 
 label enemy_butter_gun_anim(bm):
-    show expression "butter_attack3" as expression current_enemy_tag
+    $ renpy.show("butter_attack3", tag=current_enemy_tag)
     if bm.dodge_active:
-        show evade_text at fight_left:
-            linear 0.5 yoffset -100 alpha 0.0
+        "EVADE!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
     camera:
@@ -746,45 +743,38 @@ label enemy_butter_gun_anim(bm):
     return
 
 label enemy_butter_blade_anim(bm):
-    show expression "butter_attack2" as expression current_enemy_tag
+    $ renpy.show("butter_attack2", tag=current_enemy_tag)
     if bm.dodge_active:
-        show miss_text at fight_left:
-            linear 0.5 yoffset -100 alpha 0.0
+        "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack2" as expression current_enemy_tag:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.65
+    $ renpy.show("butter_attack2", tag=current_enemy_tag, at_list=[fight_right])
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
     $ renpy.pause(0.5)
     return
 
 label enemy_sword_anim(bm):
     $ enemy = bm.enemies[e_idx]
-    show expression "butter_attack1" as expression current_enemy_tag
+    $ renpy.show("butter_attack1", tag=current_enemy_tag)
     if bm.dodge_active:
-        show miss_text at fight_left:
-            linear 0.5 yoffset -100 alpha 0.0
+        "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    show expression "butter_attack1" as expression current_enemy_tag:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.65
+    $ renpy.show("butter_attack1", tag=current_enemy_tag, at_list=[fight_right])
     camera:
         ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
-    show expression enemy.sprites["idle"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_gun_anim(bm):
     $ enemy = bm.enemies[e_idx]
-    show expression "butter_attack3" as expression current_enemy_tag
+    $ renpy.show("butter_attack3", tag=current_enemy_tag)
     if bm.dodge_active:
-        show evade_text at fight_left:
-            linear 0.5 yoffset -100 alpha 0.0
+        "EVADE!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
     camera:
@@ -792,27 +782,25 @@ label enemy_gun_anim(bm):
         ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/single-gunshot-62-hp-37188.mp3" volume 2.0
     $ renpy.pause(1.0)
-    show expression enemy.sprites["idle"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_glare_anim(bm):
-    show expression "enemy_glare_sprite" as expression current_enemy_tag
+    $ renpy.show("enemy_glare_sprite", tag=current_enemy_tag)
     "Someone glares at you intensely!"
     $ renpy.pause(1.0)
     $ enemy = bm.enemies[e_idx]
-    show expression enemy.sprites["idle"] as expression current_enemy_tag
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     return
 
 label enemy_attack_anim(bm):
     $ enemy = bm.enemies[e_idx]
     $ enemy_attack = enemy.sprites["attack"]
     $ player_hit = bm.player_sprites["hit"]
-    show expression enemy_attack as expression current_enemy_tag
+    $ renpy.show(enemy_attack, tag=current_enemy_tag)
     show expression player_hit as player at fight_left
-    show expression enemy_attack as expression current_enemy_tag:
-        ease 0.2 xpos 0.5
-        ease 0.2 xpos 0.65
+    $ renpy.show(enemy_attack, tag=current_enemy_tag, at_list=[fight_right])
     camera:
         ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
@@ -820,16 +808,16 @@ label enemy_attack_anim(bm):
     $ renpy.pause(1.0)
     $ enemy_idle = enemy.sprites["idle"]
     $ player_idle = bm.player_sprites["idle"]
-    show expression enemy_idle as expression current_enemy_tag
+    $ renpy.show(enemy_idle, tag=current_enemy_tag)
     show expression player_idle as player at fight_left
 
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
-    if bm.enemy_name == "Butter":
+    if enemy.name == "Butter":
         if bm.player_barrier > 0:
             "[p_tag]" "haha i blocked"
         else:
             "[p_tag]" "OWWWWW"
-    elif bm.enemy_name == "Lumpi":
+    elif enemy.name == "Lumpi":
         if bm.player_barrier > 0:
             "lumpi" "You think you can block my sword?!"
         else:
@@ -895,7 +883,7 @@ label lumpi_battle:
         EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn. This is your chance!', animation='lumpi_back_pain_anim')
     ]
     $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(15, [lumpi], starting_slots=4, player_sprites=player_sprites)
+    $ bm = BattleManager(15, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -932,7 +920,7 @@ label lumpiwheelchair_battle:
         EnemyIntent('Glare', damage=0, desc='Lumpi glares at you intensely. He is getting focused!', animation='enemy_glare_anim')
     ]
     $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(20, [lumpi], starting_slots=6, player_sprites=player_sprites)
+    $ bm = BattleManager(20, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -970,7 +958,7 @@ label newenemy_battle:
         EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
     ]
     $ butter = Enemy('Butter', 100, enemy_sprites, butter_intents)
-    $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
+    $ bm = BattleManager(50, [butter], starting_slots=2, player_sprites=player_sprites)
     call generic_battle(bm, is_chaos=True) from _call_generic_battle_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1016,20 +1004,7 @@ label butter_ava_battle:
     $ ava_on_player_side = True
     $ ava_attacked_once = False
 
-    # Scripted Opening: Ava attacks Butter
-    show ava_idle as enemy_1 at Position(xalign=0.5, yalign=0.5)
-    show butter_idle as enemy_0 at Position(xalign=0.75, yalign=0.5)
-    show chaos_idle as player at fight_left
-    "Ava" "Sorry Butter, but I'm ending this now!"
-    show ava_attack as enemy_1:
-        ease 0.2 xpos 0.65
-        ease 0.2 xpos 0.5
-    play sound 'punch-140236.mp3' volume 2.0
-    $ bm.take_damage(50, target='enemy', enemy_idx=0)
-    "Butter" "GAH! Ava, what are you doing?!"
-
     label .turn_start:
-        $ bm.turn_count += 1
         $ bm.prepare_turn()
 
         show expression bm.player_sprites["idle"] as player at fight_left
@@ -1042,6 +1017,25 @@ label butter_ava_battle:
                     if i == 1 and ava_on_player_side:
                         pos = Position(xalign=0.5, yalign=0.5)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
+
+        if bm.turn_count == 1 and not ava_attacked_once:
+            $ ava_attacked_once = True
+            show ava_attack as ava at Position(xalign=0.5, yalign=0.5):
+                ease 0.2 xpos 0.65
+                ease 0.2 xpos 0.5
+            play sound 'punch-140236.mp3' volume 2.0
+            $ renpy.pause(1.0)
+            $ bm.take_damage(5, target='enemy', enemy_idx=0)
+            'ava' 'Take this, you villain!'
+            'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
+            show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
+            'butter' 'HOLD ON why are you attacking me?'
+            'ava' 'oh wait i forgot you are my ally'
+            'ava' 'my bad gang'
+            $ ava_on_player_side = False
+            show ava_idle as ava:
+                ease 0.2 xalign 0.85
+            $ renpy.pause(0.7)
 
         show screen battle_screen(bm)
     label .selection_phase:
@@ -1120,34 +1114,8 @@ label butter_ava_battle:
         $ e_idx += 1
         jump .interleaved_loop
     label .ava_turn:
-        if not ava_attacked_once:
-            $ ava_attacked_once = True
-            show ava_attack as ava at Position(xalign=0.5, yalign=0.5):
-                ease 0.2 xpos 0.65
-                ease 0.2 xpos 0.5
-            play sound 'punch-140236.mp3' volume 2.0
-            $ renpy.pause(1.0)
-            $ bm.take_damage(5, target='enemy', enemy_idx=0)
-            'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
-            show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
-            'butter' 'HOLD ON why are you attacking me?'
-            'ava' 'oh wait i forgot you are my ally'
-            $ ava_on_player_side = False
-            show ava_idle as ava:
-                ease 0.2 xalign 0.85
-            $ renpy.pause(0.7)
-        elif not ava_on_player_side:
-            show ava_attack as ava at Position(xalign=0.85, yalign=0.5):
-                ease 0.2 xpos 0.35
-                ease 0.2 xpos 0.85
-            play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-            $ renpy.pause(1.0)
-            show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
-            $ bm.take_damage(60, target='player')
-            'ava attacks for 60 damage! (Your HP: [bm.player_hp])'
-        if bm.player_hp <= 0:
-            jump .defeat
         $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
         jump .turn_start
     label .victory:
         hide screen battle_screen
@@ -1175,11 +1143,10 @@ label butter_ava_battle2:
     ]
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
 
-    $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
 
     label .turn_start:
-        $ bm.turn_count += 1
         $ bm.prepare_turn()
 
         show expression bm.player_sprites["idle"] as player at fight_left
@@ -1273,17 +1240,8 @@ label butter_ava_battle2:
         $ e_idx += 1
         jump .interleaved_loop
     label .ava_turn:
-        show ava_attack as ava at Position(xalign=0.85, yalign=0.5):
-            ease 0.2 xpos 0.35
-            ease 0.2 xpos 0.85
-        play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-        $ renpy.pause(1.0)
-        show ava_idle as ava at Position(xalign=0.85, yalign=0.5)
-        $ bm.take_damage(50, target='player')
-        'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
-        if bm.player_hp <= 0:
-            jump .defeat
         $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
         jump .turn_start
     label .victory:
         hide screen battle_screen
