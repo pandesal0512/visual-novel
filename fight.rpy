@@ -40,17 +40,6 @@ image kare_meditate_pose = Solid("#4444ff", xsize=250, ysize=450)
 image chaos_meditate_pose = Solid("#440044", xsize=250, ysize=450)
 image enemy_glare_sprite = Solid("#ffffff", xsize=100, ysize=100)
 
-image miss_text = Text("MISS!", color="#fff", size=60)
-image evade_text = Text("EVADE!", color="#fff", size=60)
-
-# Skill Icons Placeholders
-image icon_attack = Solid("#ff4444", xsize=60, ysize=60)
-image icon_barrier = Solid("#4444ff", xsize=60, ysize=60)
-image icon_dodge = Solid("#ffff44", xsize=60, ysize=60)
-image icon_buff = Solid("#44ff44", xsize=60, ysize=60)
-image icon_energy = Solid("#44ffff", xsize=60, ysize=60)
-image icon_ultimate = Solid("#ffffff", xsize=60, ysize=60)
-
 # Card Image Placeholders
 image card_attack = Solid("#880000", xsize=140, ysize=180)
 image card_barrier = Solid("#000088", xsize=140, ysize=180)
@@ -59,23 +48,38 @@ image card_buff = Solid("#008800", xsize=140, ysize=180)
 image card_energy = Solid("#008888", xsize=140, ysize=180)
 image card_ultimate = Solid("#444444", xsize=140, ysize=180)
 
+transform fight_left:
+    xpos 0.35
+    ypos 0.5
+    anchor (0.5, 0.5)
+    zoom 1.0
+
+transform fight_right:
+    xpos 0.65
+    ypos 0.5
+    anchor (0.5, 0.5)
+    zoom 1.0
+
+transform enemy_charge_right:
+    ease 0.2 xpos 0.5
+    ease 0.2 xpos 0.65
+
 init python:
     import random
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, icon=None, card_image=None):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None):
             self.name = name
             self.cost = cost
             self.damage = damage
             self.energy_regen = energy_regen
             self.cooldown = cooldown
             self.current_cooldown = 0
-            self.type = type # "attack", "barrier", "dodge", "buff"
+            self.type = type
             self.desc = desc
-            self.animation = animation # Label to call for animation
+            self.animation = animation
             self.buff_type = buff_type
             self.buff_duration = buff_duration
-            self.icon = icon
             self.card_image = card_image
 
     class EnemyIntent:
@@ -94,7 +98,7 @@ init python:
             self.intents = intents
             self.slots = []
             self.barrier = 0
-            self.buffs = [] # list of [type, value, duration]
+            self.buffs = []
             self.is_dead = False
 
     class BattleManager:
@@ -104,9 +108,8 @@ init python:
             self.player_energy = 10
             self.player_max_energy = 10
             self.player_barrier = 0
-            self.player_buffs = [] # list of [type, value, duration]
+            self.player_buffs = []
 
-            # Compatibility for single-enemy calls
             if isinstance(enemies, list):
                 self.enemies = enemies
             else:
@@ -119,8 +122,8 @@ init python:
             self.slots = []
 
             self.dodge_active = False
-            self.player_skills = [] # Active skills
-            self.full_skill_pool = [] # All possible skills
+            self.player_skills = []
+            self.full_skill_pool = []
             self.skill_exp = 0
             self.skill_exp_max = 100
 
@@ -135,7 +138,6 @@ init python:
             self.player_max_energy = 50 if is_chaos else 10
             self.player_energy = self.player_max_energy
             self.full_skill_pool = get_default_skills(is_chaos)
-            # Start with 2 skills
             self.player_skills = self.full_skill_pool[:2]
             self.skill_exp = 0
 
@@ -167,7 +169,7 @@ init python:
                     enemy.slots[slot_idx] = skill
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
-                    self.selected_skill = None # Close description after putting in slot
+                    self.selected_skill = None
                     return True
             return False
 
@@ -195,9 +197,8 @@ init python:
 
         def prepare_turn(self):
             self.turn_count += 1
-            # Increase slots each turn
             if self.turn_count > 1:
-                self.current_max_slots = min(5, self.current_max_slots + 1)
+                self.current_max_slots = min(10, self.current_max_slots + 1)
 
             self.used_skills_this_turn = []
             self.selected_skill = None
@@ -205,23 +206,19 @@ init python:
             self.selected_enemy_index = -1
             self.selected_slot_index = -1
 
-            # Progress skill bar
             if self.turn_count >= 1:
-                self.skill_exp += 100 # Fills every turn
+                self.skill_exp += 50 # Half the bar each turn
                 if self.skill_exp >= self.skill_exp_max:
                     self.skill_exp = 0
                     if len(self.player_skills) < len(self.full_skill_pool):
                         new_skill = self.full_skill_pool[len(self.player_skills)]
                         self.player_skills.append(new_skill)
-                        # Maybe notify player? For now just add.
 
-            # Regen energy depends on turn
             self.player_energy = min(self.player_max_energy, self.player_energy + 10)
 
             for enemy in self.enemies:
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
-                    # Fill enemy intents
                     num_enemy_slots = max(1, self.current_max_slots // 2)
                     available_indices = list(range(self.current_max_slots))
                     renpy.random.shuffle(available_indices)
@@ -236,7 +233,6 @@ init python:
                     absorbed = min(self.player_barrier, amount)
                     self.player_barrier -= absorbed
                     amount -= absorbed
-
                 self.player_hp = max(0, self.player_hp - amount)
             else:
                 enemy = self.enemies[enemy_idx]
@@ -244,7 +240,6 @@ init python:
                     absorbed = min(enemy.barrier, amount)
                     enemy.barrier -= absorbed
                     amount -= absorbed
-
                 enemy.hp = max(0, enemy.hp - amount)
                 if enemy.hp <= 0:
                     enemy.is_dead = True
@@ -265,12 +260,10 @@ init python:
                 self.enemies[enemy_idx].buffs.append([type, value, duration])
 
         def update_buffs(self):
-            # Player buffs
             for b in self.player_buffs[:]:
                 b[2] -= 1
                 if b[2] <= 0:
                     self.player_buffs.remove(b)
-            # Enemy buffs
             for enemy in self.enemies:
                 for b in enemy.buffs[:]:
                     b[2] -= 1
@@ -293,48 +286,25 @@ init python:
     def get_default_skills(is_chaos=False):
         if is_chaos:
             return [
-                # Starting skills (Index 0, 1)
-                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
-                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier", card_image="card_barrier"),
-
-                # Unlocked skills (Progressively stronger)
-                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge", card_image="card_dodge"),
-                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack", card_image="card_attack"),
-                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", icon="icon_buff", card_image="card_buff"),
-                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", icon="icon_energy", card_image="card_energy"),
-                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
-                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, icon="icon_energy", card_image="card_energy"),
-                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", icon="icon_ultimate", card_image="card_ultimate")
+                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", card_image="card_attack"),
+                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", card_image="card_barrier"),
+                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", card_image="card_dodge"),
+                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", card_image="card_attack"),
+                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", card_image="card_buff"),
+                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", card_image="card_energy"),
+                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", card_image="card_attack"),
+                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, card_image="card_energy"),
+                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", card_image="card_ultimate")
             ]
         return [
-            # Starting skills
-            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
-            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier", card_image="card_barrier"),
-
-            # Unlocked skills
-            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge", card_image="card_dodge"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack", card_image="card_attack"),
-            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", icon="icon_energy", card_image="card_energy")
+            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", card_image="card_attack"),
+            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", card_image="card_barrier"),
+            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", card_image="card_dodge"),
+            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", card_image="card_attack"),
+            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", card_image="card_energy")
         ]
 
-transform fight_left:
-    xpos 0.35
-    ypos 0.5
-    anchor (0.5, 0.5)
-    zoom 1.0
-
-transform fight_right:
-    xpos 0.65
-    ypos 0.5
-    anchor (0.5, 0.5)
-    zoom 1.0
-
-# Image definitions for KARE
-# Redundant animation definitions removed
-
-# Battle UI Screen
 screen battle_screen(bm):
-    # Player Stats
     vbox:
         xalign 0.05 yalign 0.05
         spacing 5
@@ -352,7 +322,6 @@ screen battle_screen(bm):
                     text "Barrier: [bm.player_barrier]" size 20 color "#4444ff" outlines [(1, "#000")]
                     bar value bm.player_barrier range max(20, bm.player_barrier) xmaximum 100
 
-        # Player Buffs
         hbox:
             spacing 5
             for buff in bm.player_buffs:
@@ -361,7 +330,6 @@ screen battle_screen(bm):
                     padding (5, 2)
                     text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 12 color "#fff"
 
-    # Enemy Stats (Multiple)
     vbox:
         xalign 0.95 yalign 0.05
         spacing 10
@@ -382,9 +350,8 @@ screen battle_screen(bm):
                                 padding (3, 1)
                                 text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
 
-    # Slots
     vbox:
-        xalign 0.5 yalign 0.05
+        xalign 0.5 yalign 0.2
         spacing 10
         text "Battle Slots (Select a card, then click an ENEMY slot row):" size 16 color "#aaa" xalign 0.5
 
@@ -431,7 +398,6 @@ screen battle_screen(bm):
                                             text "YOU" size 12 color "#aaaaff" xalign 0.5
                                             text "[action.name]" size 16 color "#fff" xalign 0.5
 
-    # Description Popup (if a skill is selected)
     if bm.selected_skill:
         button:
             action SetField(bm, "selected_skill", None)
@@ -442,7 +408,7 @@ screen battle_screen(bm):
             background Solid("#222e")
             xalign 0.5 yalign 0.5
             padding (30, 30)
-            xminimum 500
+            xminimum 400
             vbox:
                 spacing 15
                 text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
@@ -462,15 +428,11 @@ screen battle_screen(bm):
                             background Solid("#622")
                             padding (10, 5)
 
-    # Enemy Intent Popup
-    if bm.selected_intent:
-        button:
-            action SetField(bm, "selected_intent", None)
-            background Solid("#0008")
-            xfill True yfill True
+                $ pass
 
+    if bm.selected_intent:
         frame:
-            background Solid("#311e")
+            background Solid("#300c")
             xalign 0.5 yalign 0.5
             padding (30, 30)
             xminimum 400
@@ -483,9 +445,8 @@ screen battle_screen(bm):
 
                 $ pass
 
-    # Card selection (Available Skills) & Skill Progress
     vbox:
-        xalign 0.5 ypos 1.0 yanchor 1.0
+        xalign 0.5 ypos 0.96 yanchor 1.0
         spacing 5
 
         # Skill Bar (Minecraft-style)
@@ -512,12 +473,9 @@ screen battle_screen(bm):
                     if skill.card_image:
                         add skill.card_image
                     else:
-                        # Fallback for development
                         vbox:
                             spacing 5
                             xalign 0.5 yalign 0.5
-                            if skill.icon:
-                                add skill.icon xalign 0.5
                             text "[skill.name]" size 18 color ("#fff" if can_use else "#666") xalign 0.5 bold True
                             text "Cost: [skill.cost]" size 14 color "#44ff44" xalign 0.5
 
@@ -526,16 +484,15 @@ screen battle_screen(bm):
                     elif skill in bm.used_skills_this_turn:
                         text "USED" size 20 color "#888" align (0.5, 0.5) bold True outlines [(1, "#000")]
 
-    # Controls
     $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
     textbutton "CONFIRM":
-            xalign 0.95 yalign 0.8
-            background Solid("#f00")
-            padding (20, 10)
-            text_size 30
-            text_color "#fff"
-            text_bold True
-            action Return("execute")
+        xalign 0.95 yalign 0.8
+        background Solid("#f00")
+        padding (20, 10)
+        text_size 30
+        text_color "#fff"
+        text_bold True
+        action Return("execute")
 
     if has_player_action:
         textbutton "CLEAR":
@@ -553,7 +510,6 @@ label reset_camera:
         matrixtransform ScaleMatrix(1.0, 1.0, 1.0)*OffsetMatrix(0.0, 0.0, 0.0)*RotateMatrix(0.0, 0.0, 0.0)
     return
 
-# GENERIC BATTLE ENGINE
 label generic_battle(bm, is_chaos=False):
     $ bm.initialize_skills(is_chaos)
 
@@ -561,14 +517,11 @@ label generic_battle(bm, is_chaos=False):
         $ bm.prepare_turn()
 
         show expression bm.player_sprites["idle"] as player at fight_left
-        # Show all alive enemies
         $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
         python:
             for i, enemy in enumerate(bm.enemies):
                 if not enemy.is_dead:
                     tag = "enemy_" + str(i)
-                    # Positions based on count?
-                    # For now just spread them a bit
                     pos = fight_right
                     if e_count > 1:
                         pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
@@ -611,8 +564,6 @@ label generic_battle(bm, is_chaos=False):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-
-            # Setup current enemy tag for animations
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if skill.animation:
@@ -627,7 +578,7 @@ label generic_battle(bm, is_chaos=False):
                 "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
                 if enemy.is_dead:
                     "[enemy.name] has been defeated!"
-                    hide expression "enemy_" + str(e_idx)
+                    $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
             elif skill.type == "dodge":
@@ -652,7 +603,6 @@ label generic_battle(bm, is_chaos=False):
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] attacks! Took [damage] damage!"
 
-        # Check Win/Loss
         if all(e.is_dead for e in bm.enemies):
             jump .victory
         if bm.player_hp <= 0:
@@ -660,12 +610,10 @@ label generic_battle(bm, is_chaos=False):
 
         $ renpy.pause(0.5)
         show expression bm.player_sprites["idle"] as player at fight_left
-        # Redraw alive enemies
         python:
             for i, e in enumerate(bm.enemies):
                 if not e.is_dead:
-                    tag = "enemy_" + str(i)
-                    renpy.show(e.sprites["idle"], tag=tag)
+                    renpy.show(e.sprites["idle"], tag="enemy_" + str(i))
 
         $ e_idx += 1
         jump .interleaved_loop
@@ -690,13 +638,14 @@ label generic_battle(bm, is_chaos=False):
         return "lose"
 
 # --- Player Skill Animations ---
+# NOTE: These use renpy.show() for dynamic tags instead of "show X as expression tag"
 
 label player_strike_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_strike_sprite"
     $ enemy = bm.enemies[e_idx]
-    show expression sprite as player at fight_left
-    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
+    $ renpy.show(sprite, at_list=[fight_left], tag="player")
+    $ renpy.show(enemy.sprites["hit"], at_list=[fight_right], tag=current_enemy_tag)
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -706,15 +655,15 @@ label player_strike_anim(bm):
     play sound "punch-140236.mp3" volume 1.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     return
 
 label player_power_slash_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_power_slash_sprite"
     $ enemy = bm.enemies[e_idx]
-    show expression sprite as player at fight_left
-    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
+    $ renpy.show(sprite, at_list=[fight_left], tag="player")
+    $ renpy.show(enemy.sprites["hit"], at_list=[fight_right], tag=current_enemy_tag)
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
@@ -724,7 +673,7 @@ label player_power_slash_anim(bm):
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     return
 
 label player_block_anim(bm):
@@ -732,7 +681,7 @@ label player_block_anim(bm):
     $ sprite = p_tag + "_barrier_pose"
     show expression sprite as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
-    "You brace yourself! (+5 Barrier)"
+    "You brace yourself!"
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -750,27 +699,26 @@ label player_meditate_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_meditate_pose"
     show expression sprite as player at fight_left
-    "You focus your mind... (+4 Mana)"
+    "You focus your mind..."
     $ renpy.pause(1.0)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 # --- Enemy Intent Animations ---
+# NOTE: All dynamic tag shows use renpy.show(). No "as expression" syntax.
 
 label enemy_butter_slash_anim(bm):
-    $ renpy.show("butter_attack1", tag=current_enemy_tag)
+    $ renpy.show("butter_attack1", at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    $ renpy.show("butter_attack1", tag=current_enemy_tag, at_list=[fight_right])
-    # For movement we can use a small python block if needed or just pause
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(0.5)
     return
 
 label enemy_butter_gun_anim(bm):
-    $ renpy.show("butter_attack3", tag=current_enemy_tag)
+    $ renpy.show("butter_attack3", at_list=[fight_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "EVADE!"
     else:
@@ -783,36 +731,34 @@ label enemy_butter_gun_anim(bm):
     return
 
 label enemy_butter_blade_anim(bm):
-    $ renpy.show("butter_attack2", tag=current_enemy_tag)
+    $ renpy.show("butter_attack2", at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    $ renpy.show("butter_attack2", tag=current_enemy_tag, at_list=[fight_right])
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 3.0
     $ renpy.pause(0.5)
     return
 
 label enemy_sword_anim(bm):
     $ enemy = bm.enemies[e_idx]
-    $ renpy.show("butter_attack1", tag=current_enemy_tag)
+    $ renpy.show("butter_attack1", at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "MISS!"
     else:
         show expression bm.player_sprites["hit"] as player at fight_left
-    $ renpy.show("butter_attack1", tag=current_enemy_tag, at_list=[fight_right])
     camera:
         ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
     $ renpy.pause(1.0)
-    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_gun_anim(bm):
     $ enemy = bm.enemies[e_idx]
-    $ renpy.show("butter_attack3", tag=current_enemy_tag)
+    $ renpy.show("butter_attack3", at_list=[fight_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "EVADE!"
     else:
@@ -822,35 +768,29 @@ label enemy_gun_anim(bm):
         ease 0.1 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "audio/single-gunshot-62-hp-37188.mp3" volume 2.0
     $ renpy.pause(1.0)
-    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label enemy_glare_anim(bm):
-    $ renpy.show("enemy_glare_sprite", tag=current_enemy_tag)
+    $ renpy.show("enemy_glare_sprite", at_list=[fight_right], tag=current_enemy_tag)
     "Someone glares at you intensely!"
     $ renpy.pause(1.0)
     $ enemy = bm.enemies[e_idx]
-    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     return
 
 label enemy_attack_anim(bm):
     $ enemy = bm.enemies[e_idx]
-    $ enemy_attack = enemy.sprites["attack"]
-    $ player_hit = bm.player_sprites["hit"]
-    $ renpy.show(enemy_attack, tag=current_enemy_tag)
-    show expression player_hit as player at fight_left
-    $ renpy.show(enemy_attack, tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.show(enemy.sprites["attack"], at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
+    show expression bm.player_sprites["hit"] as player at fight_left
     camera:
         ease 0.2 xpos -0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
     $ renpy.pause(1.0)
-    $ enemy_idle = enemy.sprites["idle"]
-    $ player_idle = bm.player_sprites["idle"]
-    $ renpy.show(enemy_idle, tag=current_enemy_tag)
-    show expression player_idle as player at fight_left
-
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
+    show expression bm.player_sprites["idle"] as player at fight_left
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     if enemy.name == "Butter":
         if bm.player_barrier > 0:
@@ -875,8 +815,8 @@ label simple_battle_graphics:
         gl_depth False
     scene bg at truecenter
     show kare_idle as player at fight_left
-    show normalbutter_idle as enemy at fight_right
-    $ renpy.pause(0.5, hard='True')
+    show normalbutter_idle as enemy_0 at fight_right
+    $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'normalbutter_idle', 'attack': 'normalbutter_attack', 'hit': 'normalbutter_hit'}
     $ butter_intents = [
@@ -894,7 +834,6 @@ label simple_battle_graphics:
         $ renpy.pause(0.1)
         call reset_camera from _call_reset_camera
         hide player
-        hide enemy
         with fade
         'yay win'
         return
@@ -902,11 +841,8 @@ label simple_battle_graphics:
         $ renpy.pause(0.1)
         call reset_camera from _call_reset_camera_1
         hide player
-        hide enemy
         'You were defeated by butter...'
         return
-
-# Lumpi assets removed
 
 label lumpi_battle:
     camera:
@@ -914,8 +850,8 @@ label lumpi_battle:
         gl_depth False
     scene bg at truecenter
     show kare_idle as player at fight_left
-    show lumpi_idle as enemy at fight_right
-    $ renpy.pause(0.5, hard='True')
+    show lumpi_idle as enemy_0 at fight_right
+    $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
     $ lumpi_intents = [
@@ -923,7 +859,7 @@ label lumpi_battle:
         EnemyIntent('Back Pain', damage=0, desc='Lumpi has back pain and skips his turn. This is your chance!', animation='lumpi_back_pain_anim')
     ]
     $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(15, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(15, [lumpi], starting_slots=4, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -933,7 +869,6 @@ label lumpi_battle:
         $ renpy.pause(0.1)
         call reset_camera from _call_reset_camera_2
         hide player
-        hide enemy
         return
     label .lumpi_loses:
         $ renpy.pause(0.1)
@@ -943,16 +878,14 @@ label lumpi_battle:
             'Retry Battle':
                 jump lumpi_battle
 
-# Lumpi Wheelchair assets removed
-
 label lumpiwheelchair_battle:
     camera:
         perspective False
         gl_depth False
     scene bg at truecenter
     show kare_idle as player at fight_left
-    show lumpiwheelchair_idle as enemy at fight_right
-    $ renpy.pause(0.5, hard='True')
+    show lumpiwheelchair_idle as enemy_0 at fight_right
+    $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
     $ lumpi_intents = [
@@ -960,7 +893,7 @@ label lumpiwheelchair_battle:
         EnemyIntent('Glare', damage=0, desc='Lumpi glares at you intensely. He is getting focused!', animation='enemy_glare_anim')
     ]
     $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(20, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(20, [lumpi], starting_slots=6, player_sprites=player_sprites)
     call generic_battle(bm) from _call_generic_battle_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -970,7 +903,6 @@ label lumpiwheelchair_battle:
         $ renpy.pause(0.1)
         call reset_camera from _call_reset_camera_4
         hide player
-        hide enemy
         return
     label .lumpiwheelchair_loses:
         $ renpy.pause(0.1)
@@ -980,16 +912,14 @@ label lumpiwheelchair_battle:
             'Retry Battle':
                 jump lumpiwheelchair_battle
 
-# New Enemy assets removed
-
 label newenemy_battle:
     camera:
         perspective False
         gl_depth False
     scene bg at truecenter
     show chaos_idle as player at fight_left
-    show newenemy_idle as enemy at fight_right
-    $ renpy.pause(0.5, hard='True')
+    show newenemy_idle as enemy_0 at fight_right
+    $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ enemy_sprites = {'idle': 'newenemy_idle', 'attack': 'newenemy_attack1', 'hit': 'newenemy_hit'}
     $ butter_intents = [
@@ -998,7 +928,7 @@ label newenemy_battle:
         EnemyIntent('Blade Strike', damage=4, desc='A powerful blade strike.', animation='enemy_butter_blade_anim')
     ]
     $ butter = Enemy('Butter', 100, enemy_sprites, butter_intents)
-    $ bm = BattleManager(50, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
     call generic_battle(bm, is_chaos=True) from _call_generic_battle_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1008,7 +938,6 @@ label newenemy_battle:
         $ renpy.pause(0.1)
         call reset_camera from _call_reset_camera_6
         hide player
-        hide enemy
         return
     label .newenemy_loses:
         $ renpy.pause(0.1)
@@ -1016,8 +945,6 @@ label newenemy_battle:
         menu:
             'Retry Battle':
                 jump newenemy_battle
-
-# Asset-based image definitions removed
 
 label butter_ava_battle:
     camera:
@@ -1053,6 +980,8 @@ label butter_ava_battle:
                 if not enemy.is_dead:
                     tag = "enemy_" + str(i)
                     pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
+                    if i == 1 and ava_on_player_side:
+                        pos = Position(xalign=0.5, yalign=0.5)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
 
         show screen battle_screen(bm)
@@ -1100,7 +1029,7 @@ label butter_ava_battle:
                 "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
                 if enemy.is_dead:
                     "[enemy.name] has been defeated!"
-                    hide expression "enemy_" + str(e_idx)
+                    $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
             elif skill.type == 'dodge':
@@ -1148,8 +1077,9 @@ label butter_ava_battle:
 
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
 
+        if bm.player_hp <= 0:
+            jump .defeat
         $ bm.reduce_cooldowns()
-        $ bm.update_buffs()
         jump .turn_start
     label .victory:
         hide screen battle_screen
@@ -1177,7 +1107,7 @@ label butter_ava_battle2:
     ]
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
 
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
 
     label .turn_start:
@@ -1236,7 +1166,7 @@ label butter_ava_battle2:
                 "[skill.name] targets [enemy.name]! Dealt [damage] damage!"
                 if enemy.is_dead:
                     "[enemy.name] has been defeated!"
-                    hide expression "enemy_" + str(e_idx)
+                    $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
             elif skill.type == 'dodge':
@@ -1246,7 +1176,6 @@ label butter_ava_battle2:
         elif isinstance(action, EnemyIntent):
             $ bm.enemy_intent = action
 
-            # Special case for "Heal Butter"
             if action.name == "Heal Butter" and not bm.enemies[0].is_dead:
                 $ bm.enemies[0].hp = min(bm.enemies[0].max_hp, bm.enemies[0].hp + 50)
                 "Ava heals Butter for 50 HP!"
@@ -1274,8 +1203,17 @@ label butter_ava_battle2:
         $ e_idx += 1
         jump .interleaved_loop
     label .ava_turn:
+        show ava_attack as enemy_1 at Position(xalign=0.85, yalign=0.5):
+            ease 0.2 xpos 0.35
+            ease 0.2 xpos 0.85
+        play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+        $ renpy.pause(1.0)
+        show ava_idle as enemy_1 at Position(xalign=0.85, yalign=0.5)
+        $ bm.take_damage(50, target='player')
+        'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
+        if bm.player_hp <= 0:
+            jump .defeat
         $ bm.reduce_cooldowns()
-        $ bm.update_buffs()
         jump .turn_start
     label .victory:
         hide screen battle_screen
