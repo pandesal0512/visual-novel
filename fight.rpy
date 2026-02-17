@@ -92,28 +92,32 @@ init python:
             if isinstance(enemies, list):
                 self.enemies = enemies
             else:
-                # Fallback for old calls: BattleManager(hp, enemy_hp, name, slots, p_sprites, e_sprites)
-                # This is tricky because of the signature change.
-                # I will handle it by checking the types of arguments if possible.
                 self.enemies = []
 
             self.player_sprites = player_sprites or {"idle": "kare_idle", "attack": "kare_attack", "hit": "kare_hit"}
 
             self.starting_slots = starting_slots
             self.current_max_slots = starting_slots
-            # In multi-enemy mode, slots are managed by the Enemy objects.
-            # self.slots will be removed or repurposed.
-            # I'll keep it for single enemy compatibility but prefer self.enemies[x].slots.
             self.slots = []
 
             self.dodge_active = False
-            self.player_skills = []
+            self.player_skills = [] # Active skills
+            self.full_skill_pool = [] # All possible skills
+            self.skill_exp = 0
+            self.skill_exp_max = 100
+
             self.used_skills_this_turn = []
             self.turn_count = 0
             self.selected_skill = None
             self.selected_intent = None
             self.selected_slot_index = -1
             self.selected_enemy_index = -1
+
+        def initialize_skills(self, is_chaos):
+            self.full_skill_pool = get_default_skills(is_chaos)
+            # Start with 2 skills
+            self.player_skills = self.full_skill_pool[:2]
+            self.skill_exp = 0
 
         def select_skill(self, skill):
             if self.selected_skill == skill:
@@ -179,6 +183,16 @@ init python:
             self.selected_intent = None
             self.selected_enemy_index = -1
             self.selected_slot_index = -1
+
+            # Progress skill bar
+            if self.turn_count > 1:
+                self.skill_exp += 50 # Half the bar each turn? Or depends on speed?
+                if self.skill_exp >= self.skill_exp_max:
+                    self.skill_exp = 0
+                    if len(self.player_skills) < len(self.full_skill_pool):
+                        new_skill = self.full_skill_pool[len(self.player_skills)]
+                        self.player_skills.append(new_skill)
+                        # Maybe notify player? For now just add.
 
             # Regen energy depends on turn
             self.player_energy = min(self.player_max_energy, self.player_energy + 10)
@@ -258,22 +272,27 @@ init python:
     def get_default_skills(is_chaos=False):
         if is_chaos:
             return [
+                # Starting skills (Index 0, 1)
                 Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim"),
-                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
                 Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+
+                # Unlocked skills (Progressively stronger)
                 Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
+                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim"),
+                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim"),
                 Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim"),
-                # Placeholders for new skills
                 Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim"),
                 Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", None),
-                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim"),
-                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim")
+                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim")
             ]
         return [
+            # Starting skills
             Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
             Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim"),
+
+            # Unlocked skills
             Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim"),
+            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim"),
             Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim")
         ]
 
@@ -311,6 +330,12 @@ screen battle_screen(bm):
                 vbox:
                     text "Barrier: [bm.player_barrier]" size 20 color "#4444ff" outlines [(1, "#000")]
                     bar value bm.player_barrier range max(20, bm.player_barrier) xmaximum 100
+
+        # Skill Bar
+        vbox:
+            spacing 2
+            text "Skill Unlock Progress" size 14 color "#aaa"
+            bar value bm.skill_exp range bm.skill_exp_max xmaximum 300 ysize 10
 
         # Player Buffs
         hbox:
@@ -489,7 +514,7 @@ label reset_camera:
 
 # GENERIC BATTLE ENGINE
 label generic_battle(bm, is_chaos=False):
-    $ bm.player_skills = get_default_skills(is_chaos)
+    $ bm.initialize_skills(is_chaos)
 
     label .turn_start:
         $ bm.turn_count += 1
@@ -986,10 +1011,22 @@ label butter_ava_battle:
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
 
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
-    $ bm.player_skills = get_default_skills(True)
+    $ bm.initialize_skills(True)
 
     $ ava_on_player_side = True
     $ ava_attacked_once = False
+
+    # Scripted Opening: Ava attacks Butter
+    show ava_idle as enemy_1 at Position(xalign=0.5, yalign=0.5)
+    show butter_idle as enemy_0 at Position(xalign=0.75, yalign=0.5)
+    show chaos_idle as player at fight_left
+    "Ava" "Sorry Butter, but I'm ending this now!"
+    show ava_attack as enemy_1:
+        ease 0.2 xpos 0.65
+        ease 0.2 xpos 0.5
+    play sound 'punch-140236.mp3' volume 2.0
+    $ bm.take_damage(50, target='enemy', enemy_idx=0)
+    "Butter" "GAH! Ava, what are you doing?!"
 
     label .turn_start:
         $ bm.turn_count += 1
@@ -1139,7 +1176,7 @@ label butter_ava_battle2:
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
 
     $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
-    $ bm.player_skills = get_default_skills(True)
+    $ bm.initialize_skills(True)
 
     label .turn_start:
         $ bm.turn_count += 1
