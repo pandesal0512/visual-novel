@@ -51,11 +51,19 @@ image icon_buff = Solid("#44ff44", xsize=60, ysize=60)
 image icon_energy = Solid("#44ffff", xsize=60, ysize=60)
 image icon_ultimate = Solid("#ffffff", xsize=60, ysize=60)
 
+# Card Image Placeholders
+image card_attack = Solid("#880000", xsize=140, ysize=180)
+image card_barrier = Solid("#000088", xsize=140, ysize=180)
+image card_dodge = Solid("#888800", xsize=140, ysize=180)
+image card_buff = Solid("#008800", xsize=140, ysize=180)
+image card_energy = Solid("#008888", xsize=140, ysize=180)
+image card_ultimate = Solid("#444444", xsize=140, ysize=180)
+
 init python:
     import random
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, icon=None):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, icon=None, card_image=None):
             self.name = name
             self.cost = cost
             self.damage = damage
@@ -68,6 +76,7 @@ init python:
             self.buff_type = buff_type
             self.buff_duration = buff_duration
             self.icon = icon
+            self.card_image = card_image
 
     class EnemyIntent:
         def __init__(self, name, damage=0, desc="", animation=None):
@@ -92,8 +101,8 @@ init python:
         def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
-            self.player_energy = 50
-            self.player_max_energy = 50
+            self.player_energy = 10
+            self.player_max_energy = 10
             self.player_barrier = 0
             self.player_buffs = [] # list of [type, value, duration]
 
@@ -123,6 +132,8 @@ init python:
             self.selected_enemy_index = -1
 
         def initialize_skills(self, is_chaos):
+            self.player_max_energy = 50 if is_chaos else 10
+            self.player_energy = self.player_max_energy
             self.full_skill_pool = get_default_skills(is_chaos)
             # Start with 2 skills
             self.player_skills = self.full_skill_pool[:2]
@@ -283,27 +294,27 @@ init python:
         if is_chaos:
             return [
                 # Starting skills (Index 0, 1)
-                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", icon="icon_attack"),
-                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier"),
+                Skill("Chaos Strike", cost=8, damage=15, energy_regen=5, desc="Powerful chaos strike. Regens 5 energy.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
+                Skill("Chaos Block", cost=10, damage=20, type="barrier", desc="Gain 20 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier", card_image="card_barrier"),
 
                 # Unlocked skills (Progressively stronger)
-                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge"),
-                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack"),
-                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", icon="icon_buff"),
-                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", icon="icon_energy"),
-                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", icon="icon_attack"),
-                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, icon="icon_energy"),
-                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", icon="icon_ultimate")
+                Skill("Chaos Dodge", cost=12, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge", card_image="card_dodge"),
+                Skill("Void Slash", cost=15, damage=40, cooldown=2, desc="Devastating slash from the void. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack", card_image="card_attack"),
+                Skill("Chaos Wrath", cost=15, damage=10, cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="Increase damage by 10 for 3 turns.", animation="player_meditate_anim", icon="icon_buff", card_image="card_buff"),
+                Skill("Entropy", cost=0, energy_regen=15, desc="Regen 15 energy. Concept of chaos.", animation="player_meditate_anim", icon="icon_energy", card_image="card_energy"),
+                Skill("Chaos Blast", cost=20, damage=60, cooldown=3, desc="Concentrated chaos energy. High damage.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
+                Skill("Time Warp", cost=10, damage=0, energy_regen=20, cooldown=2, desc="Warp time to regen energy.", animation=None, icon="icon_energy", card_image="card_energy"),
+                Skill("Overload", cost=30, damage=100, cooldown=5, desc="Ultimate attack. Huge damage.", animation="player_power_slash_anim", icon="icon_ultimate", card_image="card_ultimate")
             ]
         return [
             # Starting skills
-            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", icon="icon_attack"),
-            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier"),
+            Skill("Strike", cost=2, damage=3, energy_regen=1, desc="Basic attack. Regens 1 energy.", animation="player_strike_anim", icon="icon_attack", card_image="card_attack"),
+            Skill("Block", cost=3, damage=5, type="barrier", desc="Gain 5 Block. 1 turn cooldown.", cooldown=1, animation="player_block_anim", icon="icon_barrier", card_image="card_barrier"),
 
             # Unlocked skills
-            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge"),
-            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack"),
-            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", icon="icon_energy")
+            Skill("Dodge", cost=4, type="dodge", desc="Avoid next attack. Next attack deals double damage. 2 turn cooldown.", cooldown=2, animation="player_dodge_anim", icon="icon_dodge", card_image="card_dodge"),
+            Skill("Power Slash", cost=5, damage=8, cooldown=2, desc="Strong attack. 2 turn cooldown.", animation="player_power_slash_anim", icon="icon_attack", card_image="card_attack"),
+            Skill("Meditate", cost=0, energy_regen=4, desc="Regen 4 energy. No damage.", animation="player_meditate_anim", icon="icon_energy", card_image="card_energy")
         ]
 
 transform fight_left:
@@ -411,7 +422,7 @@ screen battle_screen(bm):
                                             text "[action.name]" size 16 color "#fff" xalign 0.5
                                 elif isinstance(action, Skill):
                                     button:
-                                        action If(bm.selected_skill == action, [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)], Function(bm.select_skill, action))
+                                        action Function(bm.select_skill, action)
                                         background Solid("#226")
                                         padding (10, 5)
                                         xminimum 80
@@ -486,29 +497,25 @@ screen battle_screen(bm):
                     action Function(bm.select_skill, skill)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
                     background Frame(Solid("#555") if is_selected else (Solid("#333e") if can_use else Solid("#111e")), 4, 4)
-                    padding (10, 10)
+                    padding (5, 5)
                     xminimum 140
                     yminimum 180
-                    vbox:
-                        spacing 5
-                        if skill.icon:
-                            add skill.icon xalign 0.5
-                        else:
-                            # Placeholder for icon if missing
-                            frame:
-                                xsize 60 ysize 60
-                                background Solid("#ffffff22")
-                                xalign 0.5
-                                text "?" align (0.5, 0.5) color "#666"
+                    if skill.card_image:
+                        add skill.card_image
+                    else:
+                        # Fallback for development
+                        vbox:
+                            spacing 5
+                            xalign 0.5 yalign 0.5
+                            if skill.icon:
+                                add skill.icon xalign 0.5
+                            text "[skill.name]" size 18 color ("#fff" if can_use else "#666") xalign 0.5 bold True
+                            text "Cost: [skill.cost]" size 14 color "#44ff44" xalign 0.5
 
-                        text "[skill.name]" size 22 color ("#fff" if can_use else "#666") xalign 0.5 bold True
-                        text "Cost: [skill.cost]" size 16 color "#44ff44" xalign 0.5
-                        if skill.current_cooldown > 0:
-                            null height 10
-                            text "CD: [skill.current_cooldown]" size 18 color "#ff4444" xalign 0.5 bold True
-                        elif skill in bm.used_skills_this_turn:
-                            null height 10
-                            text "USED" size 18 color "#888" xalign 0.5 bold True
+                    if skill.current_cooldown > 0:
+                        text "[skill.current_cooldown]" size 40 color "#ff4444" align (0.5, 0.5) bold True outlines [(2, "#000")]
+                    elif skill in bm.used_skills_this_turn:
+                        text "USED" size 20 color "#888" align (0.5, 0.5) bold True outlines [(1, "#000")]
 
     # Controls
     $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
@@ -1025,8 +1032,7 @@ label butter_ava_battle:
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
 
-    $ ava_on_player_side = True
-    $ ava_attacked_once = False
+    $ ava_on_player_side = False
 
     label .turn_start:
         $ bm.prepare_turn()
@@ -1037,29 +1043,7 @@ label butter_ava_battle:
                 if not enemy.is_dead:
                     tag = "enemy_" + str(i)
                     pos = Position(xalign=0.6 + (i * 0.15), yalign=0.5)
-                    # Custom position for Ava if on player side
-                    if i == 1 and ava_on_player_side:
-                        pos = Position(xalign=0.5, yalign=0.5)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
-
-        if bm.turn_count == 1 and not ava_attacked_once:
-            $ ava_attacked_once = True
-            show ava_attack as ava at Position(xalign=0.5, yalign=0.5):
-                ease 0.2 xpos 0.65
-                ease 0.2 xpos 0.5
-            play sound 'punch-140236.mp3' volume 2.0
-            $ renpy.pause(1.0)
-            $ bm.take_damage(5, target='enemy', enemy_idx=0)
-            'ava' 'Take this, you villain!'
-            'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
-            show ava_idle as ava at Position(xalign=0.5, yalign=0.5)
-            'butter' 'HOLD ON why are you attacking me?'
-            'ava' 'oh wait i forgot you are my ally'
-            'ava' 'my bad gang'
-            $ ava_on_player_side = False
-            show ava_idle as ava:
-                ease 0.2 xalign 0.85
-            $ renpy.pause(0.7)
 
         show screen battle_screen(bm)
     label .selection_phase:
@@ -1138,6 +1122,15 @@ label butter_ava_battle:
         $ e_idx += 1
         jump .interleaved_loop
     label .ava_turn:
+        # Ava attacks Butter once like always
+        if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead:
+            $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
+            play sound 'punch-140236.mp3' volume 2.0
+            $ renpy.pause(0.5)
+            $ bm.take_damage(5, target='enemy', enemy_idx=0)
+            'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
+            $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
+
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
         jump .turn_start
