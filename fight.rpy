@@ -445,8 +445,6 @@ screen battle_screen(bm):
             xminimum 500
             vbox:
                 spacing 15
-                if bm.selected_skill.card_image:
-                    add bm.selected_skill.card_image xalign 0.5
                 text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
                 text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#44ff44" xalign 0.5
                 if bm.selected_skill.damage > 0:
@@ -463,12 +461,6 @@ screen battle_screen(bm):
                             xalign 0.5
                             background Solid("#622")
                             padding (10, 5)
-
-                textbutton "CLOSE":
-                    action SetField(bm, "selected_skill", None)
-                    xalign 0.5
-                    background Solid("#444")
-                    padding (10, 5)
 
     # Enemy Intent Popup
     if bm.selected_intent:
@@ -493,7 +485,7 @@ screen battle_screen(bm):
 
     # Card selection (Available Skills) & Skill Progress
     vbox:
-        xalign 0.5 ypos 0.88 yanchor 1.0
+        xalign 0.5 ypos 1.0 yanchor 1.0
         spacing 5
 
         # Skill Bar (Minecraft-style)
@@ -1050,6 +1042,7 @@ label butter_ava_battle:
     $ bm.initialize_skills(True)
 
     $ ava_on_player_side = False
+    $ ava_attacked_once = False
 
     label .turn_start:
         $ bm.prepare_turn()
@@ -1146,6 +1139,13 @@ label butter_ava_battle:
             $ renpy.pause(0.5)
             $ bm.take_damage(5, target='enemy', enemy_idx=0)
             'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
+
+            if not ava_attacked_once:
+                $ ava_attacked_once = True
+                'butter' 'HOLD ON why are you attacking me?'
+                'ava' 'oh wait i forgot you are my ally'
+                'ava' 'my bad gang'
+
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
 
         $ bm.reduce_cooldowns()
