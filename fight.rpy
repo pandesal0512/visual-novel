@@ -1268,7 +1268,7 @@ label enemy_attack_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-label simple_battle_graphics:
+label battle_butter_simple:
     camera:
         perspective False
         gl_depth False
@@ -1298,7 +1298,7 @@ label simple_battle_graphics:
         'You were defeated by butter...'
         return
 
-label lumpi_battle:
+label battle_lumpi_standard:
     camera:
         perspective False
         gl_depth False
@@ -1328,9 +1328,9 @@ label lumpi_battle:
         'You were defeated by Lumpi...'
         menu:
             'Retry Battle':
-                jump lumpi_battle
+                jump battle_lumpi_standard
 
-label lumpiwheelchair_battle:
+label battle_lumpi_wheelchair:
     camera:
         perspective False
         gl_depth False
@@ -1360,9 +1360,9 @@ label lumpiwheelchair_battle:
         'lumpi' 'huwhuahuwha i win'
         menu:
             'Retry Battle':
-                jump lumpiwheelchair_battle
+                jump battle_lumpi_wheelchair
 
-label newenemy_battle:
+label battle_serious_butter:
     camera:
         perspective False
         gl_depth False
@@ -1388,9 +1388,9 @@ label newenemy_battle:
         call battle_reset_camera from _call_battle_reset_camera_8
         menu:
             'Retry Battle':
-                jump newenemy_battle
+                jump battle_serious_butter
 
-label butter_ava_battle:
+label battle_boss_ava_butter_1:
     camera:
         perspective False
         gl_depth False
@@ -1528,7 +1528,7 @@ label butter_ava_battle:
         hide screen battle_screen
         return
 
-label butter_ava_battle2:
+label battle_boss_ava_butter_2:
     camera:
         perspective False
         gl_depth False
@@ -1663,7 +1663,7 @@ label butter_ava_battle2:
         hide screen battle_screen
         menu:
             'Retry Battle':
-                jump butter_ava_battle2
+                jump battle_boss_ava_butter_2
 
 label battle_credits:
     scene black
@@ -1691,20 +1691,26 @@ transform credits_scroll:
     linear 30.0 ypos -2000
 
 # --- Label Aliases for Compatibility ---
+label butter_ava_battle:
+    jump battle_boss_ava_butter_1
+
+label butter_ava_battle2:
+    jump battle_boss_ava_butter_2
+
+label lumpi_battle:
+    jump battle_lumpi_standard
+
+label lumpiwheelchair_battle:
+    jump battle_lumpi_wheelchair
+
+label newenemy_battle:
+    jump battle_serious_butter
+
+label simple_battle_graphics:
+    jump battle_butter_simple
+
 label battle_boss_ava_butter:
-    jump butter_ava_battle
+    jump battle_boss_ava_butter_1
 
 label battle_boss_ava_butter_phase2:
-    jump butter_ava_battle2
-
-label battle_lumpi_standard:
-    jump lumpi_battle
-
-label battle_lumpi_wheelchair:
-    jump lumpiwheelchair_battle
-
-label battle_serious_butter:
-    jump newenemy_battle
-
-label battle_butter_simple:
-    jump simple_battle_graphics
+    jump battle_boss_ava_butter_2
