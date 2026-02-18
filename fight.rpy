@@ -111,6 +111,12 @@ transform energy_warning_fade:
     pause 1.7
     linear 0.2 alpha 0.0
 
+transform card_selected_zoom:
+    ease 0.1 zoom 1.1
+
+transform card_idle_zoom:
+    ease 0.1 zoom 1.0
+
 init python:
     import random
 
@@ -240,6 +246,7 @@ init python:
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None
+                    renpy.sound.play("audio/item-pickup-37089.mp3")
                     return True
             return False
 
@@ -594,9 +601,10 @@ screen battle_screen(bm):
                 $ name_col = "#fff" if can_use else "#666"
 
                 button:
-                    action Function(bm.select_skill, skill)
+                    action [Function(bm.select_skill, skill), Play("sound", "audio/item-pickup-37089.mp3")]
                     hovered SetField(bm, "hovered_skill", skill)
                     unhovered SetField(bm, "hovered_skill", None)
+                    at (card_selected_zoom if is_selected else card_idle_zoom)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
                     background card_bg
                     padding (0, 0)
@@ -620,7 +628,7 @@ screen battle_screen(bm):
         text_size 30
         text_color "#fff"
         text_bold True
-        action Return("execute")
+        action [Return("execute"), Play("sound", "audio/magic-spark.mp3")]
 
     if has_player_action:
         textbutton "CLEAR":
@@ -633,15 +641,18 @@ screen battle_screen(bm):
 
 
     # ── POPUPS ──
-    $ display_skill = bm.hovered_skill
-    if display_skill is None and bm.selected_skill in bm.used_skills_this_turn:
+    $ display_skill = None
+    if bm.hovered_skill and bm.hovered_skill == bm.selected_skill:
+        $ display_skill = bm.hovered_skill
+    elif bm.selected_skill and bm.selected_skill in bm.used_skills_this_turn:
         $ display_skill = bm.selected_skill
 
     if display_skill or bm.selected_intent:
         if display_skill:
             frame:
                 background Solid("#222d")
-                xalign 0.5 yalign 0.5
+                xpos 0.15 yalign 0.5
+                xanchor 0.5
                 padding (30, 30)
                 xminimum 400
                 vbox:
@@ -671,7 +682,8 @@ screen battle_screen(bm):
         if bm.selected_intent:
             frame:
                 background Solid("#222d")
-                xalign 0.5 yalign 0.5
+                xpos 0.15 yalign 0.5
+                xanchor 0.5
                 padding (30, 30)
                 xminimum 400
                 vbox:
