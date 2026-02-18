@@ -9,7 +9,7 @@ stop music fadeout 1.0
 
 scene room
 with fade
- 
+
 show kare neutral
 "kare" "huh what the"
 "kare" "oh no its uhh late time"
@@ -19,7 +19,7 @@ show kare neutral
 
 
 
-play music "normal1.mp3" fadein 1.0 volume 0.5 
+play music "normal1.mp3" fadein 1.0 volume 0.5
 scene outside
 with fade
 
@@ -61,7 +61,7 @@ with fade
 
 
 
-show kare hurt 
+show kare hurt
 "kare" "owie"
 "kare" "..."
 
@@ -71,23 +71,23 @@ play music "classroom.mp3" fadein 1.0 volume 0.5 fadeout 1.0
 
 scene classroom
 
-show kare hurt 
+show kare hurt
 
 "kare" "goodmorning"
 hide kare hurt
-show teacher_neutral 
+show teacher_neutral
 
 "teacher" "afternoon, actually.  5 hours late"
 hide teacher_neutral
-show kare hurt  
+show kare hurt
 
 "kare" "oh"
 hide kare hurt
-show teacher_neutral 
-"teacher" "sit down" 
+show teacher_neutral
+"teacher" "sit down"
 hide teacher_neutral
 
-show kare hurt at right 
+show kare hurt at right
 
 show dobe_neutral at left
 "dobe" "uhm.. kare"
@@ -97,19 +97,19 @@ show dobe_neutral at left
 "dobe" "it can help with headache"
 "kare" "thanks"
 
-hide kare hurt 
+hide kare hurt
 show kare_neutral at right
 "dobe" "yourwelcome"
 
 hide dobe_neutral
-"teacher"  "Bugs bite some people more than others because of a combination of factors including body heat, carbon dioxide exhalation, body odor (from sweat and skin bacteria), blood type, genetics, and even the color of clothing you wear, which can attract certain insects; essentially, some people naturally emit chemical signals that are more appealing to bugs than others. 
+"teacher"  "Bugs bite some people more than others because of a combination of factors including body heat, carbon dioxide exhalation, body odor (from sweat and skin bacteria), blood type, genetics, and even the color of clothing you wear, which can attract certain insects; essentially, some people naturally emit chemical signals that are more appealing to bugs than others.
 Key reasons why bugs might be attracted to you:
-Carbon dioxide: Mosquitoes and other biting insects are drawn to the carbon dioxide you exhale when breathing. 
-Body heat: Higher body temperature can make you more noticeable to bugs. 
-Sweat and skin bacteria: The chemicals in your sweat, including lactic acid, and the bacteria on your skin can attract biting insects. 
-Blood type: Some studies suggest that certain blood types may be slightly more attractive to mosquitoes. 
-Pregnancy: Pregnant women often produce more carbon dioxide and may be more attractive to biting insects. 
-Clothing color: Dark colors tend to attract more bugs than lighter colors." 
+Carbon dioxide: Mosquitoes and other biting insects are drawn to the carbon dioxide you exhale when breathing.
+Body heat: Higher body temperature can make you more noticeable to bugs.
+Sweat and skin bacteria: The chemicals in your sweat, including lactic acid, and the bacteria on your skin can attract biting insects.
+Blood type: Some studies suggest that certain blood types may be slightly more attractive to mosquitoes.
+Pregnancy: Pregnant women often produce more carbon dioxide and may be more attractive to biting insects.
+Clothing color: Dark colors tend to attract more bugs than lighter colors."
 
 
 "kare" "..."
@@ -126,7 +126,7 @@ show butter neutral at left
 
 play sound "20 February_2025.mp3" fadein 1.0 volume 0.8 fadeout 1.0
 show butter punch with dissolve
-"" 
+""
 stop music fadeout 3.0
 
 play music "battle1.mp3" fadein 5.0 volume 0.5 fadeout 1.0
@@ -148,10 +148,10 @@ show minigun_hold with dissolve
 show minigun_shoot with dissolve
 play sound "minigun_shoot.mp3" fadein 1.0 volume 0.3 fadeout 1.0 loop
 
-"teacher" "What can you do to prevent bug bites? well just use insect repellent: Apply insect repellent containing DEET or other effective ingredients to exposed skin. 
-Wear protective clothing: Cover your skin with long sleeves and pants when in buggy areas. 
-Stay indoors during peak bug hours: Avoid being outside during dusk and dawn when mosquitoes are most active. 
-Reduce body odor: Shower regularly and wear clean clothes. 
+"teacher" "What can you do to prevent bug bites? well just use insect repellent: Apply insect repellent containing DEET or other effective ingredients to exposed skin.
+Wear protective clothing: Cover your skin with long sleeves and pants when in buggy areas.
+Stay indoors during peak bug hours: Avoid being outside during dusk and dawn when mosquitoes are most active.
+Reduce body odor: Shower regularly and wear clean clothes.
 Consider your environment: If you live in an area with a high mosquito population, take extra precautions."
 
 "butter" "stop dodging it!!!!!"
@@ -167,7 +167,7 @@ menu:
         "kare" "huh? wheres my handgun"
     "summon a sword":
         "kare" "eh? the sword didnt show up?"
-  
+
 
 
 "game" "the developer doesnt know how to code that yet"
@@ -175,7 +175,7 @@ menu:
 "kare" "FUCK"
 
 scene classroom
-   
+
 show dobe_neutral at left
 show kare_neutral at right
 
@@ -188,10 +188,10 @@ show kare_neutral at right
 "kare" "what is it?"
 
 show rpg7
-"dobe" "a RPG-7!!!"      
-"kare" "how did you where did you get that?!"  
+"dobe" "a RPG-7!!!"
+"kare" "how did you where did you get that?!"
 "dobe" "i honestly don't know"
-"kare" "i gotta get outa here"  
+"kare" "i gotta get outa here"
 
 stop sound fadeout 3.0
 scene classroom
@@ -199,7 +199,7 @@ scene classroom
 show kare_neutral at left
 show butter_neutral at right
 
-"butter" "nuh uh!!! you are not leaving!!!" 
+"butter" "nuh uh!!! you are not leaving!!!"
 "kare"  "what do you want?!"
 "butter" "..."
 "butter" "the moment we bumped into each other,i think i recognize who you are now"
@@ -226,25 +226,25 @@ show butter_neutral at right
 
 hide kare_neutral
 hide butter_neutral
-    
+
 # Call the battle system from fight.rpy
 call simple_battle_graphics from _call_simple_battle_graphics
-    
+
 # After battle ends, return to story
 scene school
 with fade
 show kare_neutral at left
 show butter_neutral at right
-    
+
 "kare" "haaah... so tired"
 "butter" "..."
-    
+
 menu:
     "summon a tank":
         "kare" "cmon i need something"
     "grab a glock 17 out of nowhere":
         "kare" "cmon i need something"
-  
+
 "game" "like i said bro theres no code for that ye-"
 "kare" "this no good game dev man hire some team already!!"
 "tuumatae" "fuck you"
@@ -294,7 +294,7 @@ show nuke
 "butter" "get off!!"
 
 hide nuke
-scene flash  
+scene flash
 stop music fadeout 3.0
 
 play sound "Time Warp Sound Effect.mp3" volume 1.0 fadeout 3.0
@@ -303,7 +303,7 @@ show kare_male at left
 "kare" "ah.. where am i.."
 show dobe_neutral at right
 "dobe" "ah kare! found you!"
-play music "normal1.mp3" fadein 1.0 volume 0.5 
+play music "normal1.mp3" fadein 1.0 volume 0.5
 "dobe" "..."
 "dobe" "kare whats with the new haircut"
 "kare" "?"
@@ -323,30 +323,30 @@ show butter_male at center
 "dobe" "uhm i dont think thats how entering other dimesions works"
 "butter" "anyway since you guys are not dead yet we'll have to continue our battle"
 "kare" "why are you trying to kill me anyway?"
-hide kare_male 
+hide kare_male
 hide dobe_neutral
 "butter" "it all happened back in"
 "kare" "i aint listening to all that"
 "butter" "..."
 play sound "20 February_2025.mp3" fadein 1.0 volume 0.8 fadeout 1.0
-show butter punch 
+show butter punch
 with dissolve
 ""
 
 scene flash
 
-show karehurt_male at center 
+show karehurt_male at center
 "kare" "can you stop spamming the same move"
 "kare" "can we just go back to our dimension already, uhm the one you didn't destroyed yet"
 show karehurt_male at left
-show butter_male at right 
+show butter_male at right
 "butter" "ok"
 play sound "Time Warp Sound Effect.mp3" volume 1.0 fadeout 3.0
 play music "calm1.mp3" fadein 1.0 volume 0.5 fadeout 1.0
 scene outside
 
 show kare_neutral at left
-show butter_neutral at right 
+show butter_neutral at right
 show dobe_neutral at center
 "kare" "finally back to normal"
 "dobe" "yeah!! normal!!"
@@ -354,7 +354,7 @@ show dobe_neutral at center
 "kare" "a normal yesterday"
 "dobe" "say that again?"
 "kare" "hey im kare by the way whats yours?"
-"butter" "im butter" 
+"butter" "im butter"
 "kare" "oh butter that sounds a bit familiar"
 "kare" "hey.. what happened yesterday again?"
 
@@ -419,7 +419,7 @@ show kare_owie
 "SHES ONE SHOT!!! SHES ONE SHOT!!!"
 hide kare_owie
 hide moon
-scene flash 
+scene flash
 show lumpi_yell with dissolve
 play sound "Crowd Battle Scream.mp3" volume 2.0
 "lumpi" "JUMP HER"
@@ -431,13 +431,13 @@ show kare_owie
 
 menu:
     "summon a robot titan":
-        "kare" "MEGA ROBO SOMETHING!!!!" 
+        "kare" "MEGA ROBO SOMETHING!!!!"
         "MEGA ROBO SOMETHING ACQUIRED"
         play sound "Building Collapse Destruction Sound Effect.mp3" volume 3.0
         "kare" "finally"
         show supermegarobot
         ""
-        play sound "Laser sound effects.mp3" fadein 1.0 volume 3.0 fadeout 1.0 
+        play sound "Laser sound effects.mp3" fadein 1.0 volume 3.0 fadeout 1.0
         "kare" "haha!!! i am at the advantage"
         "lumpi" "man you guys are trash"
 
@@ -447,14 +447,14 @@ menu:
         show supermegarobot_destroyed
         play sound "deadrobot.mp3" fadeout 5.0 volume 2.0
         "kare" "my cool robot!!!"
-        play sound "Building Collapse Destruction Sound Effect.mp3" fadein 1.0 volume 2.0 fadeout 1.0 
-   
-       
+        play sound "Building Collapse Destruction Sound Effect.mp3" fadein 1.0 volume 2.0 fadeout 1.0
+
+
         "lumpi" "hey!!!"
         "kare" "huh"
         "kare" "ah... this stick will do"
-        
-    
+
+
     "grab a stick":
         "kare" "uhm i forgot how to do the weapon thing but this will do"
         show kare_stick
@@ -485,7 +485,7 @@ show kare_lumpi_fight with dissolve
 "kare" "where is butter anyway"
 "dobe" "uh shes just staring at the void so i left her"
 "kare" "oh ok"
-stop music 
+stop music
 "lumpi" "SILENCE"
 "lumpi" "..."
 "lumpi" "excluding you background music"
@@ -618,7 +618,7 @@ menu:
         "butter" "no you dont!!"
 
 
-"butter" "interdimensional portal gun!!!" 
+"butter" "interdimensional portal gun!!!"
 "butter" "(i have to get her out of this world, every bits of her power is manifesting every second..)"
 play sound "Meteorite Impact.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "butter" "HYAAAAH!!!"
@@ -658,7 +658,7 @@ play sound "Laser sound effects.mp3" fadein 1.0 fadeout 1.0 volume 3.0
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 "butter" "HAAAH!!!!!!"
 call newenemy_battle from _call_newenemy_battle
-show portal_kick with dissolve 
+show portal_kick with dissolve
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "kare" "AH"
 stop music
@@ -744,23 +744,23 @@ show chaos_neutral
 "CHAOS" "sister!!!sister!!!!"
 "CHAOS" "look i found a fish!!!!"
 hide chaos_neutral
-show order_neutral 
+show order_neutral
 "ORDER" "..."
 "ORDER" "thats a frog, CHAOS."
 hide order_neutral
 show chaos_neutral
 "CHAOS" "whats the difference?? i heard all fish lives in the water and this frog is swimming"
 hide chaos_neutral
-show order_neutral 
+show order_neutral
 "ORDER" "..."
 show sleep with dissolve
 scene placeidk
-show chaos_neutral 
+show chaos_neutral
 "CHAOS" "sister!!!sister!!!!"
 "CHAOS" "im bored!!!!"
 "CHAOS" "i found some weird looking things like us somehwere!!!"
 hide chaos_neutral
-show order_neutral 
+show order_neutral
 "ORDER" "..."
 "ORDER" "those are humans, CHAOS."
 "ORDER" "also how did you even find-"
@@ -768,7 +768,7 @@ hide order_neutral
 show chaos_neutral
 "CHAOS" "waaauhh!! humans?? can i play with them??"
 hide chaos_neutral
-show order_neutral 
+show order_neutral
 "ORDER" "no"
 hide order_neutral
 show chaos_neutral
@@ -789,7 +789,7 @@ show chaos_neutral at center
 hide chaos_neutral with dissolve
 "CHAOS" "sneaky sneaky"
 scene city
-show chaos_neutral with dissolve 
+show chaos_neutral with dissolve
 "CHAOS" "wwoooaaah pretty!!!"
 "CHAOS" "oh!!! its a people!!!"
 "CHAOS" "hello friend!!! can we be friends!!!!"
@@ -860,7 +860,7 @@ show chaos_neutral at right
 show bg with dissolve
 scene placeidk
 hide city
-hide kare_neutral 
+hide kare_neutral
 hide chaos_neutral
 
 
@@ -872,7 +872,7 @@ show order_neutral at right
 show butter_shy at center with moveinbottom
 "ORDER" "come on now butter greet her"
 "butter" "um..."
-hide order_neutral 
+hide order_neutral
 show chaos_neutral at center
 hide butter_shy
 "CHAOS" "wowowoaooawow!!"
@@ -912,11 +912,11 @@ hide butter_shy
 "CHAOS" "lets play together!!!"
 hide chaos_neutral
 show butter_shy at center
-show bg with dissolve   
+show bg with dissolve
 "butter" "..."
 
 hide butter_shy
-scene city 
+scene city
 hide placeidk
 
 
@@ -944,14 +944,14 @@ stop sound
 hide chaos_smile
 hide city_burn
 scene placeidk
-show order_neutral 
+show order_neutral
 "ORDER" "CHAOS im home."
 "ORDER" "..."
 
 "ORDER" "im stupid"
 stop music
 show sleep with dissolve
-hide order_neutral 
+hide order_neutral
 play music "audio/Big house fire sound effect.mp3" volume 0.6
 
 show chaos_ouchie
@@ -984,11 +984,11 @@ show boutpunch2
 
 
 
-stop music 
-play music "陽気な男 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 volume 0.5 fadeout 1.0  
+stop music
+play music "陽気な男 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 volume 0.5 fadeout 1.0
 "ava" "STOP FIGHTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 "butter" "!?!"
-show avaaura    
+show avaaura
 "CHAOS,butter" "..."
 "butter" "huh"
 "CHAOS" "wow that person looks so cool"
@@ -1021,7 +1021,7 @@ hide ava
 hide placeidk
 
 
-play sound "audio/dapup.mp3" 
+play sound "audio/dapup.mp3"
 $ renpy.movie_cutscene("video/dapup.webm", stop_music=False)
 show ava_sprite at right
 show butter_neutral at left
@@ -1040,11 +1040,11 @@ show butter_neutral at left
 stop music
 play music "audio/swing swing @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" volume 0.8
 call butter_ava_battle from _call_butter_ava_battle
-scene city 
+scene city
 show ava_sprite at center
 "ava" "HA!! just so you know that you can not kill me until all humanity is wiped which would be impossible by the fact that there are currently 8 billion people in the world so you would take about 943482348234924 years to kill all of them and also the fact that "
 hide butter_neutral
-hide ava_sprite 
+hide ava_sprite
 show kare_chaos at center
 "CHAOS" "i understand it now"
 hide kare_chaos
@@ -1079,13 +1079,13 @@ show death_neutral at center
 
 "DEATH" "WHO THE HELL KILLED ALL THE HUMANS!!!!!!!!"
 hide death_neutral
-show death_neutral at right 
+show death_neutral at right
 show ava_sprite at left
 "ava" "DEATH... thank god you're here"
 "DEATH" "IM GONNA BE UNEMPLOYED!!!!"
 
-hide death_neutral 
-hide ava_sprite 
+hide death_neutral
+hide ava_sprite
 show lifecall
 "LIFE" "yes hello?"
 "LIFE" "mass extinction?"
@@ -1141,8 +1141,8 @@ hide order_neutral
 hide kare_chaos
 show butter_neutral
 "butter" "WHA-"
-show earth 
-play sound "audio/magic-03-278824.mp3" volume 2.0 
+show earth
+play sound "audio/magic-03-278824.mp3" volume 2.0
 stop music
 play music "audio/春のキッチン @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" volume 0.6
 
@@ -1208,7 +1208,7 @@ hide order_neutral
 hide butter_neutral
 show kare_chaos at center
 "CHAOS" "a-"
-play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0 
+play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
 hide kare_chaos with pixellate
 show kare_stupid at left
 show chaos_neutral at right
@@ -1256,8 +1256,8 @@ show chaos_neutral at right
 "CHAOS" "YAY!! ill see you next time!!"
 hide kare_stupid at left
 hide chaos_neutral at right
-show time_neutral 
-play sound "audio/jump.mp3" volume 2.0 
+show time_neutral
+play sound "audio/jump.mp3" volume 2.0
 "TIME" "GUYS THE WORLD IS ABOUT TO END!!!!!"
 "TIME" "WE NEED TO STOP THIS!!!!!"
 "TIME" "I KNOW WHO THE CULPRIT IS!!!!!"
@@ -1297,7 +1297,7 @@ hide dobe_neutral
 hide kare_stupid
 "ORDER" "oh thats because butter"
 "butter" "MOTHER SHSHUT UP"
-play sound "audio/Time Warp Sound Effect.mp3" volume 2.0 
+play sound "audio/Time Warp Sound Effect.mp3" volume 2.0
 "..."
 hide order_neutral at center
 hide chaos_neutral at right
@@ -1336,7 +1336,7 @@ hide byebye
 call credits from _call_credits
 
 
- 
+
 
 
 return
