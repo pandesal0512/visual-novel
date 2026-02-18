@@ -1,4 +1,4 @@
-﻿label start:
+label start:
 
 play music "digital-alarm-clock-151920.mp3" fadein 1.0 volume 1.0 fadeout 1.0
 scene sleep
@@ -228,7 +228,7 @@ hide kare_neutral
 hide butter_neutral
 
 # Call the battle system from fight.rpy
-call simple_battle_graphics from _call_simple_battle_graphics
+call battle_butter_simple from _call_battle_butter_simple_main
 
 # After battle ends, return to story
 scene school
@@ -404,7 +404,7 @@ play sound "jump.mp3" volume 2.0
 show lumpi_grab3 with dissolve
 "kare" "im gonna need some context lady"
 "kare" "also im tired af can i go home pls i just went to another dimension a mere minute ago"
-"lumpi" "you want to go home?"
+"lumpi" "you want to home?"
 "kare" "yup"
 "lumpi" "then ill bring you there!! ill end it right here and right now!!!"
 scene flash
@@ -467,7 +467,7 @@ menu:
         "lumpi" "hey!!!"
         "kare" "huh"
 
-call lumpi_battle from _call_lumpi_battle
+call battle_lumpi_standard from _call_battle_lumpi_standard_main
 
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 show kare_lumpi_fight with dissolve
@@ -524,7 +524,7 @@ show disabledlumpi with dissolve
 "kare" "thats our chance!! jump her!!!"
 "lumpi" "NO YOU DON'T!!!"
 
-call lumpiwheelchair_battle from _call_lumpiwheelchair_battle
+call battle_lumpi_wheelchair from _call_battle_lumpi_wheelchair_main
 
 show realmexpansion with dissolve
 "lumpi/dobe/kare" "REALM EXPANSION:"
@@ -657,7 +657,7 @@ play sound "Laser sound effects.mp3" fadein 1.0 fadeout 1.0 volume 3.0
 "kare" "haaah..."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 "butter" "HAAAH!!!!!!"
-call newenemy_battle from _call_newenemy_battle
+call battle_serious_butter from _call_battle_serious_butter_main
 show portal_kick with dissolve
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "kare" "AH"
@@ -1039,7 +1039,7 @@ show butter_neutral at left
 
 stop music
 play music "audio/swing swing @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" volume 0.8
-call butter_ava_battle from _call_butter_ava_battle
+call battle_boss_ava_butter from _call_battle_boss_ava_butter_main
 scene city
 show ava_sprite at center
 "ava" "HA!! just so you know that you can not kill me until all humanity is wiped which would be impossible by the fact that there are currently 8 billion people in the world so you would take about 943482348234924 years to kill all of them and also the fact that "
@@ -1096,7 +1096,7 @@ show lifecall
 show sleep with dissolve
 scene bg
 hide lifecall
-call butter_ava_battle2 from _call_butter_ava_battle2
+call battle_boss_ava_butter_phase2 from _call_battle_boss_ava_butter_phase2_main
 
 show ava_sprite at center
 "ava" "..."
@@ -1333,7 +1333,7 @@ show byebye
 "dobe" "see you tommorow kare"
 show sleep with dissolve
 hide byebye
-call credits from _call_credits
+call battle_credits from _call_battle_credits_main
 
 
 
