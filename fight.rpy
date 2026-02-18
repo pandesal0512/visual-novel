@@ -1,121 +1,94 @@
 
 image kare_idle = "kare_idle.png"
-image kare_attack = Solid("#6666ff", xsize=200, ysize=400)
-image kare_hit = Solid("#ff4444", xsize=200, ysize=400)
+image kare_hit = "kare_hit.png"
 
-image chaos_idle = Solid("#440044", xsize=200, ysize=400)
-image chaos_attack = Solid("#660066", xsize=200, ysize=400)
-image chaos_hit = Solid("#ff0000", xsize=200, ysize=400)
+image chaos_idle = "chaos_idle.png"
+image chaos_hit = "chaos_hit.png"
 
-image butter_idle = Solid("#ffcc00", xsize=200, ysize=400)
-image butter_attack = Solid("#ffff00", xsize=200, ysize=400)
-image butter_hit = Solid("#ff4444", xsize=200, ysize=400)
+image butter_idle = "butter_idle.png"
+image butter_hit = "butter_hit.png"
 
-image seriousbutter_idle = Solid("#ffaa00", xsize=200, ysize=400)
-image seriousbutter_attack = Solid("#ff7700", xsize=200, ysize=400)
-image seriousbutter_hit = Solid("#ff0000", xsize=200, ysize=400)
+image seriousbutter_idle = "seriousbutter_idle.png"
+image seriousbutter_hit = "seriousbutter_hit.png"
 
-image lumpi_idle = Solid("#88ff88", xsize=200, ysize=400)
-image lumpi_attack = Solid("#aaffaa", xsize=200, ysize=400)
-image lumpi_hit = Solid("#ff0000", xsize=200, ysize=400)
+image lumpi_idle = "lumpi_idle.png"
+image lumpi_attack = "lumpi_attack.png"
+image lumpi_hit = "lumpi_hit.png"
 
-image lumpiwheelchair_idle = Solid("#117a65", xsize=200, ysize=400)
-image lumpiwheelchair_attack = Solid("#1abc9c", xsize=200, ysize=400)
-image lumpiwheelchair_hit = Solid("#ff0000", xsize=200, ysize=400)
+image lumpiwheelchair_idle = "lumpiwheelchair_idle.png"
+image lumpiwheelchair_hit = "lumpiwheelchair_hit.png"
 
-image ava_idle = Solid("#ff8888", xsize=200, ysize=400)
-image ava_attack = Solid("#ffaaaa", xsize=200, ysize=400)
-image ava_hit = Solid("#ff0000", xsize=200, ysize=400)
+image ava_idle = "ava_idle.png"
+image ava_hit = "ava_hit.png"
 
-# --- Kare's Action Sprites ---
+# --- Action Sprites ---
 image kare_normal_sprite = "kare_normal_sprite.png"
-image kare_hard_sprite = Solid("#2980b9", xsize=250, ysize=450)
-image kare_block_sprite = Solid("#5dade2", xsize=250, ysize=450)
-image kare_dodge_sprite = Solid("#f1c40f", xsize=250, ysize=450)
-image kare_buff_sprite = Solid("#2ecc71", xsize=250, ysize=450)
-image kare_ultimate_sprite = Solid("#2c3e50", xsize=300, ysize=500)
-image kare_energy_sprite = Solid("#1abc9c", xsize=250, ysize=450)
+image kare_hard_sprite = "kare_hard_sprite.png"
+image kare_block_sprite = "kare_block_sprite.png"
+image kare_dodge_sprite = "kare_dodge_sprite.png"
+image kare_buff_sprite = "kare_buff_sprite.png"
+image kare_ultimate_sprite = "kare_ultimate_sprite.png"
+image kare_energy_sprite = "kare_energy_sprite.png"
 
-# --- Chaos's Action Sprites ---
-image chaos_normal_sprite = Solid("#8e44ad", xsize=250, ysize=450)
-image chaos_hard_sprite = Solid("#7d3c98", xsize=250, ysize=450)
-image chaos_block_sprite = Solid("#a569bd", xsize=250, ysize=450)
-image chaos_dodge_sprite = Solid("#f39c12", xsize=250, ysize=450)
-image chaos_buff_sprite = Solid("#27ae60", xsize=250, ysize=450)
-image chaos_ultimate_sprite = Solid("#1a1a1a", xsize=300, ysize=500)
-image chaos_energy_sprite = Solid("#16a085", xsize=250, ysize=450)
+image chaos_normal_sprite = "chaos_normal_sprite.png"
+image chaos_hard_sprite = "chaos_hard_sprite.png"
+image chaos_block_sprite = "chaos_block_sprite.png"
+image chaos_dodge_sprite = "chaos_dodge_sprite.png"
+image chaos_buff_sprite = "chaos_buff_sprite.png"
+image chaos_ultimate_sprite = "chaos_ultimate_sprite.png"
+image chaos_energy_sprite = "chaos_energy_sprite.png"
 
-# --- Butter's Action Sprites ---
-image butter_normal_sprite = Solid("#f1c40f", xsize=250, ysize=450)
-image butter_hard_sprite = Solid("#f39c12", xsize=250, ysize=450)
-image butter_block_sprite = Solid("#f7dc6f", xsize=250, ysize=450)
-image butter_dodge_sprite = Solid("#d4ac0d", xsize=250, ysize=450)
-image butter_buff_sprite = Solid("#d35400", xsize=250, ysize=450)
-image butter_ultimate_sprite = Solid("#e67e22", xsize=300, ysize=500)
-image butter_energy_sprite = Solid("#f39c12", xsize=250, ysize=450)
+image butter_normal_sprite = "butter_normal_sprite.png"
+image butter_hard_sprite = "butter_hard_sprite.png"
+image butter_block_sprite = "butter_block_sprite.png"
+image butter_dodge_sprite = "butter_dodge_sprite.png"
+image butter_ultimate_sprite = "butter_ultimate_sprite.png"
+image butter_energy_sprite = "butter_energy_sprite.png"
 
-# --- Serious Butter's Action Sprites ---
-image serious_butter_normal_sprite = Solid("#e67e22", xsize=250, ysize=450)
-image serious_butter_hard_sprite = Solid("#d35400", xsize=250, ysize=450)
-image serious_butter_block_sprite = Solid("#eb984e", xsize=250, ysize=450)
-image serious_butter_dodge_sprite = Solid("#ca6f1e", xsize=250, ysize=450)
-image serious_butter_buff_sprite = Solid("#a04000", xsize=250, ysize=450)
-image serious_butter_ultimate_sprite = Solid("#873600", xsize=300, ysize=500)
-image serious_butter_energy_sprite = Solid("#d35400", xsize=250, ysize=450)
+image serious_butter_normal_sprite = "serious_butter_normal_sprite.png"
+image serious_butter_hard_sprite = "serious_butter_hard_sprite.png"
+image serious_butter_block_sprite = "serious_butter_block_sprite.png"
+image serious_butter_dodge_sprite = "serious_butter_dodge_sprite.png"
+image serious_butter_ultimate_sprite = "serious_butter_ultimate_sprite.png"
+image serious_butter_energy_sprite = "serious_butter_energy_sprite.png"
 
-# --- Lumpi's Action Sprites ---
-image lumpi_normal_sprite = Solid("#2ecc71", xsize=250, ysize=450)
-image lumpi_hard_sprite = Solid("#27ae60", xsize=250, ysize=450)
-image lumpi_block_sprite = Solid("#58d68d", xsize=250, ysize=450)
-image lumpi_dodge_sprite = Solid("#1e8449", xsize=250, ysize=450)
-image lumpi_buff_sprite = Solid("#145a32", xsize=250, ysize=450)
-image lumpi_ultimate_sprite = Solid("#0b5345", xsize=300, ysize=500)
-image lumpi_energy_sprite = Solid("#27ae60", xsize=250, ysize=450)
+image lumpi_normal_sprite = "lumpi_normal_sprite.png"
+image lumpi_hard_sprite = "lumpi_hard_sprite.png"
+image lumpi_block_sprite = "lumpi_block_sprite.png"
+image lumpi_dodge_sprite = "lumpi_dodge_sprite.png"
+image lumpi_ultimate_sprite = "lumpi_ultimate_sprite.png"
+image lumpi_energy_sprite = "lumpi_energy_sprite.png"
 
-# --- Lumpi Wheelchair's Action Sprites ---
-image lumpi_wheelchair_normal_sprite = Solid("#16a085", xsize=250, ysize=450)
-image lumpi_wheelchair_hard_sprite = Solid("#117a65", xsize=250, ysize=450)
-image lumpi_wheelchair_block_sprite = Solid("#45b39d", xsize=250, ysize=450)
-image lumpi_wheelchair_dodge_sprite = Solid("#0e6251", xsize=250, ysize=450)
-image lumpi_wheelchair_buff_sprite = Solid("#0b5345", xsize=250, ysize=450)
-image lumpi_wheelchair_ultimate_sprite = Solid("#17202a", xsize=300, ysize=500)
-image lumpi_wheelchair_energy_sprite = Solid("#117a65", xsize=250, ysize=450)
+image lumpi_wheelchair_normal_sprite = "lumpi_wheelchair_normal_sprite.png"
+image lumpi_wheelchair_hard_sprite = "lumpi_wheelchair_hard_sprite.png"
+image lumpi_wheelchair_block_sprite = "lumpi_wheelchair_block_sprite.png"
+image lumpi_wheelchair_dodge_sprite = "lumpi_wheelchair_dodge_sprite.png"
+image lumpi_wheelchair_ultimate_sprite = "lumpi_wheelchair_ultimate_sprite.png"
+image lumpi_wheelchair_energy_sprite = "lumpi_wheelchair_energy_sprite.png"
 
-# --- Ava's Action Sprites ---
-image ava_normal_sprite = Solid("#e91e63", xsize=250, ysize=450)
-image ava_hard_sprite = Solid("#c2185b", xsize=250, ysize=450)
-image ava_block_sprite = Solid("#f06292", xsize=250, ysize=450)
-image ava_dodge_sprite = Solid("#880e4f", xsize=250, ysize=450)
-image ava_buff_sprite = Solid("#9c27b0", xsize=250, ysize=450)
-image ava_ultimate_sprite = Solid("#4a148c", xsize=300, ysize=500)
-image ava_energy_sprite = Solid("#c2185b", xsize=250, ysize=450)
+image ava_normal_sprite = "ava_normal_sprite.png"
+image ava_hard_sprite = "ava_hard_sprite.png"
+image ava_block_sprite = "ava_block_sprite.png"
+image ava_dodge_sprite = "ava_dodge_sprite.png"
+image ava_ultimate_sprite = "ava_ultimate_sprite.png"
+image ava_energy_sprite = "ava_energy_sprite.png"
 
-# Legacy / Global Effects
-image enemy_glare_sprite = Solid("#ffffff", xsize=100, ysize=100)
-image enemy_buff_sprite = Solid("#00ff00", xsize=100, ysize=100)
+# --- Card Images (for hand display) ---
+image card_kare_normal = "card_kare_normal.png"
+image card_kare_block = "card_kare_block.png"
+image card_kare_energy = "card_kare_energy.png"
+image card_kare_hard = "card_kare_hard.png"
+image card_kare_dodge = "card_kare_dodge.png"
+image card_kare_ultimate = "card_kare_ultimate.png"
 
+image card_chaos_normal = "card_chaos_normal.png"
+image card_chaos_block = "card_chaos_block.png"
+image card_chaos_energy = "card_chaos_energy.png"
+image card_chaos_hard = "card_chaos_hard.png"
+image card_chaos_dodge = "card_chaos_dodge.png"
+image card_chaos_ultimate = "card_chaos_ultimate.png"
 
-# --- Playable Character Cards ---
-# These are the only cards that need images because they appear in the player's hand.
-
-# Kare's Cards
-image card_kare_normal = Solid("#3498db", xsize=140, ysize=180)
-image card_kare_hard = Solid("#2980b9", xsize=140, ysize=180)
-image card_kare_block = Solid("#5dade2", xsize=140, ysize=180)
-image card_kare_dodge = Solid("#f1c40f", xsize=140, ysize=180)
-image card_kare_buff = Solid("#2ecc71", xsize=140, ysize=180)
-image card_kare_ultimate = Solid("#2c3e50", xsize=140, ysize=180)
-image card_kare_energy = Solid("#1abc9c", xsize=140, ysize=180)
-
-# Chaos's Cards
-image card_chaos_normal = Solid("#8e44ad", xsize=140, ysize=180)
-image card_chaos_hard = Solid("#7d3c98", xsize=140, ysize=180)
-image card_chaos_block = Solid("#a569bd", xsize=140, ysize=180)
-image card_chaos_dodge = Solid("#f39c12", xsize=140, ysize=180)
-image card_chaos_buff = Solid("#27ae60", xsize=140, ysize=180)
-image card_chaos_ultimate = Solid("#1a1a1a", xsize=140, ysize=180)
-image card_chaos_energy = Solid("#16a085", xsize=140, ysize=180)
-
+# --- Transforms ---
 transform fight_left:
     xpos 0.35
     ypos 0.5
@@ -406,21 +379,21 @@ init python:
         # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
         if name.lower() == "kare":
             return [
-                Skill("Blue Strike", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("Iron Guard", cost=3, damage=8, type="barrier", desc="Brace for impact.", cooldown=1, animation="kare_block_anim", card_image="card_kare_block"),
-                Skill("Breathe", cost=0, energy_regen=5, desc="Recover energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
-                Skill("Heavy Slash", cost=5, damage=12, cooldown=2, desc="Powerful swing.", animation="kare_hard_anim", card_image="card_kare_hard"),
-                Skill("Swift Step", cost=4, type="dodge", desc="Prepare to evade.", cooldown=2, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("Heroic Finisher", cost=15, damage=40, cooldown=5, desc="ULTIMATE: A hero's final blow.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
+                Skill("slap", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
+                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 sheilds.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("yummers", cost=0, energy_regen=5, desc="Recover 5 energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
+                Skill("punch", cost=5, damage=12, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=2, animation="kare_dodge_anim", card_image="card_kare_dodge"),
+                Skill("super cool kick", cost=15, damage=40, cooldown=5, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
             ]
         elif name.lower() == "chaos":
             return [
-                Skill("Chaos Bolt", cost=3, damage=8, energy_regen=2, desc="Hurl chaotic energy.", animation="chaos_normal_anim", card_image="card_chaos_normal"),
-                Skill("Void Shield", cost=5, damage=15, type="barrier", desc="Envelop in void.", cooldown=1, animation="chaos_block_anim", card_image="card_chaos_block"),
-                Skill("Consume Soul", cost=0, energy_regen=12, desc="Tear energy from the void.", animation="chaos_energy_anim", card_image="card_chaos_energy"),
-                Skill("Abyssal Crush", cost=7, damage=18, cooldown=2, desc="Crush with gravity.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
-                Skill("Phase Shift", cost=6, type="dodge", desc="Shift out of reality.", cooldown=2, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("Cataclysm", cost=25, damage=100, cooldown=5, desc="ULTIMATE: End of all things.", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
+                Skill("interitus", cost=3, damage=8, energy_regen=2, desc="huahuahuaha!!", animation="chaos_normal_anim", card_image="card_chaos_normal"),
+                Skill("Embrace", cost=5, damage=15, type="barrier", desc="Embrace the heat death of all things", cooldown=1, animation="chaos_block_anim", card_image="card_chaos_block"),
+                Skill("Entropy", cost=0, energy_regen=12, desc="gain 12 energy", animation="chaos_energy_anim", card_image="card_chaos_energy"),
+                Skill("Cataclysm", cost=7, damage=18, cooldown=2, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
+                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=2, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
+                Skill("████████", cost=25, damage=100, cooldown=5, desc="█████ ████████████", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
             ]
         return []
 
@@ -1371,8 +1344,8 @@ label battle_boss_ava_butter:
     scene bg at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     # USES UNIQUE INTENTS FOR BUTTER AND AVA
-    $ butter_intents = get_enemy_intents("butter")
-    $ butter = Enemy('butter', 100, {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}, butter_intents)
+    $ butter_intents = get_enemy_intents("serious butter")
+    $ butter = Enemy('butter', 100,{'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}, butter_intents)
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
