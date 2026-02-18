@@ -416,51 +416,51 @@ init python:
             return [
                 EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="enemy_butter_blade_anim", type="attack", card_image="card_butter_normal"),
                 EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="enemy_butter_slash_anim", type="attack", card_image="card_butter_hard"),
-                EnemyIntent("Hard Shell", damage=6, desc="Hardens its surface.", animation="enemy_preparing_anim", type="barrier", card_image="card_butter_block"),
-                EnemyIntent("Slippery", desc="Tries to dodge.", animation="enemy_preparing_anim", type="dodge", card_image="card_butter_dodge"),
-                EnemyIntent("Salting", damage=2, desc="Seasoning for power.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_butter_buff"),
+                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Block.", animation="enemy_block_anim", type="barrier", card_image="card_butter_block"),
+                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="enemy_dodge_anim", type="dodge", card_image="card_butter_dodge"),
+                EnemyIntent("Salting", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_butter_buff"),
                 EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="enemy_butter_gun_anim", type="attack", card_image="card_butter_ultimate"),
-                EnemyIntent("Rest", damage=0, desc="Chilling out.", animation="enemy_preparing_anim", type="energy", card_image="card_butter_energy")
+                EnemyIntent("Rest", damage=0, desc="Skipping turn.", animation="enemy_preparing_anim", type="energy", card_image="card_butter_energy")
             ]
         elif name.lower() == "serious butter":
             return [
                 EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="enemy_butter_blade_anim", type="attack", card_image="card_serious_butter_normal"),
                 EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="enemy_butter_slash_anim", type="attack", card_image="card_serious_butter_hard"),
-                EnemyIntent("Armor of the Serious", damage=20, desc="Professional defense.", animation="enemy_preparing_anim", type="barrier", card_image="card_serious_butter_block"),
-                EnemyIntent("Calculated Move", desc="Anticipates you.", animation="enemy_preparing_anim", type="dodge", card_image="card_serious_butter_dodge"),
-                EnemyIntent("Focus on Quality", damage=8, desc="Increased efficiency.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_serious_butter_buff"),
+                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Block.", animation="enemy_block_anim", type="barrier", card_image="card_serious_butter_block"),
+                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="enemy_dodge_anim", type="dodge", card_image="card_serious_butter_dodge"),
+                EnemyIntent("Focus on Quality", damage=8, desc="Adds 8 damage buff for 3 turns.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_serious_butter_buff"),
                 EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="enemy_butter_gun_anim", type="attack", card_image="card_serious_butter_ultimate"),
-                EnemyIntent("Recuperate", damage=0, desc="Filing paperwork.", animation="enemy_preparing_anim", type="energy", card_image="card_serious_butter_energy")
+                EnemyIntent("Recuperate", damage=0, desc="Skipping turn.", animation="enemy_preparing_anim", type="energy", card_image="card_serious_butter_energy")
             ]
         elif name.lower() == "lumpi":
             return [
                 EnemyIntent("Lump Kick", damage=3, desc="A weak kick.", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_normal"),
                 EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_hard"),
-                EnemyIntent("Lumpy Guard", damage=5, desc="Tries to stay solid.", animation="enemy_preparing_anim", type="barrier", card_image="card_lumpi_block"),
-                EnemyIntent("Bounce", desc="Boing!", animation="enemy_preparing_anim", type="dodge", card_image="card_lumpi_dodge"),
-                EnemyIntent("Grow", damage=2, desc="Getting bigger.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_buff"),
+                EnemyIntent("Lumpy Guard", damage=5, desc="Adds 5 Block.", animation="enemy_block_anim", type="barrier", card_image="card_lumpi_block"),
+                EnemyIntent("Bounce", desc="Will dodge the next attack.", animation="enemy_dodge_anim", type="dodge", card_image="card_lumpi_dodge"),
+                EnemyIntent("Grow", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_buff"),
                 EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_ultimate"),
-                EnemyIntent("Inhale", damage=0, desc="Taking a breath.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_energy")
+                EnemyIntent("Inhale", damage=0, desc="Skipping turn.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_energy")
             ]
         elif name.lower() == "lumpi wheelchair":
             return [
                 EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="enemy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_normal"),
                 EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_hard"),
-                EnemyIntent("Reinforced Frame", damage=12, desc="Metal plates.", animation="enemy_preparing_anim", type="barrier", card_image="card_lumpi_wheelchair_block"),
-                EnemyIntent("Drift", desc="Fast turns.", animation="enemy_preparing_anim", type="dodge", card_image="card_lumpi_wheelchair_dodge"),
-                EnemyIntent("Nitro Boost", damage=5, desc="Engine roaring.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_wheelchair_buff"),
+                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Block.", animation="enemy_block_anim", type="barrier", card_image="card_lumpi_wheelchair_block"),
+                EnemyIntent("Drift", desc="Will dodge the next attack.", animation="enemy_dodge_anim", type="dodge", card_image="card_lumpi_wheelchair_dodge"),
+                EnemyIntent("Nitro Boost", damage=5, desc="Adds 5 damage buff for 3 turns.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_lumpi_wheelchair_buff"),
                 EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_lumpi_wheelchair_ultimate"),
-                EnemyIntent("Refuel", damage=0, desc="Gas station stop.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_wheelchair_energy")
+                EnemyIntent("Refuel", damage=0, desc="Skipping turn.", animation="enemy_preparing_anim", type="energy", card_image="card_lumpi_wheelchair_energy")
             ]
         elif name.lower() == "ava":
             return [
                 EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="enemy_spark_anim", type="attack", card_image="card_ava_normal"),
                 EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_ava_hard"),
-                EnemyIntent("Mana Veil", damage=10, desc="Shield of stars.", animation="enemy_preparing_anim", type="barrier", card_image="card_ava_block"),
-                EnemyIntent("Blink", desc="Short teleport.", animation="enemy_preparing_anim", type="dodge", card_image="card_ava_dodge"),
-                EnemyIntent("Spell Power", damage=4, desc="Magic resonance.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_ava_buff"),
+                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Block.", animation="enemy_block_anim", type="barrier", card_image="card_ava_block"),
+                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="enemy_dodge_anim", type="dodge", card_image="card_ava_dodge"),
+                EnemyIntent("Spell Power", damage=4, desc="Adds 4 damage buff for 3 turns.", animation="enemy_buff_anim", type="buff", buff_type="damage", buff_duration=3, card_image="card_ava_buff"),
                 EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="enemy_heavy_attack_anim", type="attack", card_image="card_ava_ultimate"),
-                EnemyIntent("Meditate", damage=0, desc="Gathering mana.", animation="enemy_preparing_anim", type="energy", card_image="card_ava_energy")
+                EnemyIntent("Meditate", damage=0, desc="Skipping turn.", animation="enemy_preparing_anim", type="energy", card_image="card_ava_energy")
             ]
         return []
 
@@ -790,7 +790,7 @@ label generic_battle(bm, is_chaos=False):
                 "[enemy.name] gains [intent.damage] Block!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
-                "[enemy.name] is preparing to dodge!"
+                "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]!"
@@ -1010,6 +1010,28 @@ label enemy_glare_anim(bm):
     $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
     return
 
+label enemy_block_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    # Swap to attack or a dedicated block sprite if available
+    $ renpy.show(enemy.sprites["attack"], at_list=[fight_right], tag=current_enemy_tag)
+    play sound "Berserk Clang Sound Effect.mp3" volume 1.0
+    "[enemy.name] braces for impact!"
+    $ renpy.pause(0.5)
+    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
+    return
+
+label enemy_dodge_anim(bm):
+    $ enemy = bm.enemies[e_idx]
+    # Move back slightly to show dodging
+    python:
+        renpy.show(enemy.sprites["idle"], tag=current_enemy_tag,
+                   at_list=[fight_right, Move((0.65, 0.5), (0.75, 0.5), 0.2, anchor=(0.5, 0.5))])
+    "[enemy.name] prepares to dodge!"
+    $ renpy.pause(0.5)
+    python:
+        renpy.show(enemy.sprites["idle"], tag=current_enemy_tag,
+                   at_list=[fight_right, Move((0.75, 0.5), (0.65, 0.5), 0.2, anchor=(0.5, 0.5))])
+    return
 
 label enemy_buff_anim(bm):
     $ enemy = bm.enemies[e_idx]
@@ -1315,7 +1337,7 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Block!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
-                "[enemy.name] is preparing to dodge!"
+                "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]!"
@@ -1457,7 +1479,7 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Block!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
-                "[enemy.name] is preparing to dodge!"
+                "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]!"
