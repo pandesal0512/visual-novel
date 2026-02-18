@@ -416,6 +416,7 @@ screen battle_screen(bm):
     textbutton "CONFIRM":
         xalign 0.95 yalign 0.8 background Solid("#ffffff") padding (20, 10)
         text_size 30 text_color "#000000" text_bold True action Return("execute")
+        activate_sound Audio("audio/confirm.mp3", volume=0.5)
     if bm.selected_skill or bm.selected_intent:
         frame:
             background Solid("#000000aa") xalign 0.5 yalign 0.5 padding (30, 30) xminimum 400
