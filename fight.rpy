@@ -376,13 +376,13 @@ init python:
     def get_character_skills(name):
         """
         Returns a list of 6 skills for a playable character in the order:
-        Normal, Shields, Energy, Hard, Dodge, Ultimate.
+        Normal, Defense, Energy, Hard, Dodge, Ultimate.
         """
         # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
         if name.lower() == "kare":
             return [
                 Skill("slap", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 Shields.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
                 Skill("punch", cost=5, damage=12, cooldown=0, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
                 Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
@@ -404,13 +404,13 @@ init python:
     def get_enemy_intents(name):
         """
         Returns a list of 6 intents for an enemy character in the order:
-        Normal, Shields, Energy, Hard, Dodge, Ultimate.
+        Normal, Defense, Energy, Hard, Dodge, Ultimate.
         """
         # EDIT THESE VALUES TO CHANGE ENEMY INTENTS
         if name.lower() == "butter":
             return [
                 EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Shields.", animation="butter_block_anim", type="barrier", cooldown=0),
+                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Defense.", animation="butter_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Churn Up", damage=5, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff"),
                 EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=0),
@@ -419,7 +419,7 @@ init python:
         elif name.lower() == "serious butter":
             return [
                 EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Shields.", animation="serious_butter_block_anim", type="barrier", cooldown=0),
+                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Defense.", animation="serious_butter_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Market Analysis", damage=10, buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff"),
                 EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge", cooldown=0),
@@ -428,7 +428,7 @@ init python:
         elif name.lower() == "lumpi":
             return [
                 EnemyIntent("slash", damage=3, desc="very powerful sword", animation="lumpi_normal_anim", type="attack"),
-                EnemyIntent("Nebula Veil", damage=5, desc="Adds 5 Shields.", animation="lumpi_block_anim", type="barrier", cooldown=0),
+                EnemyIntent("Nebula Veil", damage=5, desc="Adds 5 Defense.", animation="lumpi_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Moonlight Blessing", damage=5, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="lumpi_energy_anim", type="buff"),
                 EnemyIntent("Meteor Cleave", damage=8, desc="poweful attack", animation="lumpi_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("evade", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge", cooldown=0),
@@ -437,7 +437,7 @@ init python:
         elif name.lower() == "lumpi wheelchair":
             return [
                 EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
-                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Shields.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=0),
+                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Defense.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Overdrive", damage=8, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff"),
                 EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=0),
@@ -446,7 +446,7 @@ init python:
         elif name.lower() == "ava":
             return [
                 EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="ava_normal_anim", type="attack"),
-                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Shields.", animation="ava_block_anim", type="barrier", cooldown=0),
+                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Defense.", animation="ava_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Arcane Focus", damage=15, buff_type="damage", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff"),
                 EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=0),
@@ -470,7 +470,7 @@ screen battle_screen(bm):
                 text "Energy: [bm.player_energy]/[bm.player_max_energy]" size 20 color "#666666" outlines [(1, "#000")]
             if bm.player_barrier > 0:
                 vbox:
-                    text "Shields: [bm.player_barrier]" size 20 color "#797979" outlines [(1, "#000")]
+                    text "Defense: [bm.player_barrier]" size 20 color "#797979" outlines [(1, "#000")]
 
         hbox:
             spacing 5
@@ -491,7 +491,7 @@ screen battle_screen(bm):
                     text "[enemy.name]: [enemy.hp]/[enemy.max_hp]" size 20 color "#747474" xalign 1.0 outlines [(2, "#000")]
                     bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
                     if enemy.barrier > 0:
-                        text "Shields: [enemy.barrier]" size 14 color "#6d6d6d" xalign 1.0
+                        text "Defense: [enemy.barrier]" size 14 color "#6d6d6d" xalign 1.0
 
                     # ENEMY SKILL PROGRESS BAR
                     hbox:
@@ -662,7 +662,7 @@ screen battle_screen(bm):
                         if bm.selected_intent.type == "attack":
                             text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#818181" xalign 0.5
                         elif bm.selected_intent.type == "barrier":
-                            text "Projected Shields: [bm.selected_intent.damage]" size 20 color "#5c5c5c" xalign 0.5
+                            text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#5c5c5c" xalign 0.5
                     text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
 
 label battle_reset_camera:
@@ -745,7 +745,7 @@ label battle_engine(bm, is_chaos=False):
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
-                "You gain [skill.damage] Shields!"
+                "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
@@ -777,7 +777,7 @@ label battle_engine(bm, is_chaos=False):
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] gains [intent.damage] Shields!"
+                "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
@@ -1411,7 +1411,7 @@ label battle_boss_ava_butter:
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
-                "You gain [skill.damage] Shields!"
+                "You gain [skill.damage] Defense!"
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
@@ -1440,7 +1440,7 @@ label battle_boss_ava_butter:
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] gains [intent.damage] Shields!"
+                "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
@@ -1550,7 +1550,7 @@ label battle_boss_ava_butter_phase2:
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == 'barrier':
                 $ bm.add_barrier(skill.damage)
-                "You gain [skill.damage] Shields!"
+                "You gain [skill.damage] Defense!"
             elif skill.type == 'dodge':
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
@@ -1580,7 +1580,7 @@ label battle_boss_ava_butter_phase2:
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] gains [intent.damage] Shields!"
+                "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
