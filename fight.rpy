@@ -180,8 +180,15 @@ init python:
             self.player_skills = self.full_skill_pool[:2]
             self.skill_exp = 0
 
-        def select_skill(self, skill):
-            self.selected_skill = None if self.selected_skill == skill else skill
+        def select_skill(self, skill, e_idx=-1, s_idx=-1):
+            if self.selected_skill == skill and self.selected_slot_index == s_idx and self.selected_enemy_index == e_idx:
+                self.selected_skill = None
+                self.selected_enemy_index = -1
+                self.selected_slot_index = -1
+            else:
+                self.selected_skill = skill
+                self.selected_enemy_index = e_idx
+                self.selected_slot_index = s_idx
             self.selected_intent = None
 
         def select_intent(self, intent, e_idx, s_idx):
@@ -376,13 +383,12 @@ screen battle_screen(bm):
                             button:
                                 action Function(bm.select_intent, action, e_idx, s_idx)
                                 background Frame(Solid("#111111"), 2, 2) padding (10, 5) xminimum 80 yminimum 40
-                                border 2
                                 vbox:
                                     text "ENEMY" size 12 color "#aaaaaa" xalign 0.5
                                     text "[action.name]" size 16 color "#ffffff" xalign 0.5
                         else:
                             button:
-                                action Function(bm.select_skill, action)
+                                action Function(bm.select_skill, action, e_idx, s_idx)
                                 background Frame(Solid("#555555"), 2, 2) padding (10, 5) xminimum 80 yminimum 40
                                 vbox:
                                     text "YOU" size 12 color "#dddddd" xalign 0.5
@@ -409,7 +415,7 @@ screen battle_screen(bm):
         text_size 30 text_color "#000000" text_bold True action Return("execute")
     if bm.selected_skill or bm.selected_intent:
         frame:
-            background Solid("#000000ee") xalign 0.5 yalign 0.5 padding (30, 30) xminimum 400
+            background Solid("#000000aa") xalign 0.5 yalign 0.5 padding (30, 30) xminimum 400
             vbox:
                 spacing 15 xalign 0.5
                 if bm.selected_skill:
@@ -491,7 +497,8 @@ label battle_engine(bm, is_chaos=False, is_boss1=False):
         if isinstance(action, Skill):
             $ action.current_cooldown = action.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + action.energy_regen)
-            if action.animation: call expression action.animation pass (bm)
+            if action.animation:
+                call expression action.animation pass (bm)
             if action.type == "attack":
                 if enemy.dodge_active:
                     "[enemy.name] dodged!"
@@ -508,7 +515,8 @@ label battle_engine(bm, is_chaos=False, is_boss1=False):
                 "Preparing to dodge!"
         elif isinstance(action, EnemyIntent):
             $ action.current_cooldown = action.cooldown
-            if action.animation: call expression action.animation pass (bm)
+            if action.animation:
+                call expression action.animation pass (bm)
             if action.type == "attack":
                 if bm.dodge_active:
                     "DODGED!"
@@ -523,9 +531,12 @@ label battle_engine(bm, is_chaos=False, is_boss1=False):
             elif action.type == "dodge":
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge!"
-        if all(e.is_dead for e in bm.enemies): return "win"
-        if bm.player_hp <= 0: return "lose"
-        $ renpy.pause(0.5)
+        if all(e.is_dead for e in bm.enemies):
+            return "win"
+        if bm.player_hp <= 0:
+            return "lose"
+        if isinstance(action, (Skill, EnemyIntent)):
+            $ renpy.pause(0.5)
         $ e_idx += 1
         jump .res_loop
 
@@ -850,4 +861,5 @@ screen scrolling_credits:
         null height 200
 
 transform credits_scroll:
-    ypos 1080 linear 30.0 ypos -2000
+    ypos 1080
+    linear 30.0 ypos -2000
