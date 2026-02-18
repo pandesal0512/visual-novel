@@ -220,14 +220,10 @@ show butter_neutral at right
 "kare" "...?"
 "kare" "are we outside school"
 "kare" "in an instant?! how."
-"kare" "..."
-"kare" "fine, have it your way"
-"butter" "what"
 
 hide kare_neutral
 hide butter_neutral
-    
-# Call the battle system from fight.rpy
+
 call simple_battle_graphics from _call_simple_battle_graphics
     
 # After battle ends, return to story

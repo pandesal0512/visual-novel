@@ -731,6 +731,7 @@ label battle_reset_camera:
     return
 
 label battle_engine(bm, is_chaos=False, tutorial=False):
+    window auto hide 
     $ bm.initialize_skills(is_chaos)
 
     label .engine_start_logic:
@@ -742,17 +743,18 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "butter" "we are fighting duh"
             "kare" "but i dont know how to fight"
             "butter" "well that just made this fight easier"
-            "dobe" "dont worry twin i got you"
+            "dobe" "dont worry kare i got you"
             "dobe" "the cards at the bottom are your skills"
             "kare" "uhh i cant see them"
             "dobe" "it will show after this tutorial"
+            "kare" "but im a visual learner"
             "dobe" "anyway"
             "dobe" "Select one, then click an empty slot in the row above the enemy."
-            "dobe" "Skills cost Energy (top left meter), so spend it wisely kare"
+            "dobe" "Skills cost Energy, so spend it wisely kare"
             "dobe" "And watch the enemy's slots—they show their 'Intents'. Counter them by defending or dodging "
             "dobe" "Plus, dealt damage earns you EXP to unlock even cooler moves."
-            "kare" "uhh dobe i didn't know you could fight"
-            "kare" "alright awesome help me fight her"
+            "kare" "uhh i didn't know you could fight"
+            "kare" "help me fight her"
             "dobe" "nah you got this"
             "kare" "erm.. well wouldn't it be better if you fight along side with me"
             "dobe" "nah you got this"
@@ -875,10 +877,13 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] is recovering."
 
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .engine_victory
         if bm.player_hp <= 0:
+            window hide
             jump .engine_defeat
 
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
         python:
