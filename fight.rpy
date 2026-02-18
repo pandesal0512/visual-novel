@@ -736,21 +736,15 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
     label .engine_start_logic:
         $ bm.prepare_turn()
 
-        if tutorial and bm.turn_count == 1:
-            show expression bm.player_sprites["idle"] as player at fight_left
-            $ renpy.show(bm.enemies[0].sprites["idle"], at_list=[fight_right], tag="enemy_0")
-            show dobe_neutral at center
-            "dobe" "Whoa, Kare! Looks like you're in a bit of a pickle!"
-            "kare" "Dobe? Where did you come from? And what's going on with... everything?"
-            "dobe" "No time to explain! But if you're gonna fight, you gotta know how this works."
-            "dobe" "See those cards at the bottom? Those are your skills!"
-            "dobe" "You can select a card, then click on one of the slots in the row above the enemy to plan your move."
-            "dobe" "Each skill costs Energy, so keep an eye on your meter in the top left."
-            "dobe" "But check this out—the enemies show you what they're planning too! You can see their intents in the slots."
-            "dobe" "Use your turns to counter them. You can use 'Defense' to gain a shield or 'Dodge' to avoid an attack entirely!"
-            "dobe" "Oh, and the more damage you deal, the more EXP you get. That unlocks even more powerful skills as you go."
-            "dobe" "Got it? Good luck! I'll be rooting for you!"
-            hide dobe_neutral
+        if tutorial and bm.turn_count == 2:
+            "dobe" "See? That's how it goes! One turn down."
+            "kare" "Okay, I think I'm getting the hang of it... but there's a lot to keep track of."
+            "dobe" "Don't sweat it! Just remember: cards at the bottom are your skills."
+            "dobe" "Select one, then click an empty slot in the row above the enemy."
+            "dobe" "Skills cost Energy (top left meter), so spend it wisely!"
+            "dobe" "And watch the enemy's slots—they show their 'Intents'. Counter them with Defense or Dodge!"
+            "dobe" "Plus, dealt damage earns you EXP to unlock even cooler moves."
+            "dobe" "You got this, Kare! Show 'em what you've got!"
 
         show expression bm.player_sprites["idle"] as player at fight_left
         $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
@@ -803,12 +797,12 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_generic_new
+                call expression skill.animation (bm) pass from _call_skill_anim_generic_new
 
             if skill.type == "attack":
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
+                    call expression dodge_anim (bm) pass from _call_enemy_dodge_anim_reactive
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                 else:
@@ -838,7 +832,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_generic_new
+                call expression intent.animation (bm) pass from _call_intent_anim_generic_new
             elif intent.type == "attack":
                 call enemy_attack_anim(bm) from _call_intent_anim_default_new
 
@@ -846,7 +840,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive
+                    call expression dodge_anim (bm) pass from _call_player_dodge_anim_reactive
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
@@ -1467,11 +1461,11 @@ label butter_ava_battle:
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
             if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_ava_new
+                call expression skill.animation (bm) pass from _call_skill_anim_ava_new
             if skill.type == 'attack':
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss1
+                    call expression dodge_anim (bm) pass from _call_enemy_dodge_anim_reactive_boss1
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                 else:
@@ -1498,7 +1492,7 @@ label butter_ava_battle:
             # Enemies no longer use cooldowns
             $ bm.enemy_intent = intent
             if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter_new
+                call expression intent.animation (bm) pass from _call_intent_anim_ava_butter_new
             elif intent.type == "attack":
                 call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default_new
 
@@ -1506,7 +1500,7 @@ label butter_ava_battle:
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss1
+                    call expression dodge_anim (bm) pass from _call_player_dodge_anim_reactive_boss1
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
@@ -1538,7 +1532,7 @@ label butter_ava_battle:
             $ ava_attacked_once = True
             if bm.enemies[0].dodge_active:
                 $ dodge_anim = get_dodge_anim(bm.enemies[0].name)
-                call expression dodge_anim pass (bm) from _call_enemy0_dodge_anim_boss1_extra
+                call expression dodge_anim (bm) pass from _call_enemy0_dodge_anim_boss1_extra
                 "[bm.enemies[0].name] dodged the attack from [bm.enemies[1].name]!"
                 $ bm.enemies[0].dodge_active = False
             else:
@@ -1555,6 +1549,7 @@ label butter_ava_battle:
         if bm.player_hp <= 0:
             jump .boss1_defeat
         $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
         jump .boss1_start_logic
     label .boss1_victory:
         hide screen battle_screen
@@ -1615,11 +1610,11 @@ label butter_ava_battle2:
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
             if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_ava2_new
+                call expression skill.animation (bm) pass from _call_skill_anim_ava2_new
             if skill.type == 'attack':
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss2
+                    call expression dodge_anim (bm) pass from _call_enemy_dodge_anim_reactive_boss2
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                 else:
@@ -1647,7 +1642,7 @@ label butter_ava_battle2:
             $ bm.enemy_intent = intent
             # Special logic for unique intent names can still be here if needed
             if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter2_new
+                call expression intent.animation (bm) pass from _call_intent_anim_ava_butter2_new
             elif intent.type == "attack":
                 call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2_new
 
@@ -1655,7 +1650,7 @@ label butter_ava_battle2:
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
+                    call expression dodge_anim (bm) pass from _call_player_dodge_anim_reactive_boss2
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
@@ -1686,7 +1681,7 @@ label butter_ava_battle2:
         if bm.dodge_active:
             $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
             $ dodge_anim = get_dodge_anim(p_name)
-            call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
+            call expression dodge_anim (bm) pass from _call_player_dodge_anim_boss2_extra
             "DODGED!"
             $ bm.dodge_active = False
         else:
@@ -1702,6 +1697,7 @@ label butter_ava_battle2:
         if bm.player_hp <= 0:
             jump .boss2_defeat
         $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
         jump .boss2_start_logic
     label .boss2_victory:
         hide screen battle_screen
