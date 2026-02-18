@@ -1474,18 +1474,17 @@ label battle_boss_ava_butter:
         $ e_idx += 1
         jump .boss1_resolution_core
     label .boss1_extra_turn:
-        if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead:
+        if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead and not ava_attacked_once:
+            $ ava_attacked_once = True
             $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
             play sound 'punch-140236.mp3' volume 2.0
             $ renpy.pause(0.5)
             $ bm.take_damage(5, target='enemy', enemy_idx=0)
             $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
             'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
-            if not ava_attacked_once:
-                $ ava_attacked_once = True
-                'butter' 'HOLD ON why are you attacking me?'
-                'ava' 'oh wait i forgot you are my ally'
-                'ava' 'my bad gang'
+            'butter' 'HOLD ON why are you attacking me?'
+            'ava' 'oh wait i forgot you are my ally'
+            'ava' 'my bad gang'
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
         if bm.player_hp <= 0:
             jump .boss1_defeat
@@ -1627,7 +1626,7 @@ label battle_boss_ava_butter_phase2:
         if bm.player_hp <= 0:
             jump .boss2_defeat
         $ bm.reduce_cooldowns()
-        jump .boss2_turn_start
+        jump .boss2_start_logic
     label .boss2_victory:
         hide screen battle_screen
         return
