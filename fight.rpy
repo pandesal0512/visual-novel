@@ -118,9 +118,6 @@ transform card_selected_zoom:
 transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
-# Adjustable UI sound effect volume
-default persistent.ui_volume = 1.0
-
 init python:
     import random
 
@@ -260,7 +257,7 @@ init python:
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None
-                    renpy.sound.play("audio/homemade_sfx-light-switch-flip-272436.mp3", relative_volume=persistent.ui_volume)
+                    renpy.sound.play("audio/homemade_sfx-light-switch-flip-272436.mp3")
                     return True
             return False
 
@@ -615,7 +612,7 @@ screen battle_screen(bm):
                 $ name_col = "#fff" if can_use else "#666"
 
                 button:
-                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=persistent.ui_volume)]
+                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
                     hovered SetField(bm, "hovered_skill", skill)
                     unhovered SetField(bm, "hovered_skill", None)
                     at (card_selected_zoom if is_selected else card_idle_zoom)
@@ -642,7 +639,7 @@ screen battle_screen(bm):
         text_size 30
         text_color "#fff"
         text_bold True
-        action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5 * persistent.ui_volume)]
+        action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
 
     if has_player_action:
         textbutton "CLEAR":
@@ -1268,7 +1265,7 @@ label enemy_attack_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-label battle_butter_simple:
+label simple_battle_graphics:
     camera:
         perspective False
         gl_depth False
@@ -1298,7 +1295,7 @@ label battle_butter_simple:
         'You were defeated by butter...'
         return
 
-label battle_lumpi_standard:
+label lumpi_battle:
     camera:
         perspective False
         gl_depth False
@@ -1330,7 +1327,7 @@ label battle_lumpi_standard:
             'Retry Battle':
                 jump battle_lumpi_standard
 
-label battle_lumpi_wheelchair:
+label lumpiwheelchair_battle:
     camera:
         perspective False
         gl_depth False
@@ -1362,7 +1359,7 @@ label battle_lumpi_wheelchair:
             'Retry Battle':
                 jump battle_lumpi_wheelchair
 
-label battle_serious_butter:
+label newenemy_battle:
     camera:
         perspective False
         gl_depth False
@@ -1390,7 +1387,7 @@ label battle_serious_butter:
             'Retry Battle':
                 jump battle_serious_butter
 
-label battle_boss_ava_butter_1:
+label butter_ava_battle:
     camera:
         perspective False
         gl_depth False
@@ -1508,7 +1505,7 @@ label battle_boss_ava_butter_1:
         if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead and not ava_attacked_once:
             $ ava_attacked_once = True
             $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
-            play sound 'punch-140236.mp3' volume (2.0 * persistent.ui_volume)
+            play sound 'punch-140236.mp3' volume 2.0
             $ renpy.pause(0.5, hard=True)
             $ bm.take_damage(5, target='enemy', enemy_idx=0)
             $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
@@ -1528,7 +1525,7 @@ label battle_boss_ava_butter_1:
         hide screen battle_screen
         return
 
-label battle_boss_ava_butter_2:
+label butter_ava_battle2:
     camera:
         perspective False
         gl_depth False
@@ -1646,7 +1643,7 @@ label battle_boss_ava_butter_2:
         show ava_attack as enemy_1 at Position(xalign=0.85, yalign=0.5):
             ease 0.2 xpos 0.35
             ease 0.2 xpos 0.85
-        play sound 'audio/sword-slash-and-swing-185432.mp3' volume (2.0 * persistent.ui_volume)
+        play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
         $ renpy.pause(1.0, hard=True)
         show ava_idle as enemy_1 at Position(xalign=0.85, yalign=0.5)
         $ bm.take_damage(50, target='player')
@@ -1663,7 +1660,7 @@ label battle_boss_ava_butter_2:
         hide screen battle_screen
         menu:
             'Retry Battle':
-                jump battle_boss_ava_butter_2
+                jump butter_ava_battle2
 
 label battle_credits:
     scene black
@@ -1691,26 +1688,26 @@ transform credits_scroll:
     linear 30.0 ypos -2000
 
 # --- Label Aliases for Compatibility ---
-label butter_ava_battle:
-    jump battle_boss_ava_butter_1
+label battle_boss_ava_butter_1:
+    jump butter_ava_battle
 
-label butter_ava_battle2:
-    jump battle_boss_ava_butter_2
+label battle_boss_ava_butter_2:
+    jump butter_ava_battle2
 
-label lumpi_battle:
-    jump battle_lumpi_standard
+label battle_lumpi_standard:
+    jump lumpi_battle
 
-label lumpiwheelchair_battle:
-    jump battle_lumpi_wheelchair
+label battle_lumpi_wheelchair:
+    jump lumpiwheelchair_battle
 
-label newenemy_battle:
-    jump battle_serious_butter
+label battle_serious_butter:
+    jump newenemy_battle
 
-label simple_battle_graphics:
-    jump battle_butter_simple
+label battle_butter_simple:
+    jump simple_battle_graphics
 
 label battle_boss_ava_butter:
-    jump battle_boss_ava_butter_1
+    jump butter_ava_battle
 
 label battle_boss_ava_butter_phase2:
-    jump battle_boss_ava_butter_2
+    jump butter_ava_battle2
