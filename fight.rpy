@@ -831,49 +831,86 @@ label generic_battle(bm, is_chaos=False):
                 renpy.hide("enemy_" + str(i))
         return "lose"
 
+# ==============================================================================
+# ANIMATION SECTION
+# ==============================================================================
+# To create or edit animations:
+# 1. Define a label (e.g., label my_awesome_skill_anim(bm):)
+# 2. Use 'show expression "sprite_name" as player' to REPLACE the idle sprite.
+# 3. Use 'renpy.pause(seconds)' to control how long the sprite stays on screen.
+# 4. Use 'show expression bm.player_sprites["idle"] as player' to RESET back to idle.
+#
+# Note: 'bm' is the BattleManager, 'e_idx' is the index of the enemy being targeted.
+# Use 'current_enemy_tag' to target the specific enemy sprite for effects.
+
 label player_strike_anim(bm):
+    # Determine if we use Kare or Chaos sprites
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    # Choose the specific attack sprite
     $ sprite = p_tag + "_strike_sprite"
     $ enemy = bm.enemies[e_idx]
-    $ renpy.show(sprite, at_list=[fight_left], tag="player")
-    $ renpy.show(enemy.sprites["hit"], at_list=[fight_right], tag=current_enemy_tag)
+
+    # 1. REPLACE IDLE WITH ATTACK SPRITE
+    # This automatically hides the idle sprite because it uses 'as player'
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
+
+    # Show enemy being hit
+    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
+
     camera:
         ease 0.2 xpos 0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
+
     play sound "punch-140236.mp3" volume 1.0
+
+    # 2. PAUSE FOR DRAMA
     $ renpy.pause(1.0)
+
+    # 3. RESET TO IDLE
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     return
 
 label player_power_slash_anim(bm):
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
     $ sprite = p_tag + "_power_slash_sprite"
     $ enemy = bm.enemies[e_idx]
-    $ renpy.show(sprite, at_list=[fight_left], tag="player")
-    $ renpy.show(enemy.sprites["hit"], at_list=[fight_right], tag=current_enemy_tag)
+
+    # 1. SWAP TO ATTACK POSE
     show expression sprite as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
+
+    $ renpy.show(enemy.sprites["hit"], tag=current_enemy_tag)
+
     camera:
         ease 0.2 xpos 0.1 ypos -0.1 zoom 1.2
         ease 0.2 xpos 0.0 ypos 0.0 zoom 1.0
+
     play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0
+
+    # 2. PAUSE
     $ renpy.pause(1.0)
+
+    # 3. SWAP BACK TO IDLE
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(enemy.sprites["idle"], at_list=[fight_right], tag=current_enemy_tag)
+    $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     return
 
 label player_block_anim(bm):
+    # Determine character
     $ p_tag = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+    # Sprite for the pose
     $ sprite = p_tag + "_barrier_pose"
+    # 1. SHOW POSE
     show expression sprite as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3" volume 1.0
     "You brace yourself!"
+    # 2. DELAY
     $ renpy.pause(1.0)
+    # 3. BACK TO IDLE
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
@@ -896,7 +933,11 @@ label player_meditate_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
+# --- ENEMY ANIMATIONS ---
+# Use 'as [current_enemy_tag]' to swap the enemy's idle sprite.
+
 label enemy_butter_slash_anim(bm):
+    # Swap to attack sprite
     $ renpy.show("butter_attack1", at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
     if bm.dodge_active:
         "MISS!"
@@ -1014,7 +1055,9 @@ label enemy_spark_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 label enemy_attack_anim(bm):
+    # Generic enemy attack
     $ enemy = bm.enemies[e_idx]
+    # Swap to attack sprite
     $ renpy.show(enemy.sprites["attack"], at_list=[fight_right, enemy_charge_right], tag=current_enemy_tag)
     show expression bm.player_sprites["hit"] as player at fight_left
     camera:
