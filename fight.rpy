@@ -150,7 +150,7 @@ init python:
             self.card_image = card_image
 
     class EnemyIntent:
-        def __init__(self, name, damage=0, desc="", animation=None, type="attack", buff_type=None, buff_duration=0, card_image=None):
+        def __init__(self, name, damage=0, desc="", animation=None, type="attack", buff_type=None, buff_duration=0, card_image=None, cooldown=0):
             self.name = name
             self.damage = damage
             self.desc = desc
@@ -159,6 +159,8 @@ init python:
             self.buff_type = buff_type
             self.buff_duration = buff_duration
             self.card_image = card_image
+            self.cooldown = cooldown
+            self.current_cooldown = 0
 
     class Enemy:
         def __init__(self, name, max_hp, sprites, intents):
@@ -299,10 +301,17 @@ init python:
                     num_enemy_slots = max(1, self.current_max_slots // 2)
                     available_indices = list(range(self.current_max_slots))
                     renpy.random.shuffle(available_indices)
+
+                    # Respect cooldowns for enemy intents
+                    available_intents = [i for i in enemy.intents if i.current_cooldown == 0]
+                    if not available_intents:
+                        # Fallback to basic attack or energy regen if all on cooldown
+                        available_intents = [enemy.intents[0]]
+
                     for _ in range(num_enemy_slots):
                         idx = available_indices.pop()
-                        if enemy.intents:
-                            enemy.slots[idx] = renpy.random.choice(enemy.intents)
+                        if available_intents:
+                            enemy.slots[idx] = renpy.random.choice(available_intents)
 
         def take_damage(self, amount, target="player", enemy_idx=0):
             if target == "player":
@@ -359,6 +368,10 @@ init python:
             for skill in self.player_skills:
                 if skill.current_cooldown > 0:
                     skill.current_cooldown -= 1
+            for enemy in self.enemies:
+                for intent in enemy.full_intent_pool:
+                    if intent.current_cooldown > 0:
+                        intent.current_cooldown -= 1
 
         def gain_exp(self, amount, character_type="player", enemy_idx=0):
             # CONVERSION RATE: 1 damage = 5 EXP
@@ -419,51 +432,51 @@ init python:
         if name.lower() == "butter":
             return [
                 EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack"),
-                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Block.", animation="butter_block_anim", type="barrier"),
-                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge"),
-                EnemyIntent("Salting", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="butter_buff_anim", type="buff", buff_type="damage", buff_duration=3),
-                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="butter_ultimate_anim", type="attack"),
+                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack", cooldown=1),
+                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Block.", animation="butter_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=2),
+                EnemyIntent("Salting", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="butter_buff_anim", type="buff", buff_type="damage", buff_duration=3, cooldown=3),
+                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="butter_ultimate_anim", type="attack", cooldown=5),
                 EnemyIntent("Rest", damage=0, desc="Skipping turn.", animation="butter_energy_anim", type="energy")
             ]
         elif name.lower() == "serious butter":
             return [
                 EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack"),
-                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Block.", animation="serious_butter_block_anim", type="barrier"),
-                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge"),
-                EnemyIntent("Focus on Quality", damage=8, desc="Adds 8 damage buff for 3 turns.", animation="serious_butter_buff_anim", type="buff", buff_type="damage", buff_duration=3),
-                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="serious_butter_ultimate_anim", type="attack"),
+                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack", cooldown=1),
+                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Block.", animation="serious_butter_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge", cooldown=2),
+                EnemyIntent("Focus on Quality", damage=8, desc="Adds 8 damage buff for 3 turns.", animation="serious_butter_buff_anim", type="buff", buff_type="damage", buff_duration=3, cooldown=3),
+                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=5),
                 EnemyIntent("Recuperate", damage=0, desc="Skipping turn.", animation="serious_butter_energy_anim", type="energy")
             ]
         elif name.lower() == "lumpi":
             return [
                 EnemyIntent("Lump Kick", damage=3, desc="A weak kick.", animation="lumpi_normal_anim", type="attack"),
-                EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="lumpi_hard_anim", type="attack"),
-                EnemyIntent("Lumpy Guard", damage=5, desc="Adds 5 Block.", animation="lumpi_block_anim", type="barrier"),
-                EnemyIntent("Bounce", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge"),
-                EnemyIntent("Grow", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="lumpi_buff_anim", type="buff", buff_type="damage", buff_duration=3),
-                EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="lumpi_ultimate_anim", type="attack"),
+                EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="lumpi_hard_anim", type="attack", cooldown=1),
+                EnemyIntent("Lumpy Guard", damage=5, desc="Adds 5 Block.", animation="lumpi_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Bounce", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge", cooldown=2),
+                EnemyIntent("Grow", damage=2, desc="Adds 2 damage buff for 3 turns.", animation="lumpi_buff_anim", type="buff", buff_type="damage", buff_duration=3, cooldown=3),
+                EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="lumpi_ultimate_anim", type="attack", cooldown=5),
                 EnemyIntent("Inhale", damage=0, desc="Skipping turn.", animation="lumpi_energy_anim", type="energy")
             ]
         elif name.lower() == "lumpi wheelchair":
             return [
                 EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
-                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack"),
-                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Block.", animation="lumpi_wheelchair_block_anim", type="barrier"),
-                EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge"),
-                EnemyIntent("Nitro Boost", damage=5, desc="Adds 5 damage buff for 3 turns.", animation="lumpi_wheelchair_buff_anim", type="buff", buff_type="damage", buff_duration=3),
-                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack"),
+                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=1),
+                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Block.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=2),
+                EnemyIntent("Nitro Boost", damage=5, desc="Adds 5 damage buff for 3 turns.", animation="lumpi_wheelchair_buff_anim", type="buff", buff_type="damage", buff_duration=3, cooldown=3),
+                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=5),
                 EnemyIntent("Refuel", damage=0, desc="Skipping turn.", animation="lumpi_wheelchair_energy_anim", type="energy")
             ]
         elif name.lower() == "ava":
             return [
                 EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="ava_normal_anim", type="attack"),
-                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack"),
-                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Block.", animation="ava_block_anim", type="barrier"),
-                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge"),
-                EnemyIntent("Spell Power", damage=4, desc="Adds 4 damage buff for 3 turns.", animation="ava_buff_anim", type="buff", buff_type="damage", buff_duration=3),
-                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="ava_ultimate_anim", type="attack"),
+                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack", cooldown=1),
+                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Block.", animation="ava_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=2),
+                EnemyIntent("Spell Power", damage=4, desc="Adds 4 damage buff for 3 turns.", animation="ava_buff_anim", type="buff", buff_type="damage", buff_duration=3, cooldown=3),
+                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="ava_ultimate_anim", type="attack", cooldown=5),
                 EnemyIntent("Meditate", damage=0, desc="Skipping turn.", animation="ava_energy_anim", type="energy")
             ]
         return []
@@ -774,6 +787,7 @@ label battle_engine(bm, is_chaos=False):
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
+            $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
@@ -1439,6 +1453,7 @@ label battle_boss_ava_butter:
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
+            $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_anim_ava_butter_new
@@ -1578,6 +1593,7 @@ label battle_boss_ava_butter_phase2:
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
+            $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
             # Special logic for unique intent names can still be here if needed
             if intent.animation:
