@@ -173,8 +173,8 @@ init python:
 
             self.player_sprites = player_sprites or {"idle": "kare_idle", "attack": "kare_attack", "hit": "kare_hit"}
 
-            self.starting_slots = starting_slots
-            self.current_max_slots = starting_slots
+            self.starting_slots = 2
+            self.current_max_slots = 2
             self.slots = []
 
             self.dodge_active = False
@@ -256,8 +256,8 @@ init python:
 
         def prepare_turn(self):
             self.turn_count += 1
-            if self.turn_count > 1:
-                self.current_max_slots = min(10, self.current_max_slots + 1)
+            # Growth: starts at 2, +1 every 2 turns, max 6.
+            self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 2)
 
             self.used_skills_this_turn = []
             self.selected_skill = None
@@ -272,20 +272,19 @@ init python:
             for enemy in self.enemies:
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
-                    num_enemy_slots = max(1, self.current_max_slots // 2)
+                    num_enemy_slots = self.current_max_slots // 2
                     available_indices = list(range(self.current_max_slots))
                     renpy.random.shuffle(available_indices)
 
-                    # Respect cooldowns for enemy intents
-                    available_intents = [i for i in enemy.intents if i.current_cooldown == 0]
-                    if not available_intents:
-                        # Fallback to basic attack or energy regen if all on cooldown
-                        available_intents = [enemy.intents[0]]
+                    # Unique intents, ignore cooldowns for enemies
+                    available_intents = list(enemy.intents)
+                    renpy.random.shuffle(available_intents)
 
                     for _ in range(num_enemy_slots):
+                        if not available_intents:
+                            break
                         idx = available_indices.pop()
-                        if available_intents:
-                            enemy.slots[idx] = renpy.random.choice(available_intents)
+                        enemy.slots[idx] = available_intents.pop()
 
         def take_damage(self, amount, target="player", enemy_idx=0):
             if target == "player":
@@ -340,6 +339,9 @@ init python:
 
         def reduce_cooldowns(self):
             for skill in self.player_skills:
+                # Skills used this turn don't have their cooldown reduced yet
+                if skill in self.used_skills_this_turn:
+                    continue
                 if skill.current_cooldown > 0:
                     skill.current_cooldown -= 1
             for enemy in self.enemies:
@@ -380,20 +382,20 @@ init python:
         if name.lower() == "kare":
             return [
                 Skill("slap", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 sheilds.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 sheilds.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("yummers", cost=0, energy_regen=5, desc="Recover 5 energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
-                Skill("punch", cost=5, damage=12, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
-                Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=2, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("super cool kick", cost=15, damage=40, cooldown=5, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
+                Skill("punch", cost=5, damage=12, cooldown=0, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
+                Skill("super cool kick", cost=15, damage=40, cooldown=0, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
             ]
         elif name.lower() == "chaos":
             return [
                 Skill("interitus", cost=3, damage=8, energy_regen=2, desc="huahuahuaha!!", animation="chaos_normal_anim", card_image="card_chaos_normal"),
-                Skill("Embrace", cost=5, damage=15, type="barrier", desc="Embrace the heat death of all things", cooldown=1, animation="chaos_block_anim", card_image="card_chaos_block"),
+                Skill("Embrace", cost=5, damage=15, type="barrier", desc="Embrace the heat death of all things", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block"),
                 Skill("Entropy", cost=0, energy_regen=12, desc="gain 12 energy", animation="chaos_energy_anim", card_image="card_chaos_energy"),
-                Skill("Cataclysm", cost=7, damage=18, cooldown=2, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
-                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=2, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("████████", cost=25, damage=100, cooldown=5, desc="█████ ████████████", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
+                Skill("Cataclysm", cost=7, damage=18, cooldown=0, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
+                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
+                Skill("████████", cost=25, damage=100, cooldown=0, desc="█████ ████████████", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
             ]
         return []
 
@@ -406,47 +408,47 @@ init python:
         if name.lower() == "butter":
             return [
                 EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Block.", animation="butter_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Hard Shell", damage=6, desc="Adds 6 Block.", animation="butter_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Rest", damage=0, desc="Skipping turn.", animation="butter_energy_anim", type="energy"),
-                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack", cooldown=1),
-                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=2),
-                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="butter_ultimate_anim", type="attack", cooldown=5)
+                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=0),
+                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="butter_ultimate_anim", type="attack", cooldown=0)
             ]
         elif name.lower() == "serious butter":
             return [
                 EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Block.", animation="serious_butter_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Armor of the Serious", damage=20, desc="Adds 20 Block.", animation="serious_butter_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Recuperate", damage=0, desc="Skipping turn.", animation="serious_butter_energy_anim", type="energy"),
-                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack", cooldown=1),
-                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge", cooldown=2),
-                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=5)
+                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge", cooldown=0),
+                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=0)
             ]
         elif name.lower() == "lumpi":
             return [
                 EnemyIntent("Lump Kick", damage=3, desc="A weak kick.", animation="lumpi_normal_anim", type="attack"),
-                EnemyIntent("Lumpy Guard", damage=5, desc="Adds 5 Block.", animation="lumpi_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Lumpy Guard", damage=5, desc="Adds 5 Block.", animation="lumpi_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Inhale", damage=0, desc="Skipping turn.", animation="lumpi_energy_anim", type="energy"),
-                EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="lumpi_hard_anim", type="attack", cooldown=1),
-                EnemyIntent("Bounce", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge", cooldown=2),
-                EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="lumpi_ultimate_anim", type="attack", cooldown=5)
+                EnemyIntent("Great Lump Smash", damage=8, desc="Lump power!", animation="lumpi_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Bounce", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge", cooldown=0),
+                EnemyIntent("THE BIG LUMP", damage=25, desc="ULTIMATE: Maximum Lumpy.", animation="lumpi_ultimate_anim", type="attack", cooldown=0)
             ]
         elif name.lower() == "lumpi wheelchair":
             return [
                 EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
-                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Block.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Reinforced Frame", damage=12, desc="Adds 12 Block.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Refuel", damage=0, desc="Skipping turn.", animation="lumpi_wheelchair_energy_anim", type="energy"),
-                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=1),
-                EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=2),
-                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=5)
+                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=0),
+                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=0)
             ]
         elif name.lower() == "ava":
             return [
                 EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="ava_normal_anim", type="attack"),
-                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Block.", animation="ava_block_anim", type="barrier", cooldown=1),
+                EnemyIntent("Mana Veil", damage=10, desc="Adds 10 Block.", animation="ava_block_anim", type="barrier", cooldown=0),
                 EnemyIntent("Meditate", damage=0, desc="Skipping turn.", animation="ava_energy_anim", type="energy"),
-                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack", cooldown=1),
-                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=2),
-                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="ava_ultimate_anim", type="attack", cooldown=5)
+                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=0),
+                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="ava_ultimate_anim", type="attack", cooldown=0)
             ]
         return []
 
@@ -753,7 +755,7 @@ label battle_engine(bm, is_chaos=False):
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
-            $ intent.current_cooldown = intent.cooldown
+            # Enemies no longer use cooldowns
             $ bm.enemy_intent = intent
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
@@ -1255,7 +1257,7 @@ label battle_lumpi_standard:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(15, [lumpi], starting_slots=4, player_sprites=player_sprites)
+    $ bm = BattleManager(15, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -1287,7 +1289,7 @@ label battle_lumpi_wheelchair:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(20, [lumpi], starting_slots=6, player_sprites=player_sprites)
+    $ bm = BattleManager(20, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1319,7 +1321,7 @@ label battle_serious_butter:
     # USES THE NEW UNIQUE INTENT SET FOR SERIOUS BUTTER
     $ butter_intents = get_enemy_intents("serious butter")
     $ butter = Enemy('butter', 100, enemy_sprites, butter_intents)
-    $ bm = BattleManager(50, [butter], starting_slots=8, player_sprites=player_sprites)
+    $ bm = BattleManager(50, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1416,7 +1418,7 @@ label battle_boss_ava_butter:
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
-            $ intent.current_cooldown = intent.cooldown
+            # Enemies no longer use cooldowns
             $ bm.enemy_intent = intent
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_anim_ava_butter_new
@@ -1486,7 +1488,7 @@ label battle_boss_ava_butter_phase2:
     $ butter = Enemy('butter', 100, {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}, butter_intents)
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites=player_sprites)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
 
     label .boss2_start_logic:
@@ -1553,7 +1555,7 @@ label battle_boss_ava_butter_phase2:
                 "[skill.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
-            $ intent.current_cooldown = intent.cooldown
+            # Enemies no longer use cooldowns
             $ bm.enemy_intent = intent
             # Special logic for unique intent names can still be here if needed
             if intent.animation:
