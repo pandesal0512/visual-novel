@@ -118,8 +118,21 @@ transform card_selected_zoom:
 transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
+# Adjustable UI sound effect volume
+default persistent.ui_volume = 1.0
+
 init python:
     import random
+
+    def get_serious_butter():
+        intents = get_enemy_intents("serious butter")
+        sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
+        return Enemy('Serious Butter', 100, sprites, intents)
+
+    def get_butter():
+        intents = get_enemy_intents("butter")
+        sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
+        return Enemy('Butter', 15, sprites, intents)
 
     class Skill:
         def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None):
@@ -247,7 +260,7 @@ init python:
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None
-                    renpy.sound.play("audio/homemade_sfx-light-switch-flip-272436.mp3")
+                    renpy.sound.play("audio/homemade_sfx-light-switch-flip-272436.mp3", relative_volume=persistent.ui_volume)
                     return True
             return False
 
@@ -602,7 +615,7 @@ screen battle_screen(bm):
                 $ name_col = "#fff" if can_use else "#666"
 
                 button:
-                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3")]
+                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=persistent.ui_volume)]
                     hovered SetField(bm, "hovered_skill", skill)
                     unhovered SetField(bm, "hovered_skill", None)
                     at (card_selected_zoom if is_selected else card_idle_zoom)
@@ -629,7 +642,7 @@ screen battle_screen(bm):
         text_size 30
         text_color "#fff"
         text_bold True
-        action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", volume=1.5)]
+        action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5 * persistent.ui_volume)]
 
     if has_player_action:
         textbutton "CLEAR":
@@ -1255,7 +1268,7 @@ label enemy_attack_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-label battle_butter_simple:
+label simple_battle_graphics:
     camera:
         perspective False
         gl_depth False
@@ -1264,10 +1277,7 @@ label battle_butter_simple:
     show butter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
-    $ enemy_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
-    # USES THE NEW UNIQUE INTENT SET FOR BUTTER
-    $ butter_intents = get_enemy_intents("butter")
-    $ butter = Enemy('Butter', 15, enemy_sprites, butter_intents)
+    $ butter = get_butter()
     $ bm = BattleManager(10, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_butter
     if _return == 'win':
@@ -1288,7 +1298,7 @@ label battle_butter_simple:
         'You were defeated by butter...'
         return
 
-label battle_lumpi_standard:
+label lumpi_battle:
     camera:
         perspective False
         gl_depth False
@@ -1318,9 +1328,9 @@ label battle_lumpi_standard:
         'You were defeated by Lumpi...'
         menu:
             'Retry Battle':
-                jump battle_lumpi_standard
+                jump lumpi_battle
 
-label battle_lumpi_wheelchair:
+label lumpiwheelchair_battle:
     camera:
         perspective False
         gl_depth False
@@ -1350,9 +1360,9 @@ label battle_lumpi_wheelchair:
         'lumpi' 'huwhuahuwha i win'
         menu:
             'Retry Battle':
-                jump battle_lumpi_wheelchair
+                jump lumpiwheelchair_battle
 
-label battle_serious_butter:
+label newenemy_battle:
     camera:
         perspective False
         gl_depth False
@@ -1361,10 +1371,7 @@ label battle_serious_butter:
     show seriousbutter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
-    $ enemy_sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
-    # USES THE NEW UNIQUE INTENT SET FOR SERIOUS BUTTER
-    $ butter_intents = get_enemy_intents("serious butter")
-    $ butter = Enemy('butter', 100, enemy_sprites, butter_intents)
+    $ butter = get_serious_butter()
     $ bm = BattleManager(50, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
     if _return == 'win':
@@ -1381,17 +1388,15 @@ label battle_serious_butter:
         call battle_reset_camera from _call_battle_reset_camera_8
         menu:
             'Retry Battle':
-                jump battle_serious_butter
+                jump newenemy_battle
 
-label battle_boss_ava_butter:
+label butter_ava_battle:
     camera:
         perspective False
         gl_depth False
     scene bg at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    # USES UNIQUE INTENTS FOR BUTTER AND AVA
-    $ butter_intents = get_enemy_intents("serious butter")
-    $ butter = Enemy('butter', 100,{'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}, butter_intents)
+    $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
@@ -1503,7 +1508,7 @@ label battle_boss_ava_butter:
         if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead and not ava_attacked_once:
             $ ava_attacked_once = True
             $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
-            play sound 'punch-140236.mp3' volume 2.0
+            play sound 'punch-140236.mp3' volume (2.0 * persistent.ui_volume)
             $ renpy.pause(0.5, hard=True)
             $ bm.take_damage(5, target='enemy', enemy_idx=0)
             $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
@@ -1523,15 +1528,13 @@ label battle_boss_ava_butter:
         hide screen battle_screen
         return
 
-label battle_boss_ava_butter_phase2:
+label butter_ava_battle2:
     camera:
         perspective False
         gl_depth False
     scene bg at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
-    # USES UNIQUE INTENTS FOR SERIOUS BUTTER AND AVA
-    $ butter_intents = get_enemy_intents("serious butter")
-    $ butter = Enemy('butter', 100,{'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}, butter_intents)
+    $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
@@ -1643,7 +1646,7 @@ label battle_boss_ava_butter_phase2:
         show ava_attack as enemy_1 at Position(xalign=0.85, yalign=0.5):
             ease 0.2 xpos 0.35
             ease 0.2 xpos 0.85
-        play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+        play sound 'audio/sword-slash-and-swing-185432.mp3' volume (2.0 * persistent.ui_volume)
         $ renpy.pause(1.0, hard=True)
         show ava_idle as enemy_1 at Position(xalign=0.85, yalign=0.5)
         $ bm.take_damage(50, target='player')
@@ -1660,7 +1663,7 @@ label battle_boss_ava_butter_phase2:
         hide screen battle_screen
         menu:
             'Retry Battle':
-                jump battle_boss_ava_butter_phase2
+                jump butter_ava_battle2
 
 label battle_credits:
     scene black
@@ -1686,3 +1689,22 @@ screen scrolling_credits:
 transform credits_scroll:
     ypos 1080
     linear 30.0 ypos -2000
+
+# --- Label Aliases for Compatibility ---
+label battle_boss_ava_butter:
+    jump butter_ava_battle
+
+label battle_boss_ava_butter_phase2:
+    jump butter_ava_battle2
+
+label battle_lumpi_standard:
+    jump lumpi_battle
+
+label battle_lumpi_wheelchair:
+    jump lumpiwheelchair_battle
+
+label battle_serious_butter:
+    jump newenemy_battle
+
+label battle_butter_simple:
+    jump simple_battle_graphics

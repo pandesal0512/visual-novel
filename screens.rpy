@@ -794,6 +794,11 @@ screen preferences():
                             if config.sample_sound:
                                 textbutton _("Test") action Play("sound", config.sample_sound)
 
+                        label _("UI Sound Volume")
+
+                        hbox:
+                            bar value FieldValue(persistent, "ui_volume", range=2.0, style="slider")
+
 
                     if config.has_voice:
                         label _("Voice Volume")
