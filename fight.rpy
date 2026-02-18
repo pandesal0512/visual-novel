@@ -78,6 +78,7 @@ image ava_normal_sprite = "ava_normal_sprite.png"
 image ava_hard_sprite = "ava_hard_sprite.png"
 image ava_block_sprite = "ava_block_sprite.png"
 image ava_dodge_sprite = "ava_dodge_sprite.png"
+image ava_buff_sprite = "ava_buff_sprite.png"
 image ava_ultimate_sprite = "ava_ultimate_sprite.png"
 image ava_energy_sprite = "ava_energy_sprite.png"
 
@@ -109,7 +110,7 @@ transform enemy_charge_right:
 
 init python:
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, card_image=None):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, card_image=None, buff_type=None, buff_duration=0):
             self.name = name
             self.cost = cost
             self.damage = damage
@@ -120,9 +121,11 @@ init python:
             self.desc = desc
             self.animation = animation
             self.card_image = card_image
+            self.buff_type = buff_type
+            self.buff_duration = buff_duration
 
     class EnemyIntent:
-        def __init__(self, name, damage=0, desc="", animation=None, type="attack", cooldown=0):
+        def __init__(self, name, damage=0, desc="", animation=None, type="attack", cooldown=0, buff_type=None, buff_duration=0):
             self.name = name
             self.damage = damage
             self.desc = desc
@@ -130,6 +133,8 @@ init python:
             self.type = type
             self.cooldown = cooldown
             self.current_cooldown = 0
+            self.buff_type = buff_type
+            self.buff_duration = buff_duration
 
     class Enemy:
         def __init__(self, name, max_hp, sprites, intents):
@@ -143,6 +148,7 @@ init python:
             self.skill_exp_max = 100
             self.slots = []
             self.barrier = 0
+            self.buffs = []
             self.dodge_active = False
             self.is_dead = False
 
@@ -157,6 +163,7 @@ init python:
             self.player_energy = 10
             self.player_max_energy = 10
             self.player_barrier = 0
+            self.player_buffs = []
             self.enemies = enemies or []
             self.player_sprites = player_sprites or {"idle": "kare_idle", "attack": "kare_attack", "hit": "kare_hit"}
             self.current_max_slots = starting_slots
@@ -194,6 +201,8 @@ init python:
         def select_intent(self, intent, e_idx, s_idx):
             if self.selected_intent == intent and self.selected_enemy_index == e_idx and self.selected_slot_index == s_idx:
                 self.selected_intent = None
+                self.selected_enemy_index = -1
+                self.selected_slot_index = -1
             else:
                 self.selected_intent = intent
                 self.selected_enemy_index = e_idx
@@ -223,11 +232,19 @@ init python:
                     if isinstance(enemy.slots[s_idx], Skill):
                         self.remove_from_slot(e_idx, s_idx)
 
+        def get_skill_slot_info(self, skill):
+            for e_idx, enemy in enumerate(self.enemies):
+                for s_idx, s in enumerate(enemy.slots):
+                    if s == skill:
+                        return e_idx, s_idx
+            return -1, -1
+
         def prepare_turn(self):
             self.turn_count += 1
             if self.turn_count > 1: self.current_max_slots = min(10, self.current_max_slots + 1)
             self.used_skills_this_turn = []
             self.selected_skill = self.selected_intent = None
+            self.selected_enemy_index = self.selected_slot_index = -1
             self.player_energy = min(self.player_max_energy, self.player_energy + 2)
             for enemy in self.enemies:
                 if not enemy.is_dead:
@@ -266,6 +283,37 @@ init python:
                 while e.skill_exp >= e.skill_exp_max and e.unlocked_intents_count < len(e.full_intent_pool):
                     e.skill_exp -= e.skill_exp_max
                     e.unlocked_intents_count += 1
+
+        def add_barrier(self, amount, target="player", e_idx=0):
+            if target == "player": self.player_barrier += amount
+            else: self.enemies[e_idx].barrier += amount
+
+        def add_buff(self, type, value, duration, target="player", e_idx=0):
+            if target == "player": self.player_buffs.append([type, value, duration])
+            else: self.enemies[e_idx].buffs.append([type, value, duration])
+
+        def update_buffs(self):
+            for b in self.player_buffs[:]:
+                b[2] -= 1
+                if b[2] <= 0: self.player_buffs.remove(b)
+            for enemy in self.enemies:
+                for b in enemy.buffs[:]:
+                    b[2] -= 1
+                    if b[2] <= 0: enemy.buffs.remove(b)
+
+        def get_total_buff_value(self, type, target="player", e_idx=0):
+            total = 0
+            buffs = self.player_buffs if target == "player" else self.enemies[e_idx].buffs
+            for b in buffs:
+                if b[0] == type: total += b[1]
+            return total
+
+        def reduce_cooldowns(self):
+            for skill in self.player_skills:
+                if skill.current_cooldown > 0: skill.current_cooldown -= 1
+            for enemy in self.enemies:
+                for intent in enemy.full_intent_pool:
+                    if intent.current_cooldown > 0: intent.current_cooldown -= 1
 
     def get_character_skills(name):
         if name.lower() == "kare":
@@ -338,7 +386,6 @@ init python:
 
 screen battle_screen(bm):
     $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
-    # --- Monochrome Bar Styles ---
     style_prefix "sketchy"
 
     vbox:
@@ -349,11 +396,9 @@ screen battle_screen(bm):
             spacing 20
             vbox:
                 text "Energy: [bm.player_energy]/[bm.player_max_energy]" size 20 color "#eeeeee"
-                bar value bm.player_energy range bm.player_max_energy xmaximum 200
             if bm.player_barrier > 0:
                 vbox:
-                    text "Barrier: [bm.player_barrier]" size 20 color "#cccccc"
-                    bar value bm.player_barrier range max(20, bm.player_barrier) xmaximum 100
+                    text "Defense: [bm.player_barrier]" size 20 color "#cccccc"
     vbox:
         xalign 0.95 yalign 0.05 spacing 10
         for e in bm.enemies:
@@ -416,7 +461,7 @@ screen battle_screen(bm):
     textbutton "CONFIRM":
         xalign 0.95 yalign 0.8 background Solid("#ffffff") padding (20, 10)
         text_size 30 text_color "#000000" text_bold True action Return("execute")
-        activate_sound Audio("audio/confirm.mp3", volume=0.5)
+        activate_sound "audio/confirm.mp3"
     if bm.selected_skill or bm.selected_intent:
         frame:
             background Solid("#000000aa") xalign 0.5 yalign 0.5 padding (30, 30) xminimum 400
@@ -511,15 +556,19 @@ label battle_engine(bm, is_chaos=False, is_boss1=False):
                     "[enemy.name] dodged!"
                     $ enemy.dodge_active = False
                 else:
-                    $ bm.take_damage(action.damage, target="enemy", e_idx=e_idx)
-                    $ bm.gain_exp(action.damage * 5)
-                    "[action.name] deals [action.damage] damage!"
+                    $ damage = action.damage + bm.get_total_buff_value("damage", target="player")
+                    $ bm.take_damage(damage, target="enemy", e_idx=e_idx)
+                    $ bm.gain_exp(damage * 5)
+                    "[action.name] deals [damage] damage!"
             elif action.type == "barrier":
-                $ bm.player_barrier += action.damage
-                "Gained [action.damage] Block!"
+                $ bm.add_barrier(action.damage)
+                "Gained [action.damage] Defense!"
             elif action.type == "dodge":
                 $ bm.dodge_active = True
                 "Preparing to dodge!"
+            elif action.type == "buff":
+                $ bm.add_buff(action.buff_type, action.damage, action.buff_duration, target="player")
+                "[action.name] activated!"
         elif isinstance(action, EnemyIntent):
             $ action.current_cooldown = action.cooldown
             if action.animation:
@@ -529,270 +578,271 @@ label battle_engine(bm, is_chaos=False, is_boss1=False):
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
-                    $ bm.take_damage(action.damage)
-                    $ bm.gain_exp(action.damage * 5, "enemy", e_idx)
-                    "[enemy.name] deals [action.damage] damage!"
+                    $ damage = action.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ bm.take_damage(damage)
+                    $ bm.gain_exp(damage * 5, "enemy", e_idx)
+                    "[enemy.name] deals [damage] damage!"
             elif action.type == "barrier":
-                $ enemy.barrier += action.damage
-                "[enemy.name] gained Block!"
+                $ bm.add_barrier(action.damage, target="enemy", e_idx=e_idx)
+                "[enemy.name] gained Defense!"
             elif action.type == "dodge":
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge!"
+            elif action.type == "buff":
+                $ bm.add_buff(action.buff_type, action.damage, action.buff_duration, target="enemy", e_idx=e_idx)
+                "[enemy.name] activated [action.name]!"
         if all(e.is_dead for e in bm.enemies):
             return "win"
         if bm.player_hp <= 0:
             return "lose"
         if isinstance(action, (Skill, EnemyIntent)):
-            $ renpy.pause(0.5)
+            $ renpy.pause(0.5, hard=True)
         $ e_idx += 1
         jump .res_loop
 
 # --- Animations ---
 label kare_normal_anim(bm):
-    show kare_normal_sprite as player at fight_left:
+    show expression "kare_normal_sprite" as player at fight_left:
         ease 0.1 xpos 0.4
         ease 0.1 xpos 0.35
     play sound "punch-140236.mp3"
-    $ renpy.pause(0.5)
-    show kare_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label kare_hard_anim(bm):
-    show kare_hard_sprite as player at fight_left:
+    show expression "kare_hard_sprite" as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
     play sound "audio/sword-slash-and-swing-185432.mp3"
-    $ renpy.pause(0.8)
-    show kare_idle as player at fight_left
+    $ renpy.pause(0.8, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label kare_block_anim(bm):
-    show kare_block_sprite as player at fight_left
+    show expression "kare_block_sprite" as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3"
-    $ renpy.pause(0.5)
-    show kare_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label kare_dodge_anim(bm):
-    show kare_dodge_sprite as player at fight_left:
+    show expression "kare_dodge_sprite" as player at fight_left:
         ease 0.2 xpos 0.25
         ease 0.2 xpos 0.35
-    $ renpy.pause(0.5)
-    show kare_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label kare_energy_anim(bm):
-    show kare_energy_sprite as player at fight_left
+    show expression "kare_energy_sprite" as player at fight_left
     play sound "audio/item-pickup-37089.mp3"
-    $ renpy.pause(0.5)
-    show kare_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label kare_ultimate_anim(bm):
-    show kare_ultimate_sprite as player at fight_left:
+    show expression "kare_ultimate_sprite" as player at fight_left:
         ease 0.3 xpos 0.6
         ease 0.3 xpos 0.35
     play sound "audio/sword-slash-and-swing-185432.mp3"
-    $ renpy.pause(1.2)
-    show kare_idle as player at fight_left
+    $ renpy.pause(1.2, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-# (Simplified other animations follow the same pattern)
 label chaos_normal_anim(bm):
-    show chaos_normal_sprite as player at fight_left
+    show expression "chaos_normal_sprite" as player at fight_left
     play sound "punch-140236.mp3"
-    $ renpy.pause(0.5)
-    show chaos_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 label chaos_hard_anim(bm):
-    show chaos_hard_sprite as player at fight_left
+    show expression "chaos_hard_sprite" as player at fight_left
     play sound "audio/sword-slash-and-swing-185432.mp3"
-    $ renpy.pause(0.8)
-    show chaos_idle as player at fight_left
+    $ renpy.pause(0.8, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 label chaos_block_anim(bm):
-    show chaos_block_sprite as player at fight_left
+    show expression "chaos_block_sprite" as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3"
-    $ renpy.pause(0.5)
-    show chaos_idle as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 label chaos_dodge_anim(bm):
-    show chaos_dodge_sprite as player at fight_left
-    $ renpy.pause(0.5)
-    show chaos_idle as player at fight_left
+    show expression "chaos_dodge_sprite" as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 label chaos_energy_anim(bm):
-    show chaos_energy_sprite as player at fight_left
-    $ renpy.pause(0.5)
-    show chaos_idle as player at fight_left
+    show expression "chaos_energy_sprite" as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 label chaos_ultimate_anim(bm):
-    show chaos_ultimate_sprite as player at fight_left
+    show expression "chaos_ultimate_sprite" as player at fight_left
     play sound "audio/magic-spark.mp3"
-    $ renpy.pause(1.2)
-    show chaos_idle as player at fight_left
+    $ renpy.pause(1.2, hard=True)
+    show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-# --- Enemy Animation Fallbacks ---
 label butter_normal_anim(bm):
     $ renpy.show("butter_normal_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
     play sound "audio/sword-slash-and-swing-185432.mp3"
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label butter_hard_anim(bm):
     $ renpy.show("butter_hard_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    $ renpy.pause(0.8)
+    $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label butter_block_anim(bm):
     $ renpy.show("butter_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
     play sound "Berserk Clang Sound Effect.mp3"
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label butter_dodge_anim(bm):
     $ renpy.show("butter_dodge_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label butter_ultimate_anim(bm):
     $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
     play sound "audio/single-gunshot-62-hp-37188.mp3"
-    $ renpy.pause(1.2)
+    $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label butter_energy_anim(bm):
     $ renpy.show("butter_energy_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
-# (And so on for other enemies...)
 label serious_butter_normal_anim(bm):
     $ renpy.show("serious_butter_normal_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label serious_butter_hard_anim(bm):
     $ renpy.show("serious_butter_hard_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.8)
+    $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label serious_butter_block_anim(bm):
     $ renpy.show("serious_butter_block_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label serious_butter_dodge_anim(bm):
     $ renpy.show("serious_butter_dodge_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label serious_butter_ultimate_anim(bm):
     $ renpy.show("serious_butter_ultimate_sprite", tag=current_enemy_tag)
-    $ renpy.pause(1.2)
+    $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label serious_butter_energy_anim(bm):
     $ renpy.show("serious_butter_energy_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label lumpi_normal_anim(bm):
     $ renpy.show("lumpi_normal_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_hard_anim(bm):
     $ renpy.show("lumpi_hard_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.8)
+    $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_block_anim(bm):
     $ renpy.show("lumpi_block_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_dodge_anim(bm):
     $ renpy.show("lumpi_dodge_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_ultimate_anim(bm):
     $ renpy.show("lumpi_ultimate_sprite", tag=current_enemy_tag)
-    $ renpy.pause(1.2)
+    $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_energy_anim(bm):
     $ renpy.show("lumpi_energy_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label lumpi_wheelchair_normal_anim(bm):
     $ renpy.show("lumpi_wheelchair_normal_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_wheelchair_hard_anim(bm):
     $ renpy.show("lumpi_wheelchair_hard_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.8)
+    $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_wheelchair_block_anim(bm):
     $ renpy.show("lumpi_wheelchair_block_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_wheelchair_dodge_anim(bm):
     $ renpy.show("lumpi_wheelchair_dodge_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_wheelchair_ultimate_anim(bm):
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag)
-    $ renpy.pause(1.2)
+    $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label lumpi_wheelchair_energy_anim(bm):
     $ renpy.show("lumpi_wheelchair_energy_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label ava_normal_anim(bm):
     $ renpy.show("ava_normal_sprite", tag=current_enemy_tag)
     play sound "audio/magic-spark.mp3"
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label ava_hard_anim(bm):
     $ renpy.show("ava_hard_sprite", tag=current_enemy_tag)
     play sound "audio/magic-spark.mp3"
-    $ renpy.pause(0.8)
+    $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label ava_block_anim(bm):
     $ renpy.show("ava_block_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label ava_dodge_anim(bm):
     $ renpy.show("ava_dodge_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label ava_ultimate_anim(bm):
     $ renpy.show("ava_ultimate_sprite", tag=current_enemy_tag)
     play sound "audio/magic-spark.mp3"
-    $ renpy.pause(1.2)
+    $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 label ava_energy_anim(bm):
     $ renpy.show("ava_energy_sprite", tag=current_enemy_tag)
-    $ renpy.pause(0.5)
+    $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
@@ -800,7 +850,8 @@ label ava_energy_anim(bm):
 label battle_butter_simple:
     scene bg with fade
     $ sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
-    $ e = Enemy('Butter', 15, sprites, get_enemy_intents("butter"))
+    $ butter_intents = get_enemy_intents("butter")
+    $ e = Enemy('Butter', 15, sprites, butter_intents)
     $ bm = BattleManager(10, [e])
     call battle_engine(bm) from _call_battle_engine_butter_1
     return
@@ -808,24 +859,27 @@ label battle_butter_simple:
 label battle_lumpi_standard:
     scene bg with fade
     $ sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
-    $ e = Enemy('Lumpi', 25, sprites, get_enemy_intents("lumpi"))
-    $ bm = BattleManager(15, [e], starting_slots=4)
+    $ intents = get_enemy_intents("lumpi")
+    $ e = Enemy('Lumpi', 25, sprites, intents)
+    $ bm = BattleManager(15, [e], starting_slots=2)
     call battle_engine(bm) from _call_battle_engine_lumpi_1
     return
 
 label battle_lumpi_wheelchair:
     scene bg with fade
     $ sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
-    $ e = Enemy('Lumpi (Wheelchair)', 40, sprites, get_enemy_intents("lumpi wheelchair"))
-    $ bm = BattleManager(20, [e], starting_slots=6)
+    $ intents = get_enemy_intents("lumpi wheelchair")
+    $ e = Enemy('Lumpi (Wheelchair)', 40, sprites, intents)
+    $ bm = BattleManager(20, [e], starting_slots=2)
     call battle_engine(bm) from _call_battle_engine_wheelchair_1
     return
 
 label battle_serious_butter:
     scene bg with fade
     $ sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
-    $ e = Enemy('Serious Butter', 100, sprites, get_enemy_intents("serious butter"))
-    $ bm = BattleManager(50, [e], starting_slots=8)
+    $ intents = get_enemy_intents("serious butter")
+    $ e = Enemy('Serious Butter', 100, sprites, intents)
+    $ bm = BattleManager(50, [e], starting_slots=2)
     call battle_engine(bm) from _call_battle_engine_serious_1
     return
 
@@ -833,7 +887,7 @@ label battle_boss_ava_butter:
     scene bg with fade
     $ b_sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
     $ a_sprites = {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}
-    $ butter = Enemy('Butter', 500, b_sprites, get_enemy_intents("butter"))
+    $ butter = Enemy('Butter', 500, b_sprites, get_enemy_intents("serious butter"))
     $ ava = Enemy('Ava', 999999, a_sprites, get_enemy_intents("ava"))
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites={'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'})
     call battle_engine(bm, is_chaos=True, is_boss1=True) from _call_battle_engine_boss1_1
@@ -845,7 +899,7 @@ label battle_boss_ava_butter_phase2:
     $ a_sprites = {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}
     $ butter = Enemy('Serious Butter', 500, b_sprites, get_enemy_intents("serious butter"))
     $ ava = Enemy('Ava', 500, a_sprites, get_enemy_intents("ava"))
-    $ bm = BattleManager(500, [butter, ava], starting_slots=10, player_sprites={'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'})
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites={'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'})
     call battle_engine(bm, is_chaos=True) from _call_battle_engine_boss2_1
     return
 
