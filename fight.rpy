@@ -731,6 +731,7 @@ label battle_reset_camera:
     return
 
 label battle_engine(bm, is_chaos=False, tutorial=False):
+    window hide
     $ bm.initialize_skills(is_chaos)
 
     label .engine_start_logic:
@@ -745,6 +746,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "dobe" "And watch the enemy's slots—they show their 'Intents'. Counter them with Defense or Dodge!"
             "dobe" "Plus, dealt damage earns you EXP to unlock even cooler moves."
             "dobe" "You got this, Kare! Show 'em what you've got!"
+            window hide
 
         show expression bm.player_sprites["idle"] as player at fight_left
         $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
@@ -861,10 +863,13 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] is recovering."
 
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .engine_victory
         if bm.player_hp <= 0:
+            window hide
             jump .engine_defeat
 
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
         python:
@@ -876,6 +881,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         jump .engine_resolution_core
 
     label .engine_turn_end:
+        window hide
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
         jump .engine_start_logic
@@ -1409,6 +1415,7 @@ label newenemy_battle:
                 jump battle_serious_butter
 
 label butter_ava_battle:
+    window hide
     camera:
         perspective False
         gl_depth False
@@ -1520,9 +1527,12 @@ label butter_ava_battle:
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .boss1_victory
         if bm.player_hp <= 0:
+            window hide
             jump .boss1_defeat
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
         $ e_idx += 1
@@ -1547,7 +1557,9 @@ label butter_ava_battle:
             'ava' 'my bad gang'
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
         if bm.player_hp <= 0:
+            window hide
             jump .boss1_defeat
+        window hide
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
         jump .boss1_start_logic
@@ -1559,6 +1571,7 @@ label butter_ava_battle:
         return
 
 label butter_ava_battle2:
+    window hide
     camera:
         perspective False
         gl_depth False
@@ -1670,9 +1683,12 @@ label butter_ava_battle2:
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .boss2_victory
         if bm.player_hp <= 0:
+            window hide
             jump .boss2_defeat
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
         $ e_idx += 1
@@ -1695,7 +1711,9 @@ label butter_ava_battle2:
             $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
             'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
+            window hide
             jump .boss2_defeat
+        window hide
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
         jump .boss2_start_logic
