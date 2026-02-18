@@ -105,6 +105,12 @@ transform enemy_charge_right:
     ease 0.2 xpos 0.5
     ease 0.2 xpos 0.65
 
+transform energy_warning_fade:
+    alpha 0.0
+    linear 0.1 alpha 1.0
+    pause 1.7
+    linear 0.2 alpha 0.0
+
 init python:
     import random
 
@@ -189,6 +195,8 @@ init python:
             self.selected_intent = None
             self.selected_slot_index = -1
             self.selected_enemy_index = -1
+            self.hovered_skill = None
+            self.show_energy_warning = False
 
         def initialize_skills(self, is_chaos):
             # INITIAL PLAYER ENERGY
@@ -222,7 +230,10 @@ init python:
         def add_to_slot(self, skill, enemy_idx, slot_idx):
             if skill in self.used_skills_this_turn:
                 return False
-            if self.player_energy >= skill.cost and skill.current_cooldown == 0:
+            if self.player_energy < skill.cost:
+                self.show_energy_warning = True
+                return False
+            if skill.current_cooldown == 0:
                 enemy = self.enemies[enemy_idx]
                 if enemy.slots[slot_idx] is None:
                     enemy.slots[slot_idx] = skill
@@ -264,6 +275,8 @@ init python:
             self.selected_intent = None
             self.selected_enemy_index = -1
             self.selected_slot_index = -1
+            self.hovered_skill = None
+            self.show_energy_warning = False
 
             # REGENERATE PLAYER ENERGY PER TURN
             # Change the value below (currently 2) to increase/decrease energy gain per turn
@@ -529,9 +542,9 @@ screen battle_screen(bm):
                             for s_idx in range(bm.current_max_slots):
                                 $ action = enemy.slots[s_idx]
                                 if action is None:
-                                    $ can_add = bm.selected_skill is not None and bm.player_energy >= bm.selected_skill.cost
+                                    $ can_click_slot = bm.selected_skill is not None
                                     button:
-                                        action If(can_add, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
+                                        action If(can_click_slot, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
                                         background Solid("#333")
                                         padding (10, 5)
                                         xminimum 80
@@ -582,6 +595,8 @@ screen battle_screen(bm):
 
                 button:
                     action Function(bm.select_skill, skill)
+                    hovered SetField(bm, "hovered_skill", skill)
+                    unhovered SetField(bm, "hovered_skill", None)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
                     background card_bg
                     padding (0, 0)
@@ -618,8 +633,12 @@ screen battle_screen(bm):
 
 
     # ── POPUPS ──
-    if bm.selected_skill or bm.selected_intent:
-        if bm.selected_skill:
+    $ display_skill = bm.hovered_skill
+    if display_skill is None and bm.selected_skill in bm.used_skills_this_turn:
+        $ display_skill = bm.selected_skill
+
+    if display_skill or bm.selected_intent:
+        if display_skill:
             frame:
                 background Solid("#222d")
                 xalign 0.5 yalign 0.5
@@ -627,18 +646,18 @@ screen battle_screen(bm):
                 xminimum 400
                 vbox:
                     spacing 15
-                    if bm.selected_skill.card_image:
-                        add bm.selected_skill.card_image xalign 0.5
-                    text "[bm.selected_skill.name]" size 30 color "#fff" xalign 0.5 bold True
-                    text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#808080" xalign 0.5
-                    if bm.selected_skill.damage > 0:
-                        text "Damage: [bm.selected_skill.damage]" size 20 color "#797979" xalign 0.5
-                    text "[bm.selected_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
-                    if bm.selected_skill.cooldown > 0:
-                        text "Cooldown: [bm.selected_skill.cooldown] turns" size 18 color "#7a7a7a" xalign 0.5
+                    if display_skill.card_image:
+                        add display_skill.card_image xalign 0.5
+                    text "[display_skill.name]" size 30 color "#fff" xalign 0.5 bold True
+                    text "Cost: [display_skill.cost] Energy" size 20 color "#808080" xalign 0.5
+                    if display_skill.damage > 0:
+                        text "Damage: [display_skill.damage]" size 20 color "#797979" xalign 0.5
+                    text "[display_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
+                    if display_skill.cooldown > 0:
+                        text "Cooldown: [display_skill.cooldown] turns" size 18 color "#7a7a7a" xalign 0.5
 
-                    if bm.selected_skill in bm.used_skills_this_turn:
-                        $ e_idx, s_idx = bm.get_skill_slot_info(bm.selected_skill)
+                    if display_skill in bm.used_skills_this_turn:
+                        $ e_idx, s_idx = bm.get_skill_slot_info(display_skill)
                         if e_idx != -1:
                             null height 20
                             textbutton "REMOVE FROM SLOT":
@@ -664,6 +683,16 @@ screen battle_screen(bm):
                         elif bm.selected_intent.type == "barrier":
                             text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#5c5c5c" xalign 0.5
                     text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
+
+    # ── ENERGY WARNING ──
+    if bm.show_energy_warning:
+        timer 2.0 action SetField(bm, "show_energy_warning", False)
+        frame:
+            at energy_warning_fade
+            background Solid("#800c")
+            padding (20, 10)
+            xalign 0.5 yalign 0.4
+            text "NOT ENOUGH ENERGY" color "#fff" size 30 bold True outlines [(2, "#000")]
 
 label battle_reset_camera:
     camera:
