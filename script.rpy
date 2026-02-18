@@ -227,20 +227,6 @@ show butter_neutral at right
 hide kare_neutral
 hide butter_neutral
 
-show dobe_neutral at center
-"dobe" "Whoa, Kare! Looks like you're in a bit of a pickle!"
-"kare" "Dobe? Where did you come from? And what's going on with... everything?"
-"dobe" "No time to explain! But if you're gonna fight, you gotta know how this works."
-"dobe" "See those cards at the bottom? Those are your skills!"
-"dobe" "You can select a card, then click on one of the slots in the row above the enemy to plan your move."
-"dobe" "Each skill costs Energy, so keep an eye on your meter in the top left."
-"dobe" "But check this out—the enemies show you what they're planning too! You can see their intents in the slots."
-"dobe" "Use your turns to counter them. You can use 'Defense' to gain a shield or 'Dodge' to avoid an attack entirely!"
-"dobe" "Oh, and the more damage you deal, the more EXP you get. That unlocks even more powerful skills as you go."
-"dobe" "Got it? Good luck! I'll be rooting for you!"
-hide dobe_neutral
-
-# Call the battle system from fight.rpy
 call simple_battle_graphics from _call_simple_battle_graphics
 
 # After battle ends, return to story
