@@ -407,9 +407,12 @@ screen battle_screen(bm):
                     action Function(bm.select_skill, s) sensitive can
                     background (Solid("#888888") if bm.selected_skill == s else (Solid("#333333cc") if can else Solid("#111111cc")))
                     xsize 140 ysize 180
-                    if s.card_image: add s.card_image
-                    if s.current_cooldown > 0: text "[s.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 outlines [(2, "#000")]
-                    elif s in bm.used_skills_this_turn: text "USED" size 20 color "#444444" xalign 0.5 yalign 0.5
+                    if s.card_image:
+                        add s.card_image
+                    if s.current_cooldown > 0:
+                        text "[s.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 outlines [(2, "#000")]
+                    elif s in bm.used_skills_this_turn:
+                        text "USED" size 20 color "#444444" xalign 0.5 yalign 0.5
     textbutton "CONFIRM":
         xalign 0.95 yalign 0.8 background Solid("#ffffff") padding (20, 10)
         text_size 30 text_color "#000000" text_bold True action Return("execute")
@@ -419,10 +422,12 @@ screen battle_screen(bm):
             vbox:
                 spacing 15 xalign 0.5
                 if bm.selected_skill:
-                    if bm.selected_skill.card_image: add bm.selected_skill.card_image xalign 0.5
+                    if bm.selected_skill.card_image:
+                        add bm.selected_skill.card_image xalign 0.5
                     text "[bm.selected_skill.name]" size 30 color "#ffffff" bold True
                     text "Cost: [bm.selected_skill.cost] Energy" size 20 color "#dddddd"
-                    if bm.selected_skill.damage > 0: text "Damage: [bm.selected_skill.damage]" size 20 color "#ffffff"
+                    if bm.selected_skill.damage > 0:
+                        text "Damage: [bm.selected_skill.damage]" size 20 color "#ffffff"
                     text "[bm.selected_skill.desc]" size 18 color "#bbbbbb" text_align 0.5
                     if bm.selected_skill in bm.used_skills_this_turn:
                         textbutton "REMOVE":
@@ -430,7 +435,8 @@ screen battle_screen(bm):
                             background Solid("#ffffff") padding (10, 5) text_color "#000"
                 else:
                     text "Enemy: [bm.selected_intent.name]" size 30 color "#ffffff" bold True
-                    if bm.selected_intent.damage > 0: text "Damage: [bm.selected_intent.damage]" size 20 color "#ffffff"
+                    if bm.selected_intent.damage > 0:
+                        text "Damage: [bm.selected_intent.damage]" size 20 color "#ffffff"
                     text "[bm.selected_intent.desc]" size 18 color "#bbbbbb" text_align 0.5
 
 # Define sketchy bar style
