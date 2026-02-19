@@ -137,12 +137,12 @@ init python:
     def get_serious_butter():
         intents = get_enemy_intents("serious butter")
         sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
-        return Enemy('Serious Butter', 100, sprites, intents)
+        return Enemy('Serious Butter', 300, sprites, intents)
 
     def get_butter():
         intents = get_enemy_intents("butter")
         sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
-        return Enemy('Butter', 15, sprites, intents)
+        return Enemy('Butter', 50, sprites, intents)
 
     def get_dodge_anim(char_name):
         # Normalize name to match label convention: lowercase, underscores instead of spaces/chars
@@ -306,6 +306,7 @@ init python:
             self.turn_count += 1
             # Growth: starts at 2, +1 every 2 turns, max 6.
             self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 2)
+            self.dodge_active = False   
 
             self.used_skills_this_turn = []
             self.selected_skill = None
@@ -320,6 +321,7 @@ init python:
             self.player_energy = min(self.player_max_energy, self.player_energy + 2)
 
             for enemy in self.enemies:
+                enemy.dodge_active = False  
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
                     num_enemy_slots = self.current_max_slots // 2
@@ -464,12 +466,12 @@ init python:
         # EDIT THESE VALUES TO CHANGE ENEMY INTENTS
         if name.lower() == "butter":
             return [
-                EnemyIntent("Butter Knife", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("Hard Shell", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Churn Up", damage=5, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("Melting Slam", damage=10, desc="A heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
-                EnemyIntent("Slippery", desc="Will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("Golden Spread", damage=30, desc="ULTIMATE: Covered in gold.", animation="butter_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("elbow", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
+                EnemyIntent("block", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("ready?", damage=3, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("kick", damage=10, desc="heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("PUNCH!", damage=20, desc="haha!! no way you are surviving this", animation="butter_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "serious butter":
             return [
@@ -514,7 +516,7 @@ screen battle_screen(bm):
 
     # Settings button in top right
     textbutton "Settings":
-        xalign 0.98 yalign 0.02
+        xalign 0.5 yalign 2
         action ShowMenu("preferences")
         text_size 24
         text_color "#555"
@@ -672,7 +674,6 @@ screen battle_screen(bm):
                         text "USED" size 20 color "#888" xalign 0.5 yalign 0.5 bold True
 
     # ── Confirm / Clear buttons ──
-    $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
     textbutton "CONFIRM":
         xalign 0.95 yalign 0.8
         background Solid("#7e7e7e")
@@ -682,16 +683,6 @@ screen battle_screen(bm):
         text_bold True
         text_outlines []
         action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
-
-    if has_player_action:
-        textbutton "CLEAR":
-            xalign 0.05 yalign 0.8
-            background Solid("#444")
-            padding (10, 5)
-            text_size 20
-            text_color "#fff"
-            action Function(bm.clear_queue)
-
 
     # ── POPUPS ──
     $ display_skill = None
@@ -739,7 +730,7 @@ screen battle_screen(bm):
             frame:
                 background Solid("#8888887f")
                 foreground "sketchy_bar_outline"
-                xpos 0.15 yalign 0.5
+                xpos 0.85 yalign 0.5
                 xanchor 0.5
                 padding (30, 30)
                 xminimum 400
@@ -855,23 +846,22 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
             $ current_enemy_tag = "enemy_" + str(e_idx)
 
-            if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_generic_new
-
-            if skill.type == "attack":
-                if enemy.dodge_active:
-                    $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
-                    "[enemy.name] dodged the attack!"
-                    $ enemy.dodge_active = False
-                else:
-                    $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                    $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
-                    $ bm.gain_exp(damage * 5, character_type="player")
-                    "[skill.name] deals [damage] damage to [enemy.name]!"
-                    if enemy.is_dead:
-                        "[enemy.name] has been defeated!"
-                        $ renpy.hide("enemy_" + str(e_idx))
+        if skill.type == "attack":
+        if enemy.dodge_active:
+        $ dodge_anim = get_dodge_anim(enemy.name)
+        call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
+        "[enemy.name] dodged the attack!"
+        $ enemy.dodge_active = False
+        else:
+        if skill.animation:
+            call expression skill.animation pass (bm) from _call_skill_anim_generic_new
+        $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
+        $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
+        $ bm.gain_exp(damage * 5, character_type="player")
+        "[skill.name] deals [damage] damage to [enemy.name]!"
+        if enemy.is_dead:
+            "[enemy.name] has been defeated!"
+            $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
@@ -1139,9 +1129,13 @@ label butter_buff_anim(bm):
     return
 
 label butter_ultimate_anim(bm):
-    $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    # Phase 1: windup sprite for 1 second
+    $ renpy.show("butter_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.pause(1.0, hard=True)
+    # Phase 2: actual ultimate attack
+    $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
     show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/single-gunshot-62-hp-37188.mp3"
+    play sound "audio/20 February_2025.mp3"
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1375,7 +1369,7 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(10, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(20, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm, tutorial=True) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
@@ -1411,7 +1405,7 @@ label lumpi_battle:
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
-    $ lumpi = Enemy('Lumpi', 25, enemy_sprites, lumpi_intents)
+    $ lumpi = Enemy('Lumpi', 30, enemy_sprites, lumpi_intents)
     $ bm = BattleManager(15, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
@@ -1447,8 +1441,8 @@ label lumpiwheelchair_battle:
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
-    $ lumpi = Enemy('Lumpi (Wheelchair)', 40, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(20, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ lumpi = Enemy('Lumpi (Wheelchair)', 70, enemy_sprites, lumpi_intents)
+    $ bm = BattleManager(50, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1557,8 +1551,7 @@ label butter_ava_battle:
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-            if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_ava_new
+         
             if skill.type == 'attack':
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
@@ -1588,19 +1581,19 @@ label butter_ava_battle:
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-            if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter_new
-            elif intent.type == "attack":
-                call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default_new
 
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss1
+                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_anim_ava_butter2_new
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2_new
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target='player')
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
@@ -1683,7 +1676,7 @@ label butter_ava_battle2:
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
-    $ ava = Enemy('Ava', 500, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
+    $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
     $ bm.initialize_skills(True)
 
@@ -1726,55 +1719,57 @@ label butter_ava_battle2:
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-            if skill.animation and skill.type != "dodge":
-                call expression skill.animation pass (bm) from _call_skill_anim_ava2_new
-            if skill.type == 'attack':
+            $ current_enemy_tag = "enemy_" + str(e_idx)
+
+            if skill.type == "attack":
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss2
+                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                 else:
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_anim_generic_new
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                    $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
                     "[skill.name] deals [damage] damage to [enemy.name]!"
                     if enemy.is_dead:
                         "[enemy.name] has been defeated!"
                         $ renpy.hide("enemy_" + str(e_idx))
-            elif skill.type == 'barrier':
+            elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
-            elif skill.type == 'dodge':
+            elif skill.type == "dodge":
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
-            elif skill.type == 'buff':
+            elif skill.type == "buff":
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
         elif isinstance(action, EnemyIntent):
-            $ intent = action
-            $ intent.current_cooldown = intent.cooldown
-            $ bm.enemy_intent = intent
-            # Special logic for unique intent names can still be here if needed
-            if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_ava_butter2_new
-            elif intent.type == "attack":
-                call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2_new
+    $ intent = action
+    $ intent.current_cooldown = intent.cooldown
+    $ bm.enemy_intent = intent
+    $ current_enemy_tag = "enemy_" + str(e_idx)
 
-            if intent.type == "attack":
-                if bm.dodge_active:
-                    $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
-                    $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
-                    "DODGED!"
-                    $ bm.dodge_active = False
-                else:
-                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                    $ bm.take_damage(damage, target='player')
-                    $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
-                    "[enemy.name] deals [damage] damage with [intent.name]!"
+    if intent.type == "attack":
+        if bm.dodge_active:
+            $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+            $ dodge_anim = get_dodge_anim(p_name)
+            call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive
+            "DODGED!"
+            $ bm.dodge_active = False
+        else:
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_anim_generic_new
+            else:
+                call enemy_attack_anim(bm) from _call_intent_anim_default_new
+            $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+            $ bm.take_damage(damage, target="player")
+            $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
+            "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] gains [intent.damage] Defense!"
