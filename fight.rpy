@@ -93,9 +93,13 @@ image card_chaos_ultimate = "card_chaos_ultimate.png"
 image bg = Solid("#ffffff")
 image ui_bg = Solid("#ffffff")
 
-# Helper to create an outline image
-image sketchy_outline_img = Composite((12, 12), (0, 0), Solid("#000"), (2, 2), Solid("#0000", xsize=8, ysize=8))
-image sketchy_bar_outline = Frame("sketchy_outline_img", 2, 2, 2, 2)
+# Helper to create an outline image (1px black border with transparent center)
+image sketchy_outline_img = Composite((3, 3),
+    (0, 0), Solid("#000", xsize=3, ysize=1),
+    (0, 2), Solid("#000", xsize=3, ysize=1),
+    (0, 0), Solid("#000", xsize=1, ysize=3),
+    (2, 0), Solid("#000", xsize=1, ysize=3))
+image sketchy_bar_outline = Frame("sketchy_outline_img", 1, 1, 1, 1)
 
 # --- Transforms ---
 transform fight_left:
@@ -580,12 +584,13 @@ screen battle_screen(bm):
         for e_idx, enemy in enumerate(bm.enemies):
             if not enemy.is_dead:
                 frame:
-                    background Solid("#0006")
+                    background Solid("#8888887f")
+                    foreground "sketchy_bar_outline"
                     padding (10, 10)
                     xalign 0.5
                     vbox:
                         spacing 5
-                        text "[enemy.name]'s Row" size 14 color "#ccc" xalign 0.0
+                        text "[enemy.name]'s Row" size 14 color "#333" xalign 0.0
                         hbox:
                             spacing 10
                             for s_idx in range(bm.current_max_slots):
