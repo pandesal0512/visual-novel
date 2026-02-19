@@ -96,18 +96,31 @@ style frame:
 ## https://www.renpy.org/doc/html/screen_special.html#say
 
 screen say(who, what):
-
-    window:
-        id "window"
-
-        if who is not None:
-
+    if battle_mode:
+        if who is None:
+            # System message
             window:
-                id "namebox"
-                style "namebox"
-                text who id "who"
+                style "battle_system_window"
+                text what id "what" style "battle_system_text"
+        else:
+            # Character speech
+            window:
+                style "battle_chat_window"
+                vbox:
+                    text who id "who" style "battle_chat_name"
+                    text what id "what" style "battle_chat_text"
+    else:
+        window:
+            id "window"
 
-        text what id "what"
+            if who is not None:
+
+                window:
+                    id "namebox"
+                    style "namebox"
+                    text who id "who"
+
+            text what id "what"
 
 
     ## If there's a side image, display it above the text. Do not display on the
