@@ -870,20 +870,34 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                         "[enemy.name] has been defeated!"
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_barrier_generic
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_generic
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_buff_generic
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
                 "You gained [skill.energy_regen] Energy!"
+
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -908,15 +922,27 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_barrier_generic
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_generic
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_buff_generic
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_energy_generic
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
             window hide
@@ -1008,8 +1034,7 @@ label kare_hard_anim(bm):
 
 label kare_block_anim(bm):
     show expression "kare_block_sprite" as player at fight_left
-    if not bm.is_dodged:
-        play sound "Berserk Clang Sound Effect.mp3"
+    play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1024,8 +1049,7 @@ label kare_dodge_anim(bm):
 
 label kare_buff_anim(bm):
     show expression "kare_buff_sprite" as player at fight_left
-    if not bm.is_dodged:
-        play sound "audio/meditate-sound.mp3"
+    play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1049,8 +1073,7 @@ label kare_ultimate_anim(bm):
 
 label kare_energy_anim(bm):
     show expression "kare_energy_sprite" as player at fight_left
-    if not bm.is_dodged:
-        play sound "audio/item-pickup-37089.mp3"
+    play sound "audio/item-pickup-37089.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1080,8 +1103,7 @@ label chaos_hard_anim(bm):
 
 label chaos_block_anim(bm):
     show expression "chaos_block_sprite" as player at fight_left
-    if not bm.is_dodged:
-        play sound "Berserk Clang Sound Effect.mp3"
+    play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1094,8 +1116,7 @@ label chaos_dodge_anim(bm):
 
 label chaos_buff_anim(bm):
     show expression "chaos_buff_sprite" as player at fight_left
-    if not bm.is_dodged:
-        play sound "audio/meditate-sound.mp3"
+    play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1142,8 +1163,7 @@ label butter_hard_anim(bm):
 
 label butter_block_anim(bm):
     $ renpy.show("butter_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    if not bm.is_dodged:
-        play sound "Berserk Clang Sound Effect.mp3"
+    play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1374,8 +1394,7 @@ label ava_dodge_anim(bm):
 
 label ava_buff_anim(bm):
     $ renpy.show("ava_buff_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    if not bm.is_dodged:
-        play sound "audio/meditate-sound.mp3"
+    play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1625,20 +1644,34 @@ label butter_ava_battle:
                         "[enemy.name] has been defeated!"
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss1
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss1
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_buff_boss1
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
                 "You gained [skill.energy_regen] Energy!"
+
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -1663,15 +1696,27 @@ label butter_ava_battle:
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_barrier_boss1
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss1
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_buff_boss1
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_energy_boss1
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
             window hide
@@ -1808,20 +1853,34 @@ label butter_ava_battle2:
                         "[enemy.name] has been defeated!"
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss2
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss2
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_buff_boss2
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
                 "You gained [skill.energy_regen] Energy!"
+
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -1846,15 +1905,27 @@ label butter_ava_battle2:
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_barrier_boss2
                 $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss2
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_energy_boss2
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
             window hide
