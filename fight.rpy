@@ -1586,7 +1586,7 @@ label butter_ava_battle:
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
+                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss1
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
@@ -1724,12 +1724,12 @@ label butter_ava_battle2:
             if skill.type == "attack":
                 if enemy.dodge_active:
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
+                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss2
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                 else:
                     if skill.animation:
-                        call expression skill.animation pass (bm) from _call_skill_anim_generic_new
+                        call expression skill.animation pass (bm) from _call_skill_anim_generic_new_boss2
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                     $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
@@ -1758,14 +1758,14 @@ label butter_ava_battle2:
                 if bm.dodge_active:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive
+                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
                     "DODGED!"
                     $ bm.dodge_active = False
                 else:
                     if intent.animation:
-                        call expression intent.animation pass (bm) from _call_intent_anim_generic_new
+                        call expression intent.animation pass (bm) from _call_intent_anim_generic_new_boss2
                     else:
-                        call enemy_attack_anim(bm) from _call_intent_anim_default_new
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_new_boss2
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
