@@ -94,18 +94,18 @@ image bg = Solid("#ffffff")
 image ui_bg = Solid("#ffffff")
 
 # Helper to create an outline image
-image sketchy_outline_img = Composite((10, 10), (0, 0), Solid("#000"), (1, 1), Solid("#fff0", xsize=8, ysize=8))
-image sketchy_frame = Frame("sketchy_outline_img", 2, 2, 2, 2)
+image sketchy_outline_img = Composite((10, 10), (0, 0), Solid("#000"), (2, 2), Solid("#fff", xsize=6, ysize=6))
+image sketchy_frame = Frame("sketchy_outline_img", 4, 4, 4, 4)
 
-image sketchy_button_idle = Composite((100, 40), (0, 0), Solid("#000"), (1, 1), Solid("#eeeeee", xsize=98, ysize=38))
-image sketchy_button_hover = Composite((100, 40), (0, 0), Solid("#000"), (1, 1), Solid("#dddddd", xsize=98, ysize=38))
+image sketchy_button_idle = Composite((100, 40), (0, 0), Solid("#000"), (2, 2), Solid("#eeeeee", xsize=96, ysize=36))
+image sketchy_button_hover = Composite((100, 40), (0, 0), Solid("#000"), (2, 2), Solid("#dddddd", xsize=96, ysize=36))
 
 image sketchy_bar_full = Solid("#747474")
 image sketchy_bar_empty = Solid("#ffffff")
-image sketchy_bar_outline = Frame("sketchy_outline_img", 2, 2, 2, 2)
+image sketchy_bar_outline = Frame("sketchy_outline_img", 4, 4, 4, 4)
 
-image sketchy_dialogue_box = Frame("sketchy_outline_img", 2, 2, 2, 2)
-image sketchy_chat_bubble = Frame("sketchy_outline_img", 2, 2, 2, 2)
+image sketchy_dialogue_box = Frame("sketchy_outline_img", 4, 4, 4, 4)
+image sketchy_chat_bubble = Frame("sketchy_outline_img", 4, 4, 4, 4)
 
 # --- Transforms ---
 transform fight_left:
@@ -141,7 +141,7 @@ init python:
 
     # Styles for battle dialogue
     style.battle_system_window = Style(style.default)
-    style.battle_system_window.background = Frame("sketchy_dialogue_box", 10, 10, 10, 10)
+    style.battle_system_window.background = "sketchy_dialogue_box"
     style.battle_system_window.xalign = 0.5
     style.battle_system_window.yalign = 0.5
     style.battle_system_window.xsize = 1000
@@ -155,7 +155,7 @@ init python:
     style.battle_system_text.outlines = [(1, "#fff"), (1, "#000")]
 
     style.battle_chat_window = Style(style.default)
-    style.battle_chat_window.background = Frame("sketchy_chat_bubble", 20, 20, 20, 20)
+    style.battle_chat_window.background = "sketchy_chat_bubble"
     style.battle_chat_window.xalign = 0.5
     style.battle_chat_window.yalign = 0.8
     style.battle_chat_window.xsize = 700
@@ -840,6 +840,7 @@ label battle_reset_camera:
 label battle_engine(bm, is_chaos=False, tutorial=False):
     window auto hide
     $ _skipping = None
+    $ config.allow_skipping = False
     $ battle_mode = True
     $ bm.initialize_skills(is_chaos)
 
@@ -1017,6 +1018,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         jump .engine_start_logic
 
     label .engine_victory:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         python:
@@ -1025,6 +1027,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         return "win"
 
     label .engine_defeat:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         python:
@@ -1426,6 +1429,7 @@ label enemy_attack_anim(bm):
 
 label simple_battle_graphics:
     $ _skipping = None
+    $ config.allow_skipping = False
     camera:
         perspective False
         gl_depth False
@@ -1442,6 +1446,7 @@ label simple_battle_graphics:
     else:
         jump .player_loses
     label .player_wins:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_1
         hide player
@@ -1449,6 +1454,7 @@ label simple_battle_graphics:
         'yay win'
         return
     label .player_loses:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_2
         hide player
@@ -1457,6 +1463,7 @@ label simple_battle_graphics:
 
 label lumpi_battle:
     $ _skipping = None
+    $ config.allow_skipping = False
     camera:
         perspective False
         gl_depth False
@@ -1476,11 +1483,13 @@ label lumpi_battle:
     else:
         jump .lumpi_loses
     label .lumpi_wins:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_3
         hide player
         return
     label .lumpi_loses:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_4
         'You were defeated by Lumpi...'
@@ -1490,6 +1499,7 @@ label lumpi_battle:
 
 label lumpiwheelchair_battle:
     $ _skipping = None
+    $ config.allow_skipping = False
     camera:
         perspective False
         gl_depth False
@@ -1509,11 +1519,13 @@ label lumpiwheelchair_battle:
     else:
         jump .lumpiwheelchair_loses
     label .lumpiwheelchair_wins:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_5
         hide player
         return
     label .lumpiwheelchair_loses:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_6
         'lumpi' 'huwhuahuwha i win'
@@ -1523,6 +1535,7 @@ label lumpiwheelchair_battle:
 
 label newenemy_battle:
     $ _skipping = None
+    $ config.allow_skipping = False
     camera:
         perspective False
         gl_depth False
@@ -1539,11 +1552,13 @@ label newenemy_battle:
     else:
         jump .newenemy_loses
     label .newenemy_wins:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_7
         hide player
         return
     label .newenemy_loses:
+        $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_8
         menu:
@@ -1552,6 +1567,7 @@ label newenemy_battle:
 
 label butter_ava_battle:
     $ _skipping = None
+    $ config.allow_skipping = False
     $ battle_mode = True
     camera:
         perspective False
@@ -1706,16 +1722,19 @@ label butter_ava_battle:
         window hide
         jump .boss1_start_logic
     label .boss1_victory:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         return
     label .boss1_defeat:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         return
 
 label butter_ava_battle2:
     $ _skipping = None
+    $ config.allow_skipping = False
     $ battle_mode = True
     camera:
         perspective False
@@ -1868,10 +1887,12 @@ label butter_ava_battle2:
         window hide
         jump .boss2_start_logic
     label .boss2_victory:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         return
     label .boss2_defeat:
+        $ config.allow_skipping = True
         $ battle_mode = False
         hide screen battle_screen
         menu:
