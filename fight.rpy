@@ -233,6 +233,7 @@ init python:
             self.selected_enemy_index = -1
             self.hovered_skill = None
             self.show_energy_warning = False
+            self.is_dodged = False
 
         def initialize_skills(self, is_chaos):
             # INITIAL PLAYER ENERGY
@@ -304,6 +305,7 @@ init python:
 
         def prepare_turn(self):
             self.turn_count += 1
+            self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
             self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 2)
             self.dodge_active = False   
@@ -838,23 +840,28 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             jump .engine_resolution_core
 
         $ action = enemy.slots[current_slot_idx]
+        $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
             $ pass
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-            $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if skill.type == "attack":
                 if enemy.dodge_active:
+                    $ bm.is_dodged = True
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_anim_at_dodge_generic
                     $ dodge_anim = get_dodge_anim(enemy.name)
-                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive
+                    call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_generic
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
                     if skill.animation:
-                        call expression skill.animation pass (bm) from _call_skill_anim_generic_new
+                        call expression skill.animation pass (bm) from _call_skill_anim_generic_generic
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                     $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
@@ -878,21 +885,26 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-            $ current_enemy_tag = "enemy_" + str(e_idx)
-
-            if intent.animation and intent.type != "dodge":
-                call expression intent.animation pass (bm) from _call_intent_anim_generic_new
-            elif intent.type == "attack":
-                call enemy_attack_anim(bm) from _call_intent_anim_default_new
 
             if intent.type == "attack":
                 if bm.dodge_active:
+                    $ bm.is_dodged = True
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_anim_at_dodge_generic
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_at_dodge_generic
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
-                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive
+                    call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_generic
                     "DODGED!"
                     $ bm.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_anim_generic_generic
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_generic
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
@@ -908,21 +920,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
-
-        if all(e.is_dead for e in bm.enemies):
-            window hide
-            jump .engine_victory
-        if bm.player_hp <= 0:
-            window hide
-            jump .engine_defeat
-
-        window hide
-        $ renpy.pause(0.5, hard=True)
-        show expression bm.player_sprites["idle"] as player at fight_left
-        python:
-            for i, e in enumerate(bm.enemies):
-                if not e.is_dead:
-                    renpy.show(e.sprites["idle"], tag="enemy_" + str(i))
 
         $ e_idx += 1
         jump .engine_resolution_core
@@ -975,8 +972,10 @@ label kare_normal_anim(bm):
     show expression "kare_normal_sprite" as player at fight_left:
         ease 0.1 xpos 0.4
         ease 0.1 xpos 0.35
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "punch-140236.mp3"
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "punch-140236.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -986,8 +985,10 @@ label kare_hard_anim(bm):
     show expression "kare_hard_sprite" as player at fight_left:
         ease 0.2 xpos 0.5
         ease 0.2 xpos 0.35
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "audio/sword-slash-and-swing-185432.mp3"
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "audio/sword-slash-and-swing-185432.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -995,7 +996,8 @@ label kare_hard_anim(bm):
 
 label kare_block_anim(bm):
     show expression "kare_block_sprite" as player at fight_left
-    play sound "Berserk Clang Sound Effect.mp3"
+    if not bm.is_dodged:
+        play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1010,7 +1012,8 @@ label kare_dodge_anim(bm):
 
 label kare_buff_anim(bm):
     show expression "kare_buff_sprite" as player at fight_left
-    play sound "audio/meditate-sound.mp3"
+    if not bm.is_dodged:
+        play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1019,9 +1022,12 @@ label kare_ultimate_anim(bm):
     show expression "kare_ultimate_sprite" as player at fight_left:
         ease 0.3 xpos 0.6
         ease 0.3 xpos 0.35
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "audio/sword-slash-and-swing-185432.mp3"
-    camera:
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "audio/sword-slash-and-swing-185432.mp3"
+    if not bm.is_dodged:
+        camera:
         ease 0.1 zoom 1.2
         ease 0.1 zoom 1.0
     $ renpy.pause(1.2, hard=True)
@@ -1031,7 +1037,8 @@ label kare_ultimate_anim(bm):
 
 label kare_energy_anim(bm):
     show expression "kare_energy_sprite" as player at fight_left
-    play sound "audio/item-pickup-37089.mp3"
+    if not bm.is_dodged:
+        play sound "audio/item-pickup-37089.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1039,8 +1046,10 @@ label kare_energy_anim(bm):
 # --- CHAOS ANIMATIONS ---
 label chaos_normal_anim(bm):
     show expression "chaos_normal_sprite" as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "punch-140236.mp3"
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "punch-140236.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1048,8 +1057,10 @@ label chaos_normal_anim(bm):
 
 label chaos_hard_anim(bm):
     show expression "chaos_hard_sprite" as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "audio/sword-slash-and-swing-185432.mp3"
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "audio/sword-slash-and-swing-185432.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1057,7 +1068,8 @@ label chaos_hard_anim(bm):
 
 label chaos_block_anim(bm):
     show expression "chaos_block_sprite" as player at fight_left
-    play sound "Berserk Clang Sound Effect.mp3"
+    if not bm.is_dodged:
+        play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1070,15 +1082,18 @@ label chaos_dodge_anim(bm):
 
 label chaos_buff_anim(bm):
     show expression "chaos_buff_sprite" as player at fight_left
-    play sound "audio/meditate-sound.mp3"
+    if not bm.is_dodged:
+        play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
 label chaos_ultimate_anim(bm):
     show expression "chaos_ultimate_sprite" as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    play sound "audio/magic-spark.mp3"
+    if not bm.is_dodged:
+        $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
+    if not bm.is_dodged:
+        play sound "audio/magic-spark.mp3"
     $ renpy.pause(1.2, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1093,8 +1108,10 @@ label chaos_energy_anim(bm):
 # --- BUTTER ANIMATIONS ---
 label butter_normal_anim(bm):
     $ renpy.show("butter_normal_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/sword-slash-and-swing-185432.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/sword-slash-and-swing-185432.mp3"
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1102,8 +1119,10 @@ label butter_normal_anim(bm):
 
 label butter_hard_anim(bm):
     $ renpy.show("butter_hard_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/sword-slash-and-swing-185432.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/sword-slash-and-swing-185432.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1111,7 +1130,8 @@ label butter_hard_anim(bm):
 
 label butter_block_anim(bm):
     $ renpy.show("butter_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    play sound "Berserk Clang Sound Effect.mp3"
+    if not bm.is_dodged:
+        play sound "Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1134,8 +1154,10 @@ label butter_ultimate_anim(bm):
     $ renpy.pause(1.0, hard=True)
     # Phase 2: actual ultimate attack
     $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/20 February_2025.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/20 February_2025.mp3"
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1150,7 +1172,8 @@ label butter_energy_anim(bm):
 # --- SERIOUS BUTTER ANIMATIONS ---
 label serious_butter_normal_anim(bm):
     $ renpy.show("serious_butter_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1158,7 +1181,8 @@ label serious_butter_normal_anim(bm):
 
 label serious_butter_hard_anim(bm):
     $ renpy.show("serious_butter_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1184,7 +1208,8 @@ label serious_butter_buff_anim(bm):
 
 label serious_butter_ultimate_anim(bm):
     $ renpy.show("serious_butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1199,7 +1224,8 @@ label serious_butter_energy_anim(bm):
 # --- LUMPI ANIMATIONS ---
 label lumpi_normal_anim(bm):
     $ renpy.show("lumpi_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1207,7 +1233,8 @@ label lumpi_normal_anim(bm):
 
 label lumpi_hard_anim(bm):
     $ renpy.show("lumpi_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1233,7 +1260,8 @@ label lumpi_buff_anim(bm):
 
 label lumpi_ultimate_anim(bm):
     $ renpy.show("lumpi_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1248,7 +1276,8 @@ label lumpi_energy_anim(bm):
 # --- LUMPI WHEELCHAIR ANIMATIONS ---
 label lumpi_wheelchair_normal_anim(bm):
     $ renpy.show("lumpi_wheelchair_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1256,7 +1285,8 @@ label lumpi_wheelchair_normal_anim(bm):
 
 label lumpi_wheelchair_hard_anim(bm):
     $ renpy.show("lumpi_wheelchair_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1282,7 +1312,8 @@ label lumpi_wheelchair_buff_anim(bm):
 
 label lumpi_wheelchair_ultimate_anim(bm):
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1297,8 +1328,10 @@ label lumpi_wheelchair_energy_anim(bm):
 # --- AVA ANIMATIONS ---
 label ava_normal_anim(bm):
     $ renpy.show("ava_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/magic-spark.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/magic-spark.mp3"
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1306,8 +1339,10 @@ label ava_normal_anim(bm):
 
 label ava_hard_anim(bm):
     $ renpy.show("ava_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/magic-spark.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/magic-spark.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1327,15 +1362,18 @@ label ava_dodge_anim(bm):
 
 label ava_buff_anim(bm):
     $ renpy.show("ava_buff_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    play sound "audio/meditate-sound.mp3"
+    if not bm.is_dodged:
+        play sound "audio/meditate-sound.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label ava_ultimate_anim(bm):
     $ renpy.show("ava_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
-    play sound "audio/magic-spark.mp3"
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        play sound "audio/magic-spark.mp3"
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1351,7 +1389,8 @@ label ava_energy_anim(bm):
 label enemy_attack_anim(bm):
     $ enemy = bm.enemies[e_idx]
     $ renpy.show(enemy.sprites["attack"], tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    show expression bm.player_sprites["hit"] as player at fight_left
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(enemy.sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1551,32 +1590,40 @@ label butter_ava_battle:
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-         
-            if skill.type == 'attack':
+
+            if skill.type == "attack":
                 if enemy.dodge_active:
+                    $ bm.is_dodged = True
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_anim_at_dodge_boss1
                     $ dodge_anim = get_dodge_anim(enemy.name)
                     call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss1
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_anim_generic_boss1
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
-                    $ bm.take_damage(damage, target='enemy', enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
                     "[skill.name] deals [damage] damage to [enemy.name]!"
                     if enemy.is_dead:
                         "[enemy.name] has been defeated!"
                         $ renpy.hide("enemy_" + str(e_idx))
-            elif skill.type == 'barrier':
+            elif skill.type == "barrier":
                 $ bm.add_barrier(skill.damage)
                 "You gain [skill.damage] Defense!"
-            elif skill.type == 'dodge':
+            elif skill.type == "dodge":
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
-            elif skill.type == 'buff':
+            elif skill.type == "buff":
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
+
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
@@ -1584,18 +1631,25 @@ label butter_ava_battle:
 
             if intent.type == "attack":
                 if bm.dodge_active:
+                    $ bm.is_dodged = True
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_anim_at_dodge_boss1
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_at_dodge_boss1
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
                     call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss1
                     "DODGED!"
                     $ bm.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
                     if intent.animation:
-                        call expression intent.animation pass (bm) from _call_intent_anim_ava_butter2_new
+                        call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1
                     else:
-                        call enemy_attack_anim(bm) from _call_intent_anim_ava_butter_default2_new
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_boss1
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                    $ bm.take_damage(damage, target='player')
+                    $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
             elif intent.type == "barrier":
@@ -1609,6 +1663,7 @@ label butter_ava_battle:
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
+
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss1_victory
@@ -1630,15 +1685,20 @@ label butter_ava_battle:
             $ ava_attacked_once = True
             if bm.enemies[0].dodge_active:
                 $ dodge_anim = get_dodge_anim(bm.enemies[0].name)
+                $ bm.is_dodged = True
                 call expression dodge_anim pass (bm) from _call_enemy0_dodge_anim_boss1_extra
                 "[bm.enemies[0].name] dodged the attack from [bm.enemies[1].name]!"
                 $ bm.enemies[0].dodge_active = False
+                $ bm.is_dodged = False
             else:
-                $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
-                play sound 'punch-140236.mp3' volume 2.0
+                if not bm.is_dodged:
+                    $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
+                if not bm.is_dodged:
+                    play sound 'punch-140236.mp3' volume 2.0
                 $ renpy.pause(0.5, hard=True)
                 $ bm.take_damage(5, target='enemy', enemy_idx=0)
                 $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
+                $ bm.is_dodged = False
                 'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
             'butter' 'HOLD ON why are you attacking me?'
             'ava' 'oh wait i forgot you are my ally'
@@ -1719,17 +1779,21 @@ label butter_ava_battle2:
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
-            $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if skill.type == "attack":
                 if enemy.dodge_active:
+                    $ bm.is_dodged = True
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_anim_at_dodge_boss2
                     $ dodge_anim = get_dodge_anim(enemy.name)
                     call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_boss2
                     "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
                     if skill.animation:
-                        call expression skill.animation pass (bm) from _call_skill_anim_generic_new_boss2
+                        call expression skill.animation pass (bm) from _call_skill_anim_generic_boss2
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                     $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
@@ -1748,24 +1812,31 @@ label butter_ava_battle2:
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
+
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-            $ current_enemy_tag = "enemy_" + str(e_idx)
 
             if intent.type == "attack":
                 if bm.dodge_active:
+                    $ bm.is_dodged = True
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_anim_at_dodge_boss2
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_at_dodge_boss2
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
                     call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
                     "DODGED!"
                     $ bm.dodge_active = False
+                    $ bm.is_dodged = False
                 else:
+                    $ bm.is_dodged = False
                     if intent.animation:
-                        call expression intent.animation pass (bm) from _call_intent_anim_generic_new_boss2
+                        call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2
                     else:
-                        call enemy_attack_anim(bm) from _call_intent_anim_default_new_boss2
+                        call enemy_attack_anim(bm) from _call_intent_anim_default_boss2
                     $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
@@ -1781,6 +1852,7 @@ label butter_ava_battle2:
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
+
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss2_victory
@@ -1801,18 +1873,25 @@ label butter_ava_battle2:
         if bm.dodge_active:
             $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
             $ dodge_anim = get_dodge_anim(p_name)
+            $ bm.is_dodged = True
             call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
             "DODGED!"
             $ bm.dodge_active = False
+            $ bm.is_dodged = False
         else:
-            show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
-                ease 0.2 xpos 0.35
-                ease 0.2 xpos 0.85
-            play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+            if not bm.is_dodged:
+                show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
+            if not bm.is_dodged:
+                    ease 0.2 xpos 0.35
+            if not bm.is_dodged:
+                    ease 0.2 xpos 0.85
+            if not bm.is_dodged:
+                play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
             $ renpy.pause(1.0, hard=True)
             show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
             $ bm.take_damage(50, target='player')
             $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
+            $ bm.is_dodged = False
             'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
             window hide
