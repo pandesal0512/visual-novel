@@ -736,7 +736,7 @@ label battle_reset_camera:
     return
 
 label battle_engine(bm, is_chaos=False, tutorial=False):
-    window auto hide 
+    window auto hide
     $ bm.initialize_skills(is_chaos)
 
     label .engine_start_logic:
@@ -764,8 +764,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "kare" "erm.. well wouldn't it be better if you fight along side with me"
             "dobe" "nah you got this"
             "kare" "..."
-        
-      
+            window hide
 
         show expression bm.player_sprites["idle"] as player at fight_left
         $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
@@ -902,6 +901,15 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
     label .engine_turn_end:
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
+        if all(e.is_dead for e in bm.enemies):
+            window hide
+            jump .engine_victory
+        if bm.player_hp <= 0:
+            window hide
+            jump .engine_defeat
+
+        window hide
+        $ renpy.pause(0.5, hard=True)
         jump .engine_start_logic
 
     label .engine_victory:
@@ -1513,7 +1521,7 @@ label butter_ava_battle:
                 "You gained [skill.energy_regen] Energy!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
-            # Enemies no longer use cooldowns
+            $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
             if intent.animation and intent.type != "dodge":
                 call expression intent.animation pass (bm) from _call_intent_anim_ava_butter_new
@@ -1544,11 +1552,19 @@ label butter_ava_battle:
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .boss1_victory
         if bm.player_hp <= 0:
+            window hide
             jump .boss1_defeat
+
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
+        python:
+            for i, e in enumerate(bm.enemies):
+                if not e.is_dead:
+                    renpy.show(e.sprites["idle"], tag="enemy_" + str(i))
         $ e_idx += 1
         jump .boss1_resolution_core
     label .boss1_extra_turn:
@@ -1571,9 +1587,11 @@ label butter_ava_battle:
             'ava' 'my bad gang'
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, yalign=0.5)])
         if bm.player_hp <= 0:
+            window hide
             jump .boss1_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
+        window hide
         jump .boss1_start_logic
     label .boss1_victory:
         hide screen battle_screen
@@ -1662,7 +1680,7 @@ label butter_ava_battle2:
                 "You gained [skill.energy_regen] Energy!"
         elif isinstance(action, EnemyIntent):
             $ intent = action
-            # Enemies no longer use cooldowns
+            $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
             # Special logic for unique intent names can still be here if needed
             if intent.animation and intent.type != "dodge":
@@ -1694,11 +1712,19 @@ label butter_ava_battle2:
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
         if all(e.is_dead for e in bm.enemies):
+            window hide
             jump .boss2_victory
         if bm.player_hp <= 0:
+            window hide
             jump .boss2_defeat
+
+        window hide
         $ renpy.pause(0.5, hard=True)
         show expression bm.player_sprites["idle"] as player at fight_left
+        python:
+            for i, e in enumerate(bm.enemies):
+                if not e.is_dead:
+                    renpy.show(e.sprites["idle"], tag="enemy_" + str(i))
         $ e_idx += 1
         jump .boss2_resolution_core
     label .boss2_extra_turn:
@@ -1719,9 +1745,11 @@ label butter_ava_battle2:
             $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
             'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
+            window hide
             jump .boss2_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
+        window hide
         jump .boss2_start_logic
     label .boss2_victory:
         hide screen battle_screen
