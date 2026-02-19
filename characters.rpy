@@ -48,4 +48,3 @@ image butter_hit:
     "butter_idle"
 
 
-
