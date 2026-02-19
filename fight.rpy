@@ -130,8 +130,6 @@ transform card_selected_zoom:
 transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
-default battle_mode = False
-
 init python:
     import random
 
