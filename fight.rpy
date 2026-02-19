@@ -90,22 +90,11 @@ image card_chaos_dodge = "card_chaos_dodge.png"
 image card_chaos_ultimate = "card_chaos_ultimate.png"
 
 # --- Sketch UI Placeholders ---
-image bg = Solid("#ffffff")
 image ui_bg = Solid("#ffffff")
 
 # Helper to create an outline image
 image sketchy_outline_img = Composite((10, 10), (0, 0), Solid("#000"), (2, 2), Solid("#fff", xsize=6, ysize=6))
-image sketchy_frame = Frame("sketchy_outline_img", 4, 4, 4, 4)
-
-image sketchy_button_idle = Composite((100, 40), (0, 0), Solid("#000"), (2, 2), Solid("#eeeeee", xsize=96, ysize=36))
-image sketchy_button_hover = Composite((100, 40), (0, 0), Solid("#000"), (2, 2), Solid("#dddddd", xsize=96, ysize=36))
-
-image sketchy_bar_full = Solid("#747474")
-image sketchy_bar_empty = Solid("#ffffff")
 image sketchy_bar_outline = Frame("sketchy_outline_img", 4, 4, 4, 4)
-
-image sketchy_dialogue_box = Frame("sketchy_outline_img", 4, 4, 4, 4)
-image sketchy_chat_bubble = Frame("sketchy_outline_img", 4, 4, 4, 4)
 
 # --- Transforms ---
 transform fight_left:
@@ -550,40 +539,29 @@ init python:
 screen battle_screen(bm):
     $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
 
-    # Disable quick menu during battle
-    on "show" action SetVariable("quick_menu", False)
-    on "hide" action SetVariable("quick_menu", True)
-    on "replace" action SetVariable("quick_menu", False)
-
     # ── Player stats: top left ──
     vbox:
         xalign 0.05 yalign 0.05
         spacing 5
         xmaximum 400
-        text "[p_name] [bm.player_hp]/[bm.player_max_hp]" size 28 color "#000" bold True outlines [(1, "#fff"), (1, "#000")]
+        text "[p_name]: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#747474" outlines [(2, "#000")]
+        bar value bm.player_hp range bm.player_max_hp xmaximum 300
 
-        fixed:
-            xsize 300 ysize 30
-            add "sketchy_bar_empty"
-            bar value bm.player_hp range bm.player_max_hp:
-                left_bar "sketchy_bar_full"
-                right_bar "sketchy_bar_empty"
-                xsize 300 ysize 30
-            add "sketchy_bar_outline"
-
-        vbox:
-            spacing 2
-            text "Energy [bm.player_energy]/[bm.player_max_energy]" size 22 color "#000" outlines [(1, "#fff"), (1, "#000")]
+        hbox:
+            spacing 20
+            vbox:
+                text "Energy: [bm.player_energy]/[bm.player_max_energy]" size 20 color "#666666" outlines [(1, "#000")]
             if bm.player_barrier > 0:
-                text "Defense [bm.player_barrier]" size 22 color "#000" outlines [(1, "#fff"), (1, "#000")]
+                vbox:
+                    text "Defense: [bm.player_barrier]" size 20 color "#797979" outlines [(1, "#000")]
 
         hbox:
             spacing 5
             for buff in bm.player_buffs:
                 frame:
-                    background "sketchy_frame"
+                    background Solid("#5e5e5e")
                     padding (5, 2)
-                    text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 14 color "#000"
+                    text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 12 color "#fff"
 
     # ── Enemy stats: top right ──
     vbox:
@@ -593,67 +571,43 @@ screen battle_screen(bm):
             if not enemy.is_dead:
                 vbox:
                     spacing 2
-                    text "[enemy.name] [enemy.hp]/[enemy.max_hp]" size 24 color "#000" xalign 1.0 bold True outlines [(1, "#fff"), (1, "#000")]
-
-                    fixed:
-                        xalign 1.0
-                        xsize 250 ysize 25
-                        add "sketchy_bar_empty"
-                        bar value enemy.hp range enemy.max_hp:
-                            left_bar "sketchy_bar_full"
-                            right_bar "sketchy_bar_empty"
-                            xsize 250 ysize 25
-                        add "sketchy_bar_outline"
-
+                    text "[enemy.name]: [enemy.hp]/[enemy.max_hp]" size 20 color "#747474" xalign 1.0 outlines [(2, "#000")]
+                    bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
                     if enemy.barrier > 0:
-                        text "Defense [enemy.barrier]" size 18 color "#000" xalign 1.0 outlines [(1, "#fff"), (1, "#000")]
+                        text "Defense: [enemy.barrier]" size 14 color "#6d6d6d" xalign 1.0
 
                     # ENEMY SKILL PROGRESS BAR
                     hbox:
                         xalign 1.0
-                        spacing 10
-                        text "Skill Unlock" size 14 color "#000" yalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-                        fixed:
-                            ysize 8 xsize 150 yalign 0.5
-                            bar value enemy.skill_exp range enemy.skill_exp_max:
-                                left_bar Solid("#000")
-                                right_bar Solid("#ccc")
-                                xsize 150 ysize 4 yalign 0.5
-                            # Minimalist black line
+                        spacing 4
+                        text "Skill Unlock: " size 12 color "#707070"
+                        bar value enemy.skill_exp range enemy.skill_exp_max xmaximum 150 ysize 6 yalign 0.5
 
                     hbox:
                         xalign 1.0
                         spacing 5
                         for buff in enemy.buffs:
                             frame:
-                                background "sketchy_frame"
+                                background Solid("#4b4b4b")
                                 padding (3, 1)
-                                text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 12 color "#000"
+                                text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
 
-    # ── Settings button: Top Right ──
-    textbutton "Settings":
-        xalign 0.98 yalign 0.01
-        action ShowMenu('preferences')
-        text_size 24
-        text_color "#000"
-        text_hover_color "#666"
-        text_outlines [(1, "#fff"), (1, "#000")]
 
     # ── Battle slots: top center ──
     vbox:
-        xalign 0.5 yalign 0.02
-        spacing 8
-        text "Select a card below, then click an empty slot here" size 18 color "#000" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+        xalign 0.5 yalign 0.05
+        spacing 10
+        text "Select a card below, then click an empty slot here:" size 16 color "#aaa" xalign 0.5
 
         for e_idx, enemy in enumerate(bm.enemies):
             if not enemy.is_dead:
                 frame:
-                    background "sketchy_frame"
-                    padding (15, 10)
+                    background Solid("#0006")
+                    padding (10, 10)
                     xalign 0.5
                     vbox:
                         spacing 5
-                        text "[enemy.name]'s Row" size 16 color "#000" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                        text "[enemy.name]'s Row" size 14 color "#ccc" xalign 0.0
                         hbox:
                             spacing 10
                             for s_idx in range(bm.current_max_slots):
@@ -662,34 +616,34 @@ screen battle_screen(bm):
                                     $ can_click_slot = bm.selected_skill is not None
                                     button:
                                         action If(can_click_slot, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
-                                        background "sketchy_button_idle"
-                                        hover_background "sketchy_button_hover"
+                                        background Solid("#333")
+                                        foreground "sketchy_bar_outline"
                                         padding (10, 5)
-                                        xminimum 90
-                                        yminimum 45
-                                        text "EMPTY" size 18 color "#888" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                                        xminimum 80
+                                        yminimum 40
+                                        text "EMPTY" size 16 color "#555" xalign 0.5
                                 elif isinstance(action, EnemyIntent):
                                     button:
                                         action [Function(bm.select_intent, action, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                                        background "sketchy_button_idle"
-                                        hover_background "sketchy_button_hover"
+                                        background Solid("#5e5e5e")
+                                        foreground "sketchy_bar_outline"
                                         padding (10, 5)
-                                        xminimum 90
-                                        yminimum 45
+                                        xminimum 80
+                                        yminimum 40
                                         vbox:
-                                            text "ENEMY" size 12 color "#444" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-                                            text "[action.name]" size 16 color "#000" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                                            text "ENEMY" size 12 color "#616161" xalign 0.5
+                                            text "[action.name]" size 16 color "#fff" xalign 0.5
                                 elif isinstance(action, Skill):
                                     button:
                                         action Function(bm.select_skill, action)
-                                        background "sketchy_button_idle"
-                                        hover_background "sketchy_button_hover"
+                                        background Solid("#686868")
+                                        foreground "sketchy_bar_outline"
                                         padding (10, 5)
-                                        xminimum 90
-                                        yminimum 45
+                                        xminimum 80
+                                        yminimum 40
                                         vbox:
-                                            text "YOU" size 12 color "#444" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-                                            text "[action.name]" size 16 color "#000" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                                            text "YOU" size 12 color "#3d3d3d" xalign 0.5
+                                            text "[action.name]" size 16 color "#fff" xalign 0.5
 
 
 
@@ -700,14 +654,9 @@ screen battle_screen(bm):
 
         hbox:
             xalign 0.5
-            spacing 10
-            text "Next skill" size 14 color "#000" yalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-            fixed:
-                ysize 10 xsize 600 yalign 0.5
-                bar value bm.skill_exp range bm.skill_exp_max:
-                    left_bar Solid("#000")
-                    right_bar Solid("#ccc")
-                    xsize 600 ysize 4 yalign 0.5
+            spacing 4
+            text "Next skill: " size 13 color "#777777" outlines [(1,"#000")]
+            bar value bm.skill_exp range bm.skill_exp_max xmaximum 600 ysize 8 yalign 0.5
 
         hbox:
             xalign 0.5
@@ -715,7 +664,7 @@ screen battle_screen(bm):
             for skill in bm.player_skills:
                 $ is_selected = bm.selected_skill == skill
                 $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                $ card_bg = "sketchy_button_hover" if is_selected else ("sketchy_button_idle" if can_use else Solid("#aaa"))
+                $ card_bg = Solid("#555") if is_selected else (Solid("#333e") if can_use else Solid("#111e"))
 
                 button:
                     action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
@@ -724,41 +673,37 @@ screen battle_screen(bm):
                     at (card_selected_zoom if is_selected else card_idle_zoom)
                     sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
                     background card_bg
+                    foreground "sketchy_bar_outline"
                     padding (0, 0)
                     xsize 140
                     ysize 180
 
                     if skill.card_image:
                         add skill.card_image
-                    add "sketchy_bar_outline"
 
                     if skill.current_cooldown > 0:
-                        text "[skill.current_cooldown]" size 40 color "#000" xalign 0.5 yalign 0.5 bold True outlines [(1, "#fff"), (1, "#000")]
+                        text "[skill.current_cooldown]" size 40 color "#838383" xalign 0.5 yalign 0.5 bold True outlines [(2, "#000")]
                     elif skill in bm.used_skills_this_turn:
-                        text "USED" size 20 color "#444" xalign 0.5 yalign 0.5 bold True outlines [(1, "#fff"), (1, "#000")]
+                        text "USED" size 20 color "#888" xalign 0.5 yalign 0.5 bold True outlines [(1, "#000")]
 
     # ── Confirm / Clear buttons ──
     $ has_player_action = any(isinstance(s, Skill) for enemy in bm.enemies for s in enemy.slots)
     textbutton "CONFIRM":
-        xalign 0.95 yalign 0.85
-        background "sketchy_button_idle"
-        hover_background "sketchy_button_hover"
+        xalign 0.95 yalign 0.8
+        background Solid("#7e7e7e")
         padding (20, 10)
         text_size 30
-        text_color "#000"
+        text_color "#fff"
         text_bold True
-        text_outlines [(1, "#fff"), (1, "#000")]
         action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
 
     if has_player_action:
         textbutton "CLEAR":
-            xalign 0.05 yalign 0.85
-            background "sketchy_button_idle"
-            hover_background "sketchy_button_hover"
+            xalign 0.05 yalign 0.8
+            background Solid("#444")
             padding (10, 5)
             text_size 20
-            text_color "#000"
-            text_outlines [(1, "#fff"), (1, "#000")]
+            text_color "#fff"
             action Function(bm.clear_queue)
 
 
@@ -772,7 +717,8 @@ screen battle_screen(bm):
     if display_skill or bm.selected_intent:
         if display_skill:
             frame:
-                background "sketchy_frame"
+                background Solid("#222d")
+                foreground "sketchy_bar_outline"
                 xpos 0.15 yalign 0.5
                 xanchor 0.5
                 padding (30, 30)
@@ -781,13 +727,13 @@ screen battle_screen(bm):
                     spacing 15
                     if display_skill.card_image:
                         add display_skill.card_image xalign 0.5
-                    text "[display_skill.name]" size 32 color "#000" xalign 0.5 bold True outlines [(1, "#fff"), (1, "#000")]
-                    text "Cost: [display_skill.cost] Energy" size 22 color "#333" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                    text "[display_skill.name]" size 30 color "#fff" xalign 0.5 bold True
+                    text "Cost: [display_skill.cost] Energy" size 20 color "#808080" xalign 0.5
                     if display_skill.damage > 0:
-                        text "Damage: [display_skill.damage]" size 22 color "#333" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-                    text "[display_skill.desc]" size 20 color "#000" xalign 0.5 text_align 0.5 outlines [(1, "#fff"), (1, "#000")]
+                        text "Damage: [display_skill.damage]" size 20 color "#797979" xalign 0.5
+                    text "[display_skill.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
                     if display_skill.cooldown > 0:
-                        text "Cooldown: [display_skill.cooldown] turns" size 20 color "#444" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                        text "Cooldown: [display_skill.cooldown] turns" size 18 color "#7a7a7a" xalign 0.5
 
                     if display_skill in bm.used_skills_this_turn:
                         $ e_idx, s_idx = bm.get_skill_slot_info(display_skill)
@@ -796,39 +742,38 @@ screen battle_screen(bm):
                             textbutton "REMOVE FROM SLOT":
                                 action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
                                 xalign 0.5
-                                background "sketchy_button_idle"
+                                background Solid("#8a8a8a")
                                 padding (15, 10)
                                 text_size 24
                                 text_bold True
-                                text_color "#000"
-                                text_outlines [(1, "#fff"), (1, "#000")]
 
         if bm.selected_intent:
             frame:
-                background "sketchy_frame"
+                background Solid("#222d")
+                foreground "sketchy_bar_outline"
                 xpos 0.15 yalign 0.5
                 xanchor 0.5
                 padding (30, 30)
                 xminimum 400
                 vbox:
                     spacing 15
-                    text "[bm.enemies[bm.selected_enemy_index].name]'s Intent:\n[bm.selected_intent.name]" size 32 color "#000" xalign 0.5 bold True text_align 0.5 outlines [(1, "#fff"), (1, "#000")]
+                    text "[bm.enemies[bm.selected_enemy_index].name]'s Intent: [bm.selected_intent.name]" size 30 color "#ffffff" xalign 0.5 bold True
                     if bm.selected_intent.damage > 0:
                         if bm.selected_intent.type == "attack":
-                            text "Projected Damage: [bm.selected_intent.damage]" size 22 color "#333" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
+                            text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#818181" xalign 0.5
                         elif bm.selected_intent.type == "barrier":
-                            text "Projected Defense: [bm.selected_intent.damage]" size 22 color "#333" xalign 0.5 outlines [(1, "#fff"), (1, "#000")]
-                    text "[bm.selected_intent.desc]" size 20 color "#000" xalign 0.5 text_align 0.5 outlines [(1, "#fff"), (1, "#000")]
+                            text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#5c5c5c" xalign 0.5
+                    text "[bm.selected_intent.desc]" size 18 color "#ccc" xalign 0.5 text_align 0.5
 
     # ── ENERGY WARNING ──
     if bm.show_energy_warning:
         timer 2.0 action SetField(bm, "show_energy_warning", False)
         frame:
             at energy_warning_fade
-            background Solid("#000")
+            background Solid("#979797cc")
             padding (20, 10)
             xalign 0.5 yalign 0.4
-            text "NOT ENOUGH ENERGY" color "#fff" size 30 bold True
+            text "NOT ENOUGH ENERGY" color "#fff" size 30 bold True outlines [(2, "#000")]
 
 label battle_reset_camera:
     camera:
