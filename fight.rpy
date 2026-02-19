@@ -880,12 +880,10 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
-
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -920,6 +918,20 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
+        if all(e.is_dead for e in bm.enemies):
+            window hide
+            jump .engine_victory
+        if bm.player_hp <= 0:
+            window hide
+            jump .engine_defeat
+
+        window hide
+        $ renpy.pause(0.5, hard=True)
+        show expression bm.player_sprites["idle"] as player at fight_left
+        python:
+            for i, e in enumerate(bm.enemies):
+                if not e.is_dead:
+                    renpy.show(e.sprites["idle"], tag="enemy_" + str(i))
 
         $ e_idx += 1
         jump .engine_resolution_core
@@ -1028,8 +1040,8 @@ label kare_ultimate_anim(bm):
         play sound "audio/sword-slash-and-swing-185432.mp3"
     if not bm.is_dodged:
         camera:
-        ease 0.1 zoom 1.2
-        ease 0.1 zoom 1.0
+            ease 0.1 zoom 1.2
+            ease 0.1 zoom 1.0
     $ renpy.pause(1.2, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1623,12 +1635,10 @@ label butter_ava_battle:
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
-
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -1663,7 +1673,6 @@ label butter_ava_battle:
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
-
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss1_victory
@@ -1691,14 +1700,11 @@ label butter_ava_battle:
                 $ bm.enemies[0].dodge_active = False
                 $ bm.is_dodged = False
             else:
-                if not bm.is_dodged:
-                    $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
-                if not bm.is_dodged:
-                    play sound 'punch-140236.mp3' volume 2.0
+                $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
+                play sound 'punch-140236.mp3' volume 2.0
                 $ renpy.pause(0.5, hard=True)
                 $ bm.take_damage(5, target='enemy', enemy_idx=0)
                 $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
-                $ bm.is_dodged = False
                 'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
             'butter' 'HOLD ON why are you attacking me?'
             'ava' 'oh wait i forgot you are my ally'
@@ -1812,12 +1818,10 @@ label butter_ava_battle2:
                 "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 "You gained [skill.energy_regen] Energy!"
-
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
-
             if intent.type == "attack":
                 if bm.dodge_active:
                     $ bm.is_dodged = True
@@ -1852,7 +1856,6 @@ label butter_ava_battle2:
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 "[enemy.name] is recovering."
-
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss2_victory
@@ -1879,19 +1882,14 @@ label butter_ava_battle2:
             $ bm.dodge_active = False
             $ bm.is_dodged = False
         else:
-            if not bm.is_dodged:
-                show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
-            if not bm.is_dodged:
-                    ease 0.2 xpos 0.35
-            if not bm.is_dodged:
-                    ease 0.2 xpos 0.85
-            if not bm.is_dodged:
-                play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+            show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
+                ease 0.2 xpos 0.35
+                ease 0.2 xpos 0.85
+            play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
             $ renpy.pause(1.0, hard=True)
             show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
             $ bm.take_damage(50, target='player')
             $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
-            $ bm.is_dodged = False
             'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
             window hide
