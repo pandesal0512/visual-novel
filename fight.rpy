@@ -832,14 +832,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         hide screen battle_screen
         $ current_slot_idx = 0
         $ bm.dodge_active = False
-        # Pre-apply any dodge skills/intents before slot resolution
-        python:
-            for enemy in bm.enemies:
-                for slot_action in enemy.slots:
-                    if isinstance(slot_action, Skill) and slot_action.type == "dodge":
-                        bm.dodge_active = True
-                    elif isinstance(slot_action, EnemyIntent) and slot_action.type == "dodge":
-                        enemy.dodge_active = True
 
 
     label .engine_main_loop:
@@ -895,7 +887,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ bm.dodge_active = True
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -944,7 +936,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1613,14 +1605,6 @@ label butter_ava_battle:
         hide screen battle_screen
         $ current_slot_idx = 0
         $ bm.dodge_active = False
-        # Pre-apply any dodge skills/intents before slot resolution
-        python:
-            for enemy in bm.enemies:
-                for slot_action in enemy.slots:
-                    if isinstance(slot_action, Skill) and slot_action.type == "dodge":
-                        bm.dodge_active = True
-                    elif isinstance(slot_action, EnemyIntent) and slot_action.type == "dodge":
-                        enemy.dodge_active = True
 
     label .boss1_main_loop:
         if current_slot_idx >= bm.current_max_slots:
@@ -1672,7 +1656,7 @@ label butter_ava_battle:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ bm.dodge_active = True
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1721,7 +1705,7 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1825,14 +1809,6 @@ label butter_ava_battle2:
         hide screen battle_screen
         $ current_slot_idx = 0
         $ bm.dodge_active = False
-        # Pre-apply any dodge skills/intents before slot resolution
-        python:
-            for enemy in bm.enemies:
-                for slot_action in enemy.slots:
-                    if isinstance(slot_action, Skill) and slot_action.type == "dodge":
-                        bm.dodge_active = True
-                    elif isinstance(slot_action, EnemyIntent) and slot_action.type == "dodge":
-                        enemy.dodge_active = True
 
     label .boss2_main_loop:
         if current_slot_idx >= bm.current_max_slots:
@@ -1884,7 +1860,7 @@ label butter_ava_battle2:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ bm.dodge_active = True
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1933,7 +1909,7 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ pass
+                $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
