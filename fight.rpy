@@ -441,7 +441,7 @@ init python:
         if name.lower() == "kare":
             return [
                 Skill("slap", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
                 Skill("punch", cost=5, damage=12, cooldown=0, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
                 Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
@@ -469,7 +469,7 @@ init python:
         if name.lower() == "butter":
             return [
                 EnemyIntent("elbow", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("block", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("Defense", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("ready?", damage=5, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("kick", damage=10, desc="heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
@@ -709,7 +709,12 @@ screen battle_screen(bm):
                     text "[display_skill.name]" size 30 color "#333" xalign 0.5 bold True
                     text "Cost: [display_skill.cost] Energy" size 20 color "#444" xalign 0.5
                     if display_skill.damage > 0:
-                        text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                        if display_skill.type == "barrier":
+                            text "Defense: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                        elif display_skill.type == "buff":
+                            text "Damage Buff: +[display_skill.damage]" size 20 color "#444" xalign 0.5
+                        else:
+                            text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
                     text "[display_skill.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
                     if display_skill.cooldown > 0:
                         text "Cooldown: [display_skill.cooldown] turns" size 18 color "#444" xalign 0.5
@@ -744,6 +749,8 @@ screen battle_screen(bm):
                             text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
                         elif bm.selected_intent.type == "barrier":
                             text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
+                        elif bm.selected_intent.type == "buff":
+                            text "Damage Buff: +[bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
                     text "[bm.selected_intent.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
 
     # ── ENERGY WARNING ──
