@@ -1339,7 +1339,7 @@ show byebye
 "dobe" "see you tommorow kare"
 show sleep with dissolve
 hide byebye
-call credits
+call battle_credits
 
 
  
