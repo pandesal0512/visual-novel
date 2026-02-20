@@ -886,8 +886,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_generic
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
@@ -938,8 +936,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_generic
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
@@ -1671,8 +1667,6 @@ label butter_ava_battle:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss1
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
@@ -1723,8 +1717,6 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss1
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
@@ -1891,8 +1883,6 @@ label butter_ava_battle2:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss2
                 $ bm.dodge_active = True
                 "You prepare to dodge!"
             elif skill.type == "buff":
@@ -1943,8 +1933,6 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss2
                 $ enemy.dodge_active = True
                 "[enemy.name] will dodge the next attack!"
             elif intent.type == "buff":
