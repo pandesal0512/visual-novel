@@ -671,9 +671,11 @@ screen battle_screen(bm):
                         add skill.card_image
 
                     if skill.current_cooldown > 0:
-                        text "[skill.current_cooldown]" size 40 color "#838383" xalign 0.5 yalign 0.5 bold True
+                        add Solid("#00000088")
+                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
                     elif skill in bm.used_skills_this_turn:
-                        text "USED" size 20 color "#888" xalign 0.5 yalign 0.5 bold True
+                        add Solid("#00000055")
+                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
     # ── Confirm / Clear buttons ──
     textbutton "CONFIRM":
