@@ -1,6 +1,7 @@
 
 
 
+
 image kare_idle = "kare_idle.png"
 image kare_hit = "kare_hit.png"
 
@@ -52,6 +53,7 @@ image serious_butter_hard_sprite = "serious_butter_hard_sprite.png"
 image serious_butter_block_sprite = "serious_butter_block_sprite.png"
 image serious_butter_dodge_sprite = "serious_butter_dodge_sprite.png"
 image serious_butter_ultimate_sprite = "serious_butter_ultimate_sprite.png"
+image butter_ultimate_windup = "butter_ultimate_windup.png"
 image serious_butter_energy_sprite = "serious_butter_energy_sprite.png"
 
 image lumpi_normal_sprite = "lumpi_normal_sprite.png"
@@ -277,7 +279,7 @@ init python:
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None
-                    renpy.sound.play("audio/freesound_community-page-flip-47177.mp3")
+                    renpy.sound.play("audio/freesound_community-pageturn-102978.mp3",relative_volume=1.0)
                     return True
             return False
 
@@ -441,11 +443,11 @@ init python:
         if name.lower() == "kare":
             return [
                 Skill("slap", cost=2, damage=4, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=3, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.",cooldown=4, animation="kare_energy_anim", card_image="card_kare_energy"),
-                Skill("punch", cost=5, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
-                Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("super cool kick", cost=15, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate"),
+                Skill("punch", cost=4, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("evade", cost=3, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
+                Skill("super cool kick", cost=6, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate"),
                 Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=2, animation="kare_buff_anim")
             ]
         elif name.lower() == "chaos":
@@ -470,7 +472,7 @@ init python:
             return [
                 EnemyIntent("elbow", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
                 EnemyIntent("Defense", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("ready?", damage=2, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("focus", damage=2, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=6),
                 EnemyIntent("kick", damage=10, desc="heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("PUNCH!", damage=20, desc="haha!! no way you are surviving this", animation="butter_ultimate_anim", type="attack", cooldown=6)
@@ -789,6 +791,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "butter" "we are fighting duh"
             "kare" "but i dont know how to fight"
             "butter" "well that just made this fight easier"
+            show dobe_sprite at center with moveinbottom
             "dobe" "dont worry kare i got you"
             "dobe" "the cards at the bottom are your skills"
             "kare" "uhh i cant see them"
@@ -803,6 +806,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "kare" "help me fight her"
             "dobe" "nah you got this"
             "kare" "erm.. well wouldn't it be better if you fight along side with me"
+            hide dobe_sprite with dissolve
             "dobe" "nah you got this"
             "kare" "..."
             window hide
@@ -1030,7 +1034,7 @@ label kare_hard_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "audio/sword-slash-and-swing-185432.mp3"
+        play sound "audio/punch-140236.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1039,7 +1043,7 @@ label kare_hard_anim(bm):
 label kare_block_anim(bm):
     show expression "kare_block_sprite" as player at fight_left
     play sound "Berserk Clang Sound Effect.mp3"
-    $ renpy.pause(0.5, hard=True)
+    $ renpy.pause(1, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
@@ -1053,8 +1057,7 @@ label kare_dodge_anim(bm):
 
 label kare_buff_anim(bm):
     show expression "kare_buff_sprite" as player at fight_left
-    play sound "audio/meditate-sound.mp3"
-    $ renpy.pause(0.8, hard=True)
+    $ renpy.pause(1, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
@@ -1065,7 +1068,7 @@ label kare_ultimate_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "audio/sword-slash-and-swing-185432.mp3"
+        play sound "audio/freesound_community-shotgun-firing-3-14483.mp3"
     if not bm.is_dodged:
         camera:
             ease 0.1 zoom 1.2
@@ -1077,8 +1080,8 @@ label kare_ultimate_anim(bm):
 
 label kare_energy_anim(bm):
     show expression "kare_energy_sprite" as player at fight_left
-    play sound "audio/item-pickup-37089.mp3"
-    $ renpy.pause(0.5, hard=True)
+    play sound "audio/freesound_community-bite-potato-chips-83946.mp3" volume 2
+    $ renpy.pause(1, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
@@ -1148,7 +1151,7 @@ label butter_normal_anim(bm):
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     if not bm.is_dodged:
-        play sound "audio/sword-slash-and-swing-185432.mp3"
+        play sound "audio/universfield-punch-02-123106.mp3"
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1159,7 +1162,7 @@ label butter_hard_anim(bm):
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     if not bm.is_dodged:
-        play sound "audio/sword-slash-and-swing-185432.mp3"
+        play sound "audio/universfield-punch-02-123106.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1168,7 +1171,7 @@ label butter_hard_anim(bm):
 label butter_block_anim(bm):
     $ renpy.show("butter_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
     play sound "Berserk Clang Sound Effect.mp3"
-    $ renpy.pause(0.5, hard=True)
+    $ renpy.pause(1, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
@@ -1187,13 +1190,12 @@ label butter_buff_anim(bm):
 label butter_ultimate_anim(bm):
     # Phase 1: windup sprite for 1 second
     $ renpy.show("butter_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
-    $ renpy.pause(1.0, hard=True)
+    play sound "audio/20 February_2025.mp3"
+    $ renpy.pause(2.5, hard=True)
     # Phase 2: actual ultimate attack
-    $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
+    $ renpy.show("butter_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
-    if not bm.is_dodged:
-        play sound "audio/20 February_2025.mp3"
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1201,7 +1203,7 @@ label butter_ultimate_anim(bm):
 
 label butter_energy_anim(bm):
     $ renpy.show("butter_energy_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    $ renpy.pause(0.5, hard=True)
+    $ renpy.pause(1, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
