@@ -886,8 +886,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -936,8 +935,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -952,7 +950,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .engine_victory
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .engine_defeat
@@ -974,7 +971,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .engine_victory
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .engine_defeat
@@ -1667,8 +1663,7 @@ label butter_ava_battle:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1717,8 +1712,7 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1733,7 +1727,6 @@ label butter_ava_battle:
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss1_victory
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .boss1_defeat
@@ -1768,7 +1761,6 @@ label butter_ava_battle:
             'ava' 'oh wait i forgot you are my ally'
             'ava' 'my bad gang'
             $ renpy.show("ava_idle", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .boss1_defeat
@@ -1883,8 +1875,7 @@ label butter_ava_battle2:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1933,8 +1924,7 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1949,7 +1939,6 @@ label butter_ava_battle2:
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss2_victory
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .boss2_defeat
@@ -1982,7 +1971,6 @@ label butter_ava_battle2:
             $ bm.take_damage(50, target='player')
             $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
             'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
-        "DEBUG: Player HP = [bm.player_hp]"
         if bm.player_hp <= 0:
             window hide
             jump .boss2_defeat
