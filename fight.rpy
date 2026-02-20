@@ -135,14 +135,14 @@ init python:
     import random
 
     def get_serious_butter():
-        intents = get_enemy_intents("serious butter")
+        intents = get_enemy_intents("butter")
         sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
-        return Enemy('Serious Butter', 300, sprites, intents)
+        return Enemy('butter', 300, sprites, intents)
 
     def get_butter():
         intents = get_enemy_intents("butter")
         sprites = {'idle': 'butter_idle', 'attack': 'butter_attack', 'hit': 'butter_hit'}
-        return Enemy('Butter', 50, sprites, intents)
+        return Enemy('Butter', 200, sprites, intents)
 
     def get_dodge_anim(char_name):
         # Normalize name to match label convention: lowercase, underscores instead of spaces/chars
@@ -277,7 +277,7 @@ init python:
                     self.player_energy -= skill.cost
                     self.used_skills_this_turn.append(skill)
                     self.selected_skill = None
-                    renpy.sound.play("audio/homemade_sfx-light-switch-flip-272436.mp3")
+                    renpy.sound.play("audio/freesound_community-page-flip-47177.mp3")
                     return True
             return False
 
@@ -440,13 +440,13 @@ init python:
         # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
         if name.lower() == "kare":
             return [
-                Skill("slap", cost=2, damage=5, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
-                Skill("block", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=0, animation="kare_block_anim", card_image="card_kare_block"),
-                Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.", animation="kare_energy_anim", card_image="card_kare_energy"),
-                Skill("punch", cost=5, damage=12, cooldown=0, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("slap", cost=2, damage=4, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
+                Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=3, animation="kare_block_anim", card_image="card_kare_block"),
+                Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.",cooldown=4, animation="kare_energy_anim", card_image="card_kare_energy"),
+                Skill("punch", cost=5, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
                 Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("super cool kick", cost=15, damage=40, cooldown=0, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate"),
-                Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="kare_buff_anim")
+                Skill("super cool kick", cost=15, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate"),
+                Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=2, animation="kare_buff_anim")
             ]
         elif name.lower() == "chaos":
             return [
@@ -455,7 +455,7 @@ init python:
                 Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="Gain 12 Energy.", animation="chaos_energy_anim", card_image="card_chaos_energy"),
                 Skill("Cataclysm", cost=7, damage=18, cooldown=0, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
                 Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("████████", cost=25, damage=100, cooldown=0, desc="█████ ████████████", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate"),
+                Skill("??????", cost=25, damage=100, cooldown=0, desc="??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate"),
                 Skill("Aura of Dread", cost=6, damage=10, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="chaos_buff_anim")
             ]
         return []
@@ -469,8 +469,8 @@ init python:
         if name.lower() == "butter":
             return [
                 EnemyIntent("elbow", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
-                EnemyIntent("block", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("ready?", damage=3, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("Defense", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("ready?", damage=2, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("kick", damage=10, desc="heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("PUNCH!", damage=20, desc="haha!! no way you are surviving this", animation="butter_ultimate_anim", type="attack", cooldown=6)
@@ -709,7 +709,12 @@ screen battle_screen(bm):
                     text "[display_skill.name]" size 30 color "#333" xalign 0.5 bold True
                     text "Cost: [display_skill.cost] Energy" size 20 color "#444" xalign 0.5
                     if display_skill.damage > 0:
-                        text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                        if display_skill.type == "barrier":
+                            text "Defense: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                        elif display_skill.type == "buff":
+                            text "Damage Buff: +[display_skill.damage]" size 20 color "#444" xalign 0.5
+                        else:
+                            text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
                     text "[display_skill.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
                     if display_skill.cooldown > 0:
                         text "Cooldown: [display_skill.cooldown] turns" size 18 color "#444" xalign 0.5
@@ -744,6 +749,8 @@ screen battle_screen(bm):
                             text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
                         elif bm.selected_intent.type == "barrier":
                             text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
+                        elif bm.selected_intent.type == "buff":
+                            text "Damage Buff: +[bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
                     text "[bm.selected_intent.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
 
     # ── ENERGY WARNING ──
@@ -780,7 +787,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "butter" "we are fighting duh"
             "kare" "but i dont know how to fight"
             "butter" "well that just made this fight easier"
-            show dobe_sprite at center with moveinbottom
             "dobe" "dont worry kare i got you"
             "dobe" "the cards at the bottom are your skills"
             "kare" "uhh i cant see them"
@@ -795,7 +801,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
             "kare" "help me fight her"
             "dobe" "nah you got this"
             "kare" "erm.. well wouldn't it be better if you fight along side with me"
-            hide dobe_sprite with dissolve
             "dobe" "nah you got this"
             "kare" "..."
             window hide
@@ -888,10 +893,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_generic
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -940,10 +942,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_generic
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1450,7 +1449,7 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(20, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm, tutorial=True) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
@@ -1486,8 +1485,8 @@ label lumpi_battle:
     $ enemy_sprites = {'idle': 'lumpi_idle', 'attack': 'lumpi_attack', 'hit': 'lumpi_hit'}
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
-    $ lumpi = Enemy('Lumpi', 30, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(15, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ lumpi = Enemy('Lumpi', 300, enemy_sprites, lumpi_intents)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -1522,8 +1521,8 @@ label lumpiwheelchair_battle:
     $ enemy_sprites = {'idle': 'lumpiwheelchair_idle', 'attack': 'lumpiwheelchair_attack', 'hit': 'lumpiwheelchair_hit'}
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
-    $ lumpi = Enemy('Lumpi (Wheelchair)', 70, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(50, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1556,7 +1555,7 @@ label newenemy_battle:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
-    $ bm = BattleManager(50, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites)
     call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1671,10 +1670,7 @@ label butter_ava_battle:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss1
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1723,10 +1719,7 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss1
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1889,10 +1882,7 @@ label butter_ava_battle2:
                 "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
-                if skill.animation:
-                    call expression skill.animation pass (bm) from _call_skill_anim_dodge_prep_boss2
-                $ bm.dodge_active = True
-                "You prepare to dodge!"
+                $ pass
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1941,10 +1931,7 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
-                if intent.animation:
-                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_prep_boss2
-                $ enemy.dodge_active = True
-                "[enemy.name] will dodge the next attack!"
+                $ pass
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
