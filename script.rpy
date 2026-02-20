@@ -42,7 +42,6 @@ play sound "Loud glass breaking sound.mp3"  volume 0.5
 "butter" " excuse me?!!?"
 "kare"  "yea im late because of u"
 "butter" "nah u trippin"
-"butter" "literally even"
 "kare"  "i have no time for this i gotta go to school"
 "butter" "nah you're not going anywhere"
 "butter" "not until you say sorry and pay for your damage"
@@ -189,7 +188,7 @@ show kare_neutral at right
 "kare" "what is it?"
 
 show rpg7
-"dobe" "an RPG-7!!!"
+"dobe" "a RPG-7!!!"
 "kare" "how did you where did you get that?!"  
 "dobe" "i honestly don't know"
 "kare" "i gotta get outa here"  
@@ -221,14 +220,10 @@ show butter_neutral at right
 "kare" "...?"
 "kare" "are we outside school"
 "kare" "in an instant?! how."
-"kare" "..."
-"kare" "fine, have it your way"
-"butter" "what"
 
 hide kare_neutral
 hide butter_neutral
 
-# Call the battle system from fight.rpy
 call battle_butter_simple from _call_simple_battle_graphics
     
 # After battle ends, return to story
@@ -630,14 +625,14 @@ show karebutterfight3 with dissolve
 play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "kare" "ahhk.."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"butter" "you are a persistent one"
+"butter" "persistent as always "
 "kare" "..."
 play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "butter" "meow!!"
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 "kare" "meow meow"
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"kare" "uughhh.. dizzy"
+"kare" "uughhh.."
 "kare" "?!?"
 "butter" "fret not CHAOS we're almost there"
 "butter" "HA!"
@@ -648,14 +643,11 @@ play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 play sound "minigun_shoot.mp3" fadein 1.0 fadeout 1.0 volume 0.3
 "kare" "...gun"
 "butter" "tsk"
-"butter" "..."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 "butter" "HAAH!!!"
-"kare" "meteor.."
 play sound "Meteorite Impact.mp3" volume 2.0
 "butter" "shield!!"
 "butter" "enough!!!!!!"
-"butter" "photon accelerator"
 play sound "Laser sound effects.mp3" fadein 1.0 fadeout 1.0 volume 3.0
 "kare" "gaah!!"
 "kare" "haaah..."
@@ -675,7 +667,6 @@ show butter_real with dissolve
 "butter" "..."
 "butter" "why do you want to stay here so bad.."
 "butter" "you are not suppose to be here."
-"butter" "you are not suppose to leave your duty."
 "butter" "you are not suppose to inhabit with humanity"
 "butter" "please just let me make this easy for me, and you"
 "butter" "will you?"
@@ -824,7 +815,7 @@ show chaos_smile
 "kare" "WHAT"
 "CHAOS" "thats ok sister will find me!!"
 "kare" "..."
-"kare" "(i could sell this child)"
+"kare" "(i could sell this kid to some shady people and make some quick cash)"
 "kare" "(WHAT WHO WAS THAT)"
 "kare" "(its me, your inner thoughts!!!)"
 "kare" "(what- get out)"
@@ -969,7 +960,6 @@ show bg with dissolve
 hide chaos_ouchie
 show chaos_kick
 "butter" "HGHAGHHH"
-"CHAOS" '...'
 hide chaos_kick
 stop music
 play sound "audio/Time Warp Sound Effect.mp3" volume 3.0
@@ -984,7 +974,7 @@ hide boutpunch
 show boutpunch2
 "butter" "im really tired you know that"
 "CHAOS" "blehblehblehbulbleh"
-"butter" "..."
+
 
 
 
@@ -1236,8 +1226,8 @@ show kare_stupid at right
 "dobe" "kare!!"
 "kare" "douh!!"
 "dobe" "uhm.."
-"butter" "shes fine"
-"dobe" "oh ok"
+"ORDER" "shes fine"
+"dobe" "ok"
 hide dobe_neutral at left
 hide kare_stupid at right
 show lumpi_nuetral at left
@@ -1245,7 +1235,7 @@ show lumpi_nuetral at left
 show order_neutral at right
 "ORDER" "lumpi.."
 "lumpi" "dont even talk to me"
-"ORDER" "ooh? you're still a bit pissed at me huh?"
+"ORDER" "ooh? still a bit pissed at me?"
 "lumpi" "..."
 "ORDER" "and i thought we could work together again"
 "lumpi" "..."
@@ -1267,7 +1257,7 @@ play sound "audio/jump.mp3" volume 2.0
 "TIME" "GUYS THE WORLD IS ABOUT TO END!!!!!"
 "TIME" "WE NEED TO STOP THIS!!!!!"
 "TIME" "I KNOW WHO THE CULPRIT IS!!!!!"
-"TIME" "ITS THE ONE WHO HAS BEEN CAUSING ALL THIS CHAOS SINCE THE BEGINNING OF TIME!!!!!"
+"TIME" "ITS THE ONE WHO HAS BEEN CAUSING ALL THIS SINCE THE BEGINNING OF TIME!!!!!"
 "lumpi" "erm its over buddy"
 "butter" "the world is fine now"
 "TIME" "wha huh"
@@ -1292,7 +1282,7 @@ hide butter_neutral at left
 show dobe_neutral at right
 show kare_stupid at left
 "dobe" "really? we're still classmates?"
-"kare" "?! (HELL NO)"
+"kare" "oau (HELL NO)"
 "butter" "yup"
 "dobe" "hm? you sound normal again"
 "dobe" "weren't you speaking all formal and fancy earlier?"
