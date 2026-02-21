@@ -1,7 +1,6 @@
 
 
 
-
 image kare_idle = "kare_idle.png"
 image kare_hit = "kare_hit.png"
 
@@ -53,7 +52,6 @@ image serious_butter_hard_sprite = "serious_butter_hard_sprite.png"
 image serious_butter_block_sprite = "serious_butter_block_sprite.png"
 image serious_butter_dodge_sprite = "serious_butter_dodge_sprite.png"
 image serious_butter_ultimate_sprite = "serious_butter_ultimate_sprite.png"
-image butter_ultimate_windup = "butter_ultimate_windup.png"
 image serious_butter_energy_sprite = "serious_butter_energy_sprite.png"
 
 image lumpi_normal_sprite = "lumpi_normal_sprite.png"
@@ -269,18 +267,36 @@ init python:
         def add_to_slot(self, skill, enemy_idx, slot_idx):
             if skill in self.used_skills_this_turn:
                 return False
-            if self.player_energy < skill.cost:
+
+            enemy = self.enemies[enemy_idx]
+            old_action = enemy.slots[slot_idx]
+
+            # Check energy, accounting for potential refund if replacing a skill
+            needed_energy = skill.cost
+            if isinstance(old_action, Skill):
+                needed_energy -= old_action.cost
+
+            if self.player_energy < needed_energy:
                 self.show_energy_warning = True
                 return False
+
             if skill.current_cooldown == 0:
-                enemy = self.enemies[enemy_idx]
-                if enemy.slots[slot_idx] is None:
-                    enemy.slots[slot_idx] = skill
-                    self.player_energy -= skill.cost
-                    self.used_skills_this_turn.append(skill)
-                    self.selected_skill = None
-                    renpy.sound.play("audio/freesound_community-pageturn-102978.mp3",relative_volume=1.0)
-                    return True
+                # Refund old skill if slot is already occupied by a Skill
+                if isinstance(old_action, Skill):
+                    self.player_energy += old_action.cost
+                    if old_action in self.used_skills_this_turn:
+                        self.used_skills_this_turn.remove(old_action)
+                elif isinstance(old_action, EnemyIntent):
+                    # Cannot replace enemy intents
+                    return False
+
+                # Place new skill
+                enemy.slots[slot_idx] = skill
+                self.player_energy -= skill.cost
+                self.used_skills_this_turn.append(skill)
+                self.selected_skill = None
+                renpy.sound.play("audio/freesound_community-pageturn-102978.mp3")
+                return True
             return False
 
         def remove_from_slot(self, enemy_idx, slot_idx):
@@ -444,11 +460,12 @@ init python:
             return [
                 Skill("slap", cost=2, damage=4, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
                 Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
-                Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.",cooldown=4, animation="kare_energy_anim", card_image="card_kare_energy"),
-                Skill("punch", cost=4, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
-                Skill("evade", cost=3, type="dodge", desc="Dodges next attack.", cooldown=0, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("super cool kick", cost=6, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate"),
-                Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=2, animation="kare_buff_anim")
+                Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=5, animation="kare_buff_anim"),
+                Skill("punch", cost=5, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.",cooldown=3, animation="kare_energy_anim", card_image="card_kare_energy"),
+                Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=4, animation="kare_dodge_anim", card_image="card_kare_dodge"),
+                Skill("super cool kick", cost=15, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
+               
             ]
         elif name.lower() == "chaos":
             return [
@@ -457,8 +474,9 @@ init python:
                 Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="Gain 12 Energy.", animation="chaos_energy_anim", card_image="card_chaos_energy"),
                 Skill("Cataclysm", cost=7, damage=18, cooldown=0, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
                 Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("??????", cost=25, damage=100, cooldown=0, desc="??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate"),
-                Skill("Aura of Dread", cost=6, damage=10, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="chaos_buff_anim")
+                Skill("Aura of Dread", cost=6, damage=10, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="chaos_buff_anim"),
+                Skill("??????", cost=25, damage=100, cooldown=0, desc="??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
+              
             ]
         return []
 
@@ -472,7 +490,7 @@ init python:
             return [
                 EnemyIntent("elbow", damage=4, desc="A quick poke.", animation="butter_normal_anim", type="attack"),
                 EnemyIntent("Defense", damage=5, desc="Adds 5 Defense.", animation="butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("focus", damage=2, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=6),
+                EnemyIntent("Focus", damage=2, buff_type="damage", buff_duration=3, desc="Increases damage by 2 for 3 turns.", animation="butter_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("kick", damage=10, desc="heavy impact.", animation="butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("PUNCH!", damage=20, desc="haha!! no way you are surviving this", animation="butter_ultimate_anim", type="attack", cooldown=6)
@@ -625,8 +643,11 @@ screen battle_screen(bm):
                                             text "ENEMY" size 12 color "#616161" xalign 0.5
                                             text "[action.name]" size 16 color "#747474" xalign 0.5
                                 elif isinstance(action, Skill):
+                                    $ can_replace = bm.selected_skill is not None and bm.selected_skill != action
                                     button:
-                                        action Function(bm.select_skill, action)
+                                        action If(can_replace,
+                                                Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx),
+                                                Function(bm.select_skill, action))
                                         background Solid("#ddd")
                                         foreground "sketchy_bar_outline"
                                         padding (10, 5)
@@ -1021,7 +1042,7 @@ label kare_normal_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "punch-140236.mp3"
+        play sound "universfield-punch-02-123106.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1057,6 +1078,7 @@ label kare_dodge_anim(bm):
 
 label kare_buff_anim(bm):
     show expression "kare_buff_sprite" as player at fight_left
+    play sound "audio/meditate-sound.mp3"
     $ renpy.pause(1, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1068,7 +1090,7 @@ label kare_ultimate_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "audio/freesound_community-shotgun-firing-3-14483.mp3"
+        play sound "audio/freesound_community-shotgun-firing-3-14483.mp3" volume 1.5
     if not bm.is_dodged:
         camera:
             ease 0.1 zoom 1.2
@@ -1081,7 +1103,7 @@ label kare_ultimate_anim(bm):
 label kare_energy_anim(bm):
     show expression "kare_energy_sprite" as player at fight_left
     play sound "audio/freesound_community-bite-potato-chips-83946.mp3" volume 2
-    $ renpy.pause(1, hard=True)
+    $ renpy.pause(2, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
@@ -1102,7 +1124,7 @@ label chaos_hard_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "audio/sword-slash-and-swing-185432.mp3"
+        play sound "audio/punch-140236.mp3"
     $ renpy.pause(0.8, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1162,7 +1184,7 @@ label butter_hard_anim(bm):
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     if not bm.is_dodged:
-        play sound "audio/universfield-punch-02-123106.mp3"
+        play sound "audio/punch-140236.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
@@ -1203,7 +1225,7 @@ label butter_ultimate_anim(bm):
 
 label butter_energy_anim(bm):
     $ renpy.show("butter_energy_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    $ renpy.pause(1, hard=True)
+    $ renpy.pause(2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
