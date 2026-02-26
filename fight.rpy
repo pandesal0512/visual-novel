@@ -206,7 +206,7 @@ init python:
         tutorial = False
         dobe_helps = False
         is_chaos = False
-        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False):
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False, skill_overrides=None):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
             self.player_energy = starting_energy
@@ -216,6 +216,7 @@ init python:
             self.tutorial = tutorial
             self.dobe_helps = dobe_helps
             self.is_chaos = is_chaos
+            self.skill_overrides = skill_overrides or {}
 
             if isinstance(enemies, list):
                 self.enemies = enemies
@@ -247,6 +248,10 @@ init python:
         def initialize_skills(self, is_chaos):
             char_name = "chaos" if is_chaos else "kare"
             self.full_skill_pool = get_character_skills(char_name)
+            for skill in self.full_skill_pool:
+                if skill.name in self.skill_overrides:
+                    for attr, value in self.skill_overrides[skill.name].items():
+                        setattr(skill, attr, value)
             self.player_skills = self.full_skill_pool[:2]
             self.skill_exp = 0
 
@@ -1490,7 +1495,7 @@ label enemy_attack_anim(bm):
     show expression bm.player_sprites["idle"] as player at fight_left
     return
 
-label simple_battle_graphics:
+label simple_battle_graphics(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     camera:
@@ -1502,7 +1507,7 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10, tutorial=True)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10, tutorial=True, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
@@ -1524,7 +1529,7 @@ label simple_battle_graphics:
         '...'
         return
 
-label lumpi_battle:
+label lumpi_battle(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     camera:
@@ -1539,7 +1544,7 @@ label lumpi_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 300, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=15, max_energy=15)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=15, max_energy=15, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -1560,7 +1565,7 @@ label lumpi_battle:
             'Retry Battle':
                 jump battle_lumpi_standard
 
-label lumpiwheelchair_battle:
+label lumpiwheelchair_battle(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     camera:
@@ -1575,7 +1580,7 @@ label lumpiwheelchair_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, dobe_helps=True)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, dobe_helps=True, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1596,7 +1601,7 @@ label lumpiwheelchair_battle:
             'Retry Battle':
                 jump battle_lumpi_wheelchair
 
-label newenemy_battle:
+label newenemy_battle(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     camera:
@@ -1608,7 +1613,7 @@ label newenemy_battle:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1628,7 +1633,7 @@ label newenemy_battle:
             'Retry Battle':
                 jump battle_serious_butter
 
-label butter_ava_battle:
+label butter_ava_battle(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     $ battle_mode = True
@@ -1641,7 +1646,7 @@ label butter_ava_battle:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
     $ ava_attacked_once = False
 
@@ -1835,7 +1840,7 @@ label butter_ava_battle:
         hide screen battle_screen
         return
 
-label butter_ava_battle2:
+label butter_ava_battle2(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
     $ battle_mode = True
@@ -1848,7 +1853,7 @@ label butter_ava_battle2:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .boss2_start_logic:
@@ -2067,26 +2072,34 @@ transform credits_scroll:
     linear 30.0 ypos -2000
 
 # --- Label Aliases for Compatibility ---
-label battle_boss_ava_butter_1:
-    jump butter_ava_battle
+label battle_boss_ava_butter_1(skill_overrides=None):
+    call butter_ava_battle(skill_overrides) from _call_butter_ava_battle_alias_1
+    return
 
-label battle_boss_ava_butter_2:
-    jump butter_ava_battle2
+label battle_boss_ava_butter_2(skill_overrides=None):
+    call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_1
+    return
 
-label battle_lumpi_standard:
-    jump lumpi_battle
+label battle_lumpi_standard(skill_overrides=None):
+    call lumpi_battle(skill_overrides) from _call_lumpi_battle_alias_1
+    return
 
-label battle_lumpi_wheelchair:
-    jump lumpiwheelchair_battle
+label battle_lumpi_wheelchair(skill_overrides=None):
+    call lumpiwheelchair_battle(skill_overrides) from _call_lumpiwheelchair_battle_alias_1
+    return
 
-label battle_serious_butter:
-    jump newenemy_battle
+label battle_serious_butter(skill_overrides=None):
+    call newenemy_battle(skill_overrides) from _call_newenemy_battle_alias_1
+    return
 
-label battle_butter_simple:
-    jump simple_battle_graphics
+label battle_butter_simple(skill_overrides=None):
+    call simple_battle_graphics(skill_overrides) from _call_simple_battle_graphics_alias_1
+    return
 
-label battle_boss_ava_butter:
-    jump butter_ava_battle
+label battle_boss_ava_butter(skill_overrides=None):
+    call butter_ava_battle(skill_overrides) from _call_butter_ava_battle_alias_2
+    return
 
-label battle_boss_ava_butter_phase2:
-    jump butter_ava_battle2
+label battle_boss_ava_butter_phase2(skill_overrides=None):
+    call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_2
+    return
