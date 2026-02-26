@@ -1507,7 +1507,16 @@ label simple_battle_graphics(skill_overrides=None):
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10, tutorial=True, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(300, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, tutorial=True, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
@@ -1544,7 +1553,16 @@ label lumpi_battle(skill_overrides=None):
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 300, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=15, max_energy=15, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(400, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=30, max_energy=30, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -1580,7 +1598,16 @@ label lumpiwheelchair_battle(skill_overrides=None):
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, dobe_helps=True, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(500, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=40, max_energy=40, dobe_helps=True, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1613,7 +1640,16 @@ label newenemy_battle(skill_overrides=None):
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(600, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1646,7 +1682,16 @@ label butter_ava_battle(skill_overrides=None):
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(1000, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=100, max_energy=100, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
     $ ava_attacked_once = False
 
@@ -1686,7 +1731,7 @@ label butter_ava_battle(skill_overrides=None):
         $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
             $ e_idx += 1
-            jump .engine_resolution_core
+            jump .boss1_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
@@ -1853,7 +1898,16 @@ label butter_ava_battle2(skill_overrides=None):
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
+    $ skill_overrides = skill_overrides or {
+        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
+        "punch":            {"damage": 20, "cooldown": 1},
+        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
+        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
+        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
+        "yummers":          {"energy_regen": 8, "cooldown": 2},
+        "evade":            {"cost": 2, "cooldown": 2},
+    }
+    $ bm = BattleManager(1000, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=100, max_energy=100, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .boss2_start_logic:
@@ -1892,7 +1946,7 @@ label butter_ava_battle2(skill_overrides=None):
         $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
             $ e_idx += 1
-            jump .engine_resolution_core
+            jump .boss2_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
