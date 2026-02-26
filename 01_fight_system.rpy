@@ -1,4 +1,6 @@
-﻿# BATTLE SYSTEM CORE LOGIC
+﻿init offset = -1
+# BATTLE SYSTEM CORE LOGIC
+# BATTLE SYSTEM CORE LOGIC
 init python:
     import random
 

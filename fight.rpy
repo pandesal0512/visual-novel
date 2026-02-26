@@ -1,4 +1,6 @@
-﻿# BATTLE ENCOUNTERS AND ALIASES
+﻿init offset = 1
+# BATTLE ENCOUNTERS AND ALIASES
+# BATTLE ENCOUNTERS AND ALIASES
 label simple_battle_graphics(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
