@@ -794,6 +794,7 @@ label battle_reset_camera:
     return
 
 label battle_engine(bm, is_chaos=False, tutorial=False, dobe_helps=False):
+    $ dobe_helps = dobe_helps
     window auto hide
     $ _skipping = None
     $ config.allow_skipping = False
