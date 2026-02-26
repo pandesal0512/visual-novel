@@ -1,6 +1,7 @@
 
 
 
+
 image kare_idle = "kare_idle.png"
 image kare_hit = "kare_hit.png"
 
@@ -22,6 +23,8 @@ image lumpiwheelchair_hit = "lumpiwheelchair_hit.png"
 
 image ava_idle = "ava_idle.png"
 image ava_hit = "ava_hit.png"
+image dobe_sprite = "dobe_sprite.png"
+image dobe_attack = "dobe_fight.png"
 
 # --- Action Sprites ---
 image kare_normal_sprite = "kare_normal_sprite.png"
@@ -200,13 +203,19 @@ init python:
             return self.full_intent_pool[:self.unlocked_intents_count]
 
     class BattleManager:
-        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10):
+        tutorial = False
+        dobe_helps = False
+        is_chaos = False
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
             self.player_energy = starting_energy
             self.player_max_energy = max_energy
             self.player_barrier = 0
             self.player_buffs = []
+            self.tutorial = tutorial
+            self.dobe_helps = dobe_helps
+            self.is_chaos = is_chaos
 
             if isinstance(enemies, list):
                 self.enemies = enemies
@@ -454,13 +463,13 @@ init python:
         # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
         if name.lower() == "kare":
             return [
-                Skill("slap", cost=2, damage=100000, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
+                Skill("slap", cost=2, damage=6, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
                 Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=5, animation="kare_buff_anim"),
-                Skill("punch", cost=5, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
-                Skill("yummers", cost=0, energy_regen=5, type="energy", desc="Recover 5 energy.",cooldown=3, animation="kare_energy_anim", card_image="card_kare_energy"),
+                Skill("punch", cost=4, damage=13, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
+                Skill("yummers", cost=0, energy_regen=10, type="energy", desc="Recover 5 energy.",cooldown=2, animation="kare_energy_anim", card_image="card_kare_energy"),
                 Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=4, animation="kare_dodge_anim", card_image="card_kare_dodge"),
-                Skill("super cool kick", cost=15, damage=15, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
+                Skill("super cool kick", cost=6, damage=20, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
                
             ]
         elif name.lower() == "chaos":
@@ -502,7 +511,7 @@ init python:
             ]
         elif name.lower() == "lumpi":
             return [
-                EnemyIntent("slash", damage=3, desc="very powerful sword", animation="lumpi_normal_anim", type="attack"),
+                EnemyIntent("slash", damage=5, desc="very powerful sword", animation="lumpi_normal_anim", type="attack"),
                 EnemyIntent("Nebula Veil", damage=4, desc="wrap myself in the fabric of space itself. good luck getting through that.", animation="lumpi_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("Moonlight Blessing", damage=5, buff_type="damage", buff_duration=3, desc="within my domain, my power is absolute.(Increases damage by 5 for 3 turns.)", animation="lumpi_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("Meteor Cleave", damage=8, desc="poweful attack", animation="lumpi_hard_anim", type="attack", cooldown=0),
@@ -511,12 +520,12 @@ init python:
             ]
         elif name.lower() == "lumpi wheelchair":
             return [
-                EnemyIntent("Tire Runover", damage=7, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
-                EnemyIntent("Reinforced Frame", damage=10, desc="Adds 10 Defense.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Overdrive", damage=8, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("Turbo Charge", damage=15, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Tire Runover", damage=4, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
+                EnemyIntent("Reinforced Frame", damage=4, desc="Adds 10 Defense.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("Overdrive", damage=4, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("Turbo Charge", damage=7, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("SUPERSONIC CRASH", damage=50, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("SUPERSONIC CRASH", damage=15, desc="ULTIMATE: Breaking sound barrier.", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "ava":
             return [
@@ -791,18 +800,18 @@ label battle_reset_camera:
         matrixtransform ScaleMatrix(1.0, 1.0, 1.0)*OffsetMatrix(0.0, 0.0, 0.0)*RotateMatrix(0.0, 0.0, 0.0)
     return
 
-label battle_engine(bm, is_chaos=False, tutorial=False):
+label battle_engine(bm):
     window auto hide
     $ _skipping = None
     $ config.allow_skipping = False
     $ battle_mode = True
     $ quick_menu = False
-    $ bm.initialize_skills(is_chaos)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .engine_start_logic:
         $ bm.prepare_turn()
 
-        if tutorial and bm.turn_count == 2:
+        if getattr(bm, "tutorial", False) and bm.turn_count == 2:
             "kare" "augh..."
             "kare" "what the hell is happening"
             "butter" "we are fighting duh"
@@ -873,7 +882,8 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         $ action = enemy.slots[current_slot_idx]
         $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
-            $ pass
+            $ e_idx += 1
+            jump .engine_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
@@ -886,7 +896,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                         call expression skill.animation pass (bm) from _call_skill_anim_at_dodge_generic
                     $ dodge_anim = get_dodge_anim(enemy.name)
                     call expression dodge_anim pass (bm) from _call_enemy_dodge_anim_reactive_generic
-                    "[enemy.name] dodged the attack!"
                     $ enemy.dodge_active = False
                     $ bm.is_dodged = False
                 else:
@@ -896,16 +905,16 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                     $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
                     $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(damage * 5, character_type="player")
-                    "[skill.name] deals [damage] damage to [enemy.name]!"
+                    "[skill.name] deals [damage] damage to [enemy.name]"
                     if enemy.is_dead:
-                        "[enemy.name] has been defeated!"
+                        "[enemy.name] has been defeated"
                         $ renpy.hide("enemy_" + str(e_idx))
             elif skill.type == "barrier":
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_generic
                 $ bm.add_barrier(skill.damage)
-                "You gain [skill.damage] Defense!"
+                "You gain [skill.damage] Defense"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
@@ -914,12 +923,12 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_generic
                 $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
-                "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
+                "[skill.name] Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
-                "You gained [skill.energy_regen] Energy!"
+                "You gained [skill.energy_regen] Energy"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -936,7 +945,6 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
                     call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_generic
-                    "DODGED!"
                     $ bm.dodge_active = False
                     $ bm.is_dodged = False
                 else:
@@ -957,13 +965,15 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_generic
                 $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_generic
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
+                "[enemy.name] damage increased by [intent.damage]"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -996,6 +1006,33 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         if bm.player_hp <= 0:
             window hide
             jump .engine_defeat
+
+        if getattr(bm, "dobe_helps", False) and not bm.enemies[0].is_dead:
+            show dobe_attack:
+                xanchor 0.5 yanchor 1.0
+                xpos 1.3 ypos 0.8
+                ease 0.25 xpos 0.75
+            $ renpy.pause(0.25, hard=True)
+            show dobe_attack:
+                xanchor 0.5 yanchor 1.0
+                xpos 0.75 ypos 0.8
+                ease 0.1 xpos 0.55
+                ease 0.1 xpos 0.75
+            $ renpy.show(bm.enemies[0].sprites["hit"], tag="enemy_0")
+            play sound "universfield-punch-02-123106.mp3"
+            $ renpy.pause(0.4, hard=True)
+            $ renpy.show(bm.enemies[0].sprites["idle"], tag="enemy_0")
+            $ bm.take_damage(5, target="enemy", enemy_idx=0)
+            "Dobe kicks the crippled lady for 5 damage"
+            show dobe_attack:
+                xanchor 0.5 yanchor 1.0
+                xpos 0.75 ypos 0.8
+                ease 0.25 xpos 1.3
+            $ renpy.pause(0.25, hard=True)
+            hide dobe_attack
+            if bm.enemies[0].is_dead:
+                window hide
+                jump .engine_victory
 
         window hide
         $ renpy.pause(0.5, hard=True)
@@ -1288,7 +1325,7 @@ label lumpi_normal_anim(bm):
     return
 
 label lumpi_hard_anim(bm):
-    $ renpy.show("lumpi_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.show("lumpi_hard_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
@@ -1331,7 +1368,8 @@ label lumpi_energy_anim(bm):
 
 # --- LUMPI WHEELCHAIR ANIMATIONS ---
 label lumpi_wheelchair_normal_anim(bm):
-    $ renpy.show("lumpi_wheelchair_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.show("lumpi_wheelchair_normal_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
+    play sound "audio/car_crash-377291.mp3"
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.5, hard=True)
@@ -1340,7 +1378,8 @@ label lumpi_wheelchair_normal_anim(bm):
     return
 
 label lumpi_wheelchair_hard_anim(bm):
-    $ renpy.show("lumpi_wheelchair_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.show("lumpi_wheelchair_hard_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
+    play sound "audio/car_crash-377291.mp3" 
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
@@ -1463,8 +1502,8 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10)
-    call battle_engine(bm, tutorial=True) from _call_battle_engine_butter
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10, tutorial=True)
+    call battle_engine(bm) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
     else:
@@ -1536,7 +1575,7 @@ label lumpiwheelchair_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, dobe_helps=True)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1570,7 +1609,7 @@ label newenemy_battle:
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
     $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25)
-    call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
+    call battle_engine(bm) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
     else:
@@ -1602,8 +1641,8 @@ label butter_ava_battle:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
-    $ bm.initialize_skills(True)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
     $ ava_attacked_once = False
 
     label .boss1_start_logic:
@@ -1641,7 +1680,8 @@ label butter_ava_battle:
         $ action = enemy.slots[current_slot_idx]
         $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
-            $ pass
+            $ e_idx += 1
+            jump .engine_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
@@ -1704,7 +1744,6 @@ label butter_ava_battle:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
                     call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss1
-                    "DODGED!"
                     $ bm.dodge_active = False
                     $ bm.is_dodged = False
                 else:
@@ -1725,6 +1764,8 @@ label butter_ava_battle:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss1
                 $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
@@ -1807,8 +1848,8 @@ label butter_ava_battle2:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
-    $ bm.initialize_skills(True)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .boss2_start_logic:
         $ bm.prepare_turn()
@@ -1845,7 +1886,8 @@ label butter_ava_battle2:
         $ action = enemy.slots[current_slot_idx]
         $ current_enemy_tag = "enemy_" + str(e_idx)
         if action is None:
-            $ pass
+            $ e_idx += 1
+            jump .engine_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
@@ -1908,7 +1950,6 @@ label butter_ava_battle2:
                     $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
                     $ dodge_anim = get_dodge_anim(p_name)
                     call expression dodge_anim pass (bm) from _call_player_dodge_anim_reactive_boss2
-                    "DODGED!"
                     $ bm.dodge_active = False
                     $ bm.is_dodged = False
                 else:
@@ -1929,6 +1970,8 @@ label butter_ava_battle2:
                 "[enemy.name] gains [intent.damage] Defense!"
             elif intent.type == "dodge":
                 $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss2
                 $ enemy.dodge_active = True
             elif intent.type == "buff":
                 $ bm.is_dodged = False
@@ -1963,7 +2006,7 @@ label butter_ava_battle2:
             $ dodge_anim = get_dodge_anim(p_name)
             $ bm.is_dodged = True
             call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
-            "DODGED!"
+          
             $ bm.dodge_active = False
             $ bm.is_dodged = False
         else:
