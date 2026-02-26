@@ -202,6 +202,9 @@ init python:
             return self.full_intent_pool[:self.unlocked_intents_count]
 
     class BattleManager:
+        tutorial = False
+        dobe_helps = False
+        is_chaos = False
         def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
@@ -802,12 +805,12 @@ label battle_engine(bm):
     $ config.allow_skipping = False
     $ battle_mode = True
     $ quick_menu = False
-    $ bm.initialize_skills(bm.is_chaos)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .engine_start_logic:
         $ bm.prepare_turn()
 
-        if bm.tutorial and bm.turn_count == 2:
+        if getattr(bm, "tutorial", False) and bm.turn_count == 2:
             "kare" "augh..."
             "kare" "what the hell is happening"
             "butter" "we are fighting duh"
@@ -1002,14 +1005,18 @@ label battle_engine(bm):
             window hide
             jump .engine_defeat
 
-        if bm.dobe_helps and not bm.enemies[0].is_dead:
-            show dobe_attack at Position(xalign=1.3, ypos=0.8, yanchor=1.0)
+        if getattr(bm, "dobe_helps", False) and not bm.enemies[0].is_dead:
             show dobe_attack:
-                ease 0.2 xalign 0.75
+                xanchor 0.5 yanchor 1.0
+                xpos 1.3 ypos 0.8
+                ease 0.25 xpos 0.75
+            $ renpy.pause(0.25, hard=True)
             "dobe" "don't mind me"
             show dobe_attack:
-                ease 0.1 xalign 0.55
-                ease 0.1 xalign 0.75
+                xanchor 0.5 yanchor 1.0
+                xpos 0.75 ypos 0.8
+                ease 0.1 xpos 0.55
+                ease 0.1 xpos 0.75
             $ renpy.show(bm.enemies[0].sprites["hit"], tag="enemy_0")
             play sound "universfield-punch-02-123106.mp3"
             $ renpy.pause(0.4, hard=True)
@@ -1017,7 +1024,10 @@ label battle_engine(bm):
             $ bm.take_damage(1, target="enemy", enemy_idx=0)
             "Dobe pokes Lumpi for 1 damage!"
             show dobe_attack:
-                ease 0.2 xalign 1.3
+                xanchor 0.5 yanchor 1.0
+                xpos 0.75 ypos 0.8
+                ease 0.25 xpos 1.3
+            $ renpy.pause(0.25, hard=True)
             hide dobe_attack
             if bm.enemies[0].is_dead:
                 window hide
@@ -1629,7 +1639,7 @@ label butter_ava_battle:
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
-    $ bm.initialize_skills(True)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
     $ ava_attacked_once = False
 
     label .boss1_start_logic:
@@ -1834,7 +1844,7 @@ label butter_ava_battle2:
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
-    $ bm.initialize_skills(True)
+    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .boss2_start_logic:
         $ bm.prepare_turn()
