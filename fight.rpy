@@ -22,6 +22,8 @@ image lumpiwheelchair_hit = "lumpiwheelchair_hit.png"
 
 image ava_idle = "ava_idle.png"
 image ava_hit = "ava_hit.png"
+image dobe_sprite = "dobe_neutral.png"
+image dobe_attack = "dobe_neutral.png"
 
 # --- Action Sprites ---
 image kare_normal_sprite = "kare_normal_sprite.png"
@@ -791,7 +793,7 @@ label battle_reset_camera:
         matrixtransform ScaleMatrix(1.0, 1.0, 1.0)*OffsetMatrix(0.0, 0.0, 0.0)*RotateMatrix(0.0, 0.0, 0.0)
     return
 
-label battle_engine(bm, is_chaos=False, tutorial=False):
+label battle_engine(bm, is_chaos=False, tutorial=False, dobe_helps=False):
     window auto hide
     $ _skipping = None
     $ config.allow_skipping = False
@@ -996,6 +998,27 @@ label battle_engine(bm, is_chaos=False, tutorial=False):
         if bm.player_hp <= 0:
             window hide
             jump .engine_defeat
+
+        if dobe_helps and not bm.enemies[0].is_dead:
+            show dobe_attack at Position(xalign=1.3, ypos=0.8, yanchor=1.0)
+            show dobe_attack:
+                ease 0.2 xalign 0.75
+            "dobe" "don't mind me"
+            show dobe_attack:
+                ease 0.1 xalign 0.55
+                ease 0.1 xalign 0.75
+            $ renpy.show(bm.enemies[0].sprites["hit"], tag="enemy_0")
+            play sound "universfield-punch-02-123106.mp3"
+            $ renpy.pause(0.4, hard=True)
+            $ renpy.show(bm.enemies[0].sprites["idle"], tag="enemy_0")
+            $ bm.take_damage(1, target="enemy", enemy_idx=0)
+            "Dobe pokes Lumpi for 1 damage!"
+            show dobe_attack:
+                ease 0.2 xalign 1.3
+            hide dobe_attack
+            if bm.enemies[0].is_dead:
+                window hide
+                jump .engine_victory
 
         window hide
         $ renpy.pause(0.5, hard=True)
@@ -1537,7 +1560,7 @@ label lumpiwheelchair_battle:
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
     $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20)
-    call battle_engine(bm) from _call_battle_engine_wheelchair
+    call battle_engine(bm, dobe_helps=True) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
     else:
