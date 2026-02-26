@@ -200,11 +200,11 @@ init python:
             return self.full_intent_pool[:self.unlocked_intents_count]
 
     class BattleManager:
-        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None):
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
-            self.player_energy = 10
-            self.player_max_energy = 10
+            self.player_energy = starting_energy
+            self.player_max_energy = max_energy
             self.player_barrier = 0
             self.player_buffs = []
 
@@ -236,10 +236,6 @@ init python:
             self.is_dodged = False
 
         def initialize_skills(self, is_chaos):
-            # INITIAL PLAYER ENERGY
-            # Change these values to set starting/max energy for Kare and Chaos
-            self.player_max_energy = 50 if is_chaos else 10
-            self.player_energy = self.player_max_energy
             char_name = "chaos" if is_chaos else "kare"
             self.full_skill_pool = get_character_skills(char_name)
             self.player_skills = self.full_skill_pool[:2]
@@ -325,7 +321,7 @@ init python:
             self.turn_count += 1
             self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
-            self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 2)
+            self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 4)
             self.dodge_active = False   
 
             self.used_skills_this_turn = []
@@ -458,7 +454,7 @@ init python:
         # EDIT THESE VALUES TO CHANGE CHARACTER SKILLS
         if name.lower() == "kare":
             return [
-                Skill("slap", cost=2, damage=4, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
+                Skill("slap", cost=2, damage=100000, energy_regen=1, desc="Standard strike.", animation="kare_normal_anim", card_image="card_kare_normal"),
                 Skill("Defense", cost=3, damage=8, type="barrier", desc="Gain 8 Defense.", cooldown=2, animation="kare_block_anim", card_image="card_kare_block"),
                 Skill("Focus", cost=4, damage=5, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", cooldown=5, animation="kare_buff_anim"),
                 Skill("punch", cost=5, damage=8, cooldown=2, desc="Powerful punch.", animation="kare_hard_anim", card_image="card_kare_hard"),
@@ -469,12 +465,12 @@ init python:
             ]
         elif name.lower() == "chaos":
             return [
-                Skill("interitus", cost=3, damage=8, energy_regen=2, desc="huahuahuaha!!", animation="chaos_normal_anim", card_image="card_chaos_normal"),
-                Skill("Embrace", cost=5, damage=15, type="barrier", desc="Gain 15 Defense.", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block"),
-                Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="Gain 12 Energy.", animation="chaos_energy_anim", card_image="card_chaos_energy"),
-                Skill("Cataclysm", cost=7, damage=18, cooldown=0, desc="Reality fractures under my touch.", animation="chaos_hard_anim", card_image="card_chaos_hard"),
+                Skill("interitus", cost=3, damage=9999999, energy_regen=2, desc="huahuahuaha!!", animation="chaos_normal_anim", card_image="card_chaos_normal"),
+                Skill("Embrace", cost=5, damage=15, type="barrier", desc="COME HERE!!", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block"),
+                Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="everything falls apart eventually. might as well use it", animation="chaos_energy_anim", card_image="card_chaos_energy"),
+                Skill("Cataclysm", cost=7, damage=18, cooldown=0, desc="oopsie", animation="chaos_hard_anim", card_image="card_chaos_hard"),
                 Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("Aura of Dread", cost=6, damage=10, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="chaos_buff_anim"),
+                Skill("playing rough", cost=6, damage=10, type="buff", buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="chaos_buff_anim"),
                 Skill("??????", cost=25, damage=100, cooldown=0, desc="??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
               
             ]
@@ -495,22 +491,22 @@ init python:
                 EnemyIntent("Slippery", desc="will dodge the next attack.", animation="butter_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("PUNCH!", damage=20, desc="haha!! no way you are surviving this", animation="butter_ultimate_anim", type="attack", cooldown=6)
             ]
-        elif name.lower() == "serious butter":
+        elif name.lower() == "LAW":
             return [
-                EnemyIntent("Serious Slash", damage=10, desc="No jokes here.", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("Armor of the Serious", damage=12, desc="Adds 12 Defense.", animation="serious_butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Market Analysis", damage=10, buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("Executive Decision", damage=25, desc="Finalized.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
-                EnemyIntent("Calculated Move", desc="Will dodge the next attack.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("MARKET CRASH", damage=80, desc="ULTIMATE: Absolute devastation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("VERDICT", damage=10, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
+                EnemyIntent("ABSOLUTE RULE", damage=12, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("ENFORCEMENT", damage=10, buff_type="every law has consequences", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("BINDING JUDGMENT", damage=25, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("SENTENCE", damage=80, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "lumpi":
             return [
                 EnemyIntent("slash", damage=3, desc="very powerful sword", animation="lumpi_normal_anim", type="attack"),
-                EnemyIntent("Nebula Veil", damage=4, desc="Adds 4 Defense.", animation="lumpi_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Moonlight Blessing", damage=5, buff_type="damage", buff_duration=3, desc="Increases damage by 5 for 3 turns.", animation="lumpi_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("Nebula Veil", damage=4, desc="wrap myself in the fabric of space itself. good luck getting through that.", animation="lumpi_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("Moonlight Blessing", damage=5, buff_type="damage", buff_duration=3, desc="within my domain, my power is absolute.(Increases damage by 5 for 3 turns.)", animation="lumpi_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("Meteor Cleave", damage=8, desc="poweful attack", animation="lumpi_hard_anim", type="attack", cooldown=0),
-                EnemyIntent("evade", desc="Will dodge the next attack.", animation="lumpi_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("Spatial Shift", desc="simply moves through space itself.", animation="lumpi_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("Execution", damage=25, desc="very powerful attack.", animation="lumpi_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "lumpi wheelchair":
@@ -524,12 +520,12 @@ init python:
             ]
         elif name.lower() == "ava":
             return [
-                EnemyIntent("Magic Spark", damage=6, desc="A tiny burst.", animation="ava_normal_anim", type="attack"),
-                EnemyIntent("Mana Veil", damage=8, desc="Adds 8 Defense.", animation="ava_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Arcane Focus", damage=15, buff_type="damage", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("Arcane Blast", damage=15, desc="Powerful magic.", animation="ava_hard_anim", type="attack", cooldown=0),
-                EnemyIntent("Blink", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("COSMIC BURST", damage=60, desc="ULTIMATE: Nebula explosion.", animation="ava_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("poke", damage=6, desc="poke", animation="ava_normal_anim", type="attack"),
+                EnemyIntent("ETERNAL RECORD", damage=8, desc="as long as a single soul remembers civilization, I cannot fall. history does not die easily.", animation="ava_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("RALLY", damage=15, buff_type="the spirit of a thousand civilizations surge through me. something something power of humanity.", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("CULTURAL IMPACT", damage=15, desc="a strike so significant it will be remembered for generations. probably.", animation="ava_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("WRITTEN IN HISTORY", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("END OF AN ERA", damage=60, desc="every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now", animation="ava_ultimate_anim", type="attack", cooldown=6)
             ]
         return []
 
@@ -1283,10 +1279,10 @@ label serious_butter_energy_anim(bm):
 
 # --- LUMPI ANIMATIONS ---
 label lumpi_normal_anim(bm):
-    $ renpy.show("lumpi_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.show("lumpi_normal_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
-    $ renpy.pause(0.5, hard=True)
+    $ renpy.pause(1, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1467,7 +1463,7 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10)
     call battle_engine(bm, tutorial=True) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
@@ -1486,7 +1482,7 @@ label simple_battle_graphics:
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_2
         hide player
-        'You were defeated by butter...'
+        '...'
         return
 
 label lumpi_battle:
@@ -1504,7 +1500,7 @@ label lumpi_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 300, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=15, max_energy=15)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
         jump .lumpi_wins
@@ -1520,7 +1516,7 @@ label lumpi_battle:
         $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_4
-        'You were defeated by Lumpi...'
+        'lumpi' 'haah... so tiring'
         menu:
             'Retry Battle':
                 jump battle_lumpi_standard
@@ -1540,7 +1536,7 @@ label lumpiwheelchair_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20)
     call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
@@ -1556,7 +1552,7 @@ label lumpiwheelchair_battle:
         $ config.allow_skipping = True
         $ renpy.pause(0.1, hard=True)
         call battle_reset_camera from _call_battle_reset_camera_6
-        'lumpi' 'huwhuahuwha i win'
+        'lumpi' 'alright now thats done'
         menu:
             'Retry Battle':
                 jump battle_lumpi_wheelchair
@@ -1573,7 +1569,7 @@ label newenemy_battle:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25)
     call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -1606,7 +1602,7 @@ label butter_ava_battle:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
     $ bm.initialize_skills(True)
     $ ava_attacked_once = False
 
@@ -1741,7 +1737,7 @@ label butter_ava_battle:
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_boss1
                 "[enemy.name] is recovering."
-        if all(e.is_dead for e in bm.enemies):
+        if bm.enemies[0].is_dead:
             window hide
             jump .boss1_victory
         if bm.player_hp <= 0:
@@ -1811,7 +1807,7 @@ label butter_ava_battle2:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
     $ bm.initialize_skills(True)
 
     label .boss2_start_logic:
