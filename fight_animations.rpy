@@ -1,4 +1,4 @@
-# ANIMATION SECTION
+﻿# ANIMATION SECTION
 # ==============================================================================
 # To create or edit animations:
 # 1. Define a label (e.g., label kare_normal_anim(bm):)

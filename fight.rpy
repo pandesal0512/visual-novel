@@ -1,3 +1,4 @@
+﻿# BATTLE ENCOUNTERS AND ALIASES
 label simple_battle_graphics(skill_overrides=None):
     $ _skipping = None
     $ config.allow_skipping = False
@@ -186,16 +187,14 @@ label butter_ava_battle(skill_overrides=None):
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ skill_overrides = skill_overrides or {
-        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
-        "punch":            {"damage": 20, "cooldown": 1},
-        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
-        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
-        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
-        "yummers":          {"energy_regen": 8, "cooldown": 2},
-        "evade":            {"cost": 2, "cooldown": 2},
+        "interitus":        {"damage": 9999999, "cost": 3, "energy_regen": 2},
+        "Embrace":          {"damage": 15, "cost": 5, "type": "barrier"},
+        "Entropy":          {"energy_regen": 12, "cost": 0},
+        "Cataclysm":        {"damage": 18, "cost": 7},
+        "dissolutum":       {"cost": 6, "type": "dodge"},
+        "playing rough":    {"damage": 10, "cost": 6, "buff_duration": 3},
     }
     $ bm = BattleManager(1000, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=100, max_energy=100, is_chaos=True, skill_overrides=skill_overrides)
-    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
     $ ava_attacked_once = False
 
     label .boss1_start_logic:
@@ -402,16 +401,14 @@ label butter_ava_battle2(skill_overrides=None):
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ skill_overrides = skill_overrides or {
-        "slap":             {"damage": 10, "cost": 1, "energy_regen": 2},
-        "punch":            {"damage": 20, "cooldown": 1},
-        "super cool kick":  {"damage": 50, "cost": 12, "cooldown": 4},
-        "Defense":          {"damage": 15, "cost": 2, "cooldown": 1},
-        "Focus":            {"damage": 10, "cost": 3, "buff_duration": 5, "cooldown": 3},
-        "yummers":          {"energy_regen": 8, "cooldown": 2},
-        "evade":            {"cost": 2, "cooldown": 2},
+        "interitus":        {"damage": 9999999, "cost": 3, "energy_regen": 2},
+        "Embrace":          {"damage": 15, "cost": 5, "type": "barrier"},
+        "Entropy":          {"energy_regen": 12, "cost": 0},
+        "Cataclysm":        {"damage": 18, "cost": 7},
+        "dissolutum":       {"cost": 6, "type": "dodge"},
+        "playing rough":    {"damage": 10, "cost": 6, "buff_duration": 3},
     }
     $ bm = BattleManager(1000, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=100, max_energy=100, is_chaos=True, skill_overrides=skill_overrides)
-    $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
     label .boss2_start_logic:
         $ bm.prepare_turn()

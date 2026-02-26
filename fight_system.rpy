@@ -1,3 +1,4 @@
+﻿# BATTLE SYSTEM CORE LOGIC
 init python:
     import random
 
