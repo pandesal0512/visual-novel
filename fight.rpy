@@ -202,13 +202,16 @@ init python:
             return self.full_intent_pool[:self.unlocked_intents_count]
 
     class BattleManager:
-        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10):
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
             self.player_energy = starting_energy
             self.player_max_energy = max_energy
             self.player_barrier = 0
             self.player_buffs = []
+            self.tutorial = tutorial
+            self.dobe_helps = dobe_helps
+            self.is_chaos = is_chaos
 
             if isinstance(enemies, list):
                 self.enemies = enemies
@@ -793,19 +796,18 @@ label battle_reset_camera:
         matrixtransform ScaleMatrix(1.0, 1.0, 1.0)*OffsetMatrix(0.0, 0.0, 0.0)*RotateMatrix(0.0, 0.0, 0.0)
     return
 
-label battle_engine(bm, is_chaos=False, tutorial=False, dobe_helps=False):
-    $ dobe_helps = dobe_helps
+label battle_engine(bm):
     window auto hide
     $ _skipping = None
     $ config.allow_skipping = False
     $ battle_mode = True
     $ quick_menu = False
-    $ bm.initialize_skills(is_chaos)
+    $ bm.initialize_skills(bm.is_chaos)
 
     label .engine_start_logic:
         $ bm.prepare_turn()
 
-        if tutorial and bm.turn_count == 2:
+        if bm.tutorial and bm.turn_count == 2:
             "kare" "augh..."
             "kare" "what the hell is happening"
             "butter" "we are fighting duh"
@@ -1000,7 +1002,7 @@ label battle_engine(bm, is_chaos=False, tutorial=False, dobe_helps=False):
             window hide
             jump .engine_defeat
 
-        if dobe_helps and not bm.enemies[0].is_dead:
+        if bm.dobe_helps and not bm.enemies[0].is_dead:
             show dobe_attack at Position(xalign=1.3, ypos=0.8, yanchor=1.0)
             show dobe_attack:
                 ease 0.2 xalign 0.75
@@ -1487,8 +1489,8 @@ label simple_battle_graphics:
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10)
-    call battle_engine(bm, tutorial=True) from _call_battle_engine_butter
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=10, max_energy=10, tutorial=True)
+    call battle_engine(bm) from _call_battle_engine_butter
     if _return == 'win':
         jump .player_wins
     else:
@@ -1560,8 +1562,8 @@ label lumpiwheelchair_battle:
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 350, enemy_sprites, lumpi_intents)
-    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20)
-    call battle_engine(bm, dobe_helps=True) from _call_battle_engine_wheelchair
+    $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=20, max_energy=20, dobe_helps=True)
+    call battle_engine(bm) from _call_battle_engine_wheelchair
     if _return == 'win':
         jump .lumpiwheelchair_wins
     else:
@@ -1594,7 +1596,7 @@ label newenemy_battle:
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
     $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25)
-    call battle_engine(bm, is_chaos=False) from _call_battle_engine_newenemy
+    call battle_engine(bm) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
     else:
@@ -1626,7 +1628,7 @@ label butter_ava_battle:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
     $ bm.initialize_skills(True)
     $ ava_attacked_once = False
 
@@ -1831,7 +1833,7 @@ label butter_ava_battle2:
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
-    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50)
+    $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True)
     $ bm.initialize_skills(True)
 
     label .boss2_start_logic:
