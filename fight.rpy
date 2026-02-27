@@ -195,6 +195,7 @@ init python:
             self.barrier = 0
             self.buffs = []
             self.dodge_active = False
+            self.dodge_expires_at_slot = -1
             self.is_dead = False
 
         @property
@@ -230,6 +231,7 @@ init python:
             self.slots = []
 
             self.dodge_active = False
+            self.dodge_expires_at_slot = -1
             self.player_skills = []
             self.full_skill_pool = []
             self.skill_exp = 0
@@ -336,7 +338,8 @@ init python:
             self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
             self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 4)
-            self.dodge_active = False   
+            self.dodge_active = False
+            self.dodge_expires_at_slot = -1
 
             self.used_skills_this_turn = []
             self.selected_skill = None
@@ -351,7 +354,8 @@ init python:
             self.player_energy = min(self.player_max_energy, self.player_energy + 2)
 
             for enemy in self.enemies:
-                enemy.dodge_active = False  
+                enemy.dodge_active = False
+                enemy.dodge_expires_at_slot = -1
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
                     num_enemy_slots = self.current_max_slots // 2
@@ -870,6 +874,12 @@ label battle_engine(bm):
 
 
     label .engine_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .engine_turn_end
 
@@ -923,6 +933,7 @@ label battle_engine(bm):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -973,6 +984,7 @@ label battle_engine(bm):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_generic
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1730,6 +1742,12 @@ label butter_ava_battle(skill_overrides=None):
         $ bm.dodge_active = False
 
     label .boss1_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .boss1_extra_turn
         $ e_idx = 0
@@ -1781,6 +1799,7 @@ label butter_ava_battle(skill_overrides=None):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1831,6 +1850,7 @@ label butter_ava_battle(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss1
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1859,6 +1879,13 @@ label butter_ava_battle(skill_overrides=None):
         $ e_idx += 1
         jump .boss1_resolution_core
     label .boss1_extra_turn:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
+
         if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead and not ava_attacked_once:
             $ ava_attacked_once = True
             if bm.enemies[0].dodge_active:
@@ -1936,6 +1963,12 @@ label butter_ava_battle2(skill_overrides=None):
         $ bm.dodge_active = False
 
     label .boss2_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .boss2_extra_turn
         $ e_idx = 0
@@ -1987,6 +2020,7 @@ label butter_ava_battle2(skill_overrides=None):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2037,6 +2071,7 @@ label butter_ava_battle2(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss2
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -2065,24 +2100,30 @@ label butter_ava_battle2(skill_overrides=None):
         $ e_idx += 1
         jump .boss2_resolution_core
     label .boss2_extra_turn:
-        if bm.dodge_active:
-            $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
-            $ dodge_anim = get_dodge_anim(p_name)
-            $ bm.is_dodged = True
-            call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
-          
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
             $ bm.dodge_active = False
-            $ bm.is_dodged = False
-        else:
-            show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
-                ease 0.2 xpos 0.35
-                ease 0.2 xpos 0.85
-            play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-            $ renpy.pause(1.0, hard=True)
-            show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
-            $ bm.take_damage(50, target='player')
-            $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
-            'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
+        if not bm.enemies[1].is_dead:
+            if bm.dodge_active:
+                $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+                $ dodge_anim = get_dodge_anim(p_name)
+                $ bm.is_dodged = True
+                call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
+                $ bm.dodge_active = False
+                $ bm.is_dodged = False
+            else:
+                show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
+                    ease 0.2 xpos 0.35
+                    ease 0.2 xpos 0.85
+                play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+                $ renpy.pause(1.0, hard=True)
+                show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
+                $ bm.take_damage(50, target='player')
+                $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
+                'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
             window hide
             jump .boss2_defeat
