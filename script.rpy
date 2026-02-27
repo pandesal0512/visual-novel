@@ -37,14 +37,16 @@ show butter neutral with moveinright
 play sound "Loud glass breaking sound.mp3"  volume 0.5
 "CRASDH"
 
-"butter" " OW watch it stupid"
+"butter" " OW watch it"
 "kare"  "nah u watch it"
 "butter" " excuse me?!!?"
-"kare"  "yea im late because of u"
-"butter" "nah u trippin"
+"kare"  "now im late because of u"
+"butter" "i was just walking here minding my own business and you just came out of nowhere and bumped into me and now you are blaming me?"
+"kare" "..."
 "kare"  "i have no time for this i gotta go to school"
-"butter" "nah you're not going anywhere"
-"butter" "not until you say sorry and pay for your damage"
+"butter" "you're not going anywhere"
+"butter" "not until you say sorry"
+"butter" "and pay for your damage"
 "kare"  "what damage?"
 hide  kare neutral
 hide butter neutral
@@ -59,9 +61,8 @@ with fade
 
 
 show kare hurt 
-"kare" "owie"
-"kare" "..."
-"kare" "ugh.. my head"
+"kare" "ow"
+"kare" "my head"
 "kare" "where did that jerk go"
 "kare" "whatever..."
 
@@ -98,7 +99,7 @@ show kare_neutral at right
 "dobe" "yourwelcome"
 
 hide dobe_neutral
-"teacher"  "Bugs bite some people more than others because of a combination of factors including body heat, carbon dioxide exhalation, body odor (from sweat and skin bacteria), blood type, genetics, and even the color of clothing you wear, which can attract certain insects; essentially, some people naturally emit chemical signals that are more appealing to bugs than others. 
+"teacher"  "Bugs bite some people more than others because of a combination of factors including body heat, carbon dioxide exhalation, body odor from sweat and skin bacteria, blood type, genetics, and even the color of clothing you wear, which can attract certain insects; essentially, some people naturally emit chemical signals that are more appealing to bugs than others. 
 Key reasons why bugs might be attracted to you:
 Carbon dioxide: Mosquitoes and other biting insects are drawn to the carbon dioxide you exhale when breathing. 
 Body heat: Higher body temperature can make you more noticeable to bugs. 
@@ -158,7 +159,7 @@ label choices:
 
 menu:
     "grab a handgun out of nowhere":
-        "kare" "huh? wheres my handgun"
+        "kare" "huh? wheres my gun"
     "summon a sword":
         "kare" "eh? the sword didnt show up?"
   
@@ -191,10 +192,10 @@ scene classroom
 show kare_neutral at left
 show butter_neutral at right
 
-"butter" "nuh uh!!! you are not leaving!!!" 
+"butter" "you are not leaving!!!" 
 "kare"  "what do you want?!"
 "butter" "hmmm"
-"butter" "you are dangerously emmiting some kind of energy that is awfully familiar"
+"butter" "you are dangerously emmiting energy that is awfully familiar"
 "butter" "thats why i followed you to this building"
 "kare" "you lied about us being in the same school??"
 "kare" "what about that uniform?"
@@ -263,7 +264,7 @@ show nuke
 "kare" "uuuuhh give me some kind of uh time machine that can bring me back before the nuclear explosion or something"
 "COOLDOWN 30948543HOURS"
 "kare" "WHAT"
-"butter" "ha!! you cant escape now!"
+"butter" "you cant escape now!"
 "butter" "well im off now goodbye"
 "kare" "nuh uh"
 "butter" "hey!!! get off me!!"
@@ -283,14 +284,13 @@ play music "normal1.mp3" fadein 1.0 volume 0.5
 show butter_neutral at center
 "butter" "WHAT why did you follow me"
 "kare" "because we dont want to be oblitered to dust by that nuke"
-"butter" "okay"
 "dobe" "where are we?"
 "butter" "we are in another dimension"
 "butter" "where i have not dropped a nuke yet"
 "kare" "what the heck how"
 "butter" "its this interdimensional portal blade it can take me to any dimension i want"
 "kare" "how did you even get that portal blade"
-"butter" "uhm i forgot"
+"butter" "i found it in the school bathroom"
 "butter" "anyway since you guys are not dead yet we'll have to continue our battle"
 "kare" "why are you trying to kill me anyway?"
 "butter" "uuuh i honestly dont rememb-"
@@ -316,8 +316,8 @@ show kare neutral at left
 "kare" "who you?"
 "kare" "did you do this to her"
 "lumpi" "huh what no"
-"lumpi" "mother Cosmos has sent me. your existence is unraveling the fabric of this realm and that is my jurisdiction and-"
-"kare" "huh what are you talking about"
+"lumpi" "mother Order has sent me, you are violating the governing structure of this realm and-"
+"kare" "huh what are you yapping about"
 "lumpi" "..."
 
 scene flash
@@ -390,10 +390,10 @@ menu:
         
     
     "grab a stick":
-        "kare" "uhm..."
+        "kare" "whatever works"
         show kare_stick
         "lumpi" "HUH how is a stick doing numbers to a thousand army???"
-        "person" "im tired, boss"
+        "person" "im tired boss"
 
         scene outside
         show lumpi_nuetral at center
@@ -449,7 +449,7 @@ show dobe_neutral at center
 hide dobe_neutral
 show lumpi_nuetral at center
 "lumpi" "so be it."
-"lumpi" "LEGENDARY SWORD OF SPACE"
+"lumpi" "SOVEREIGN BLADE "
 "dobe" "DISABLITY GUN!!!!"
 play sound "Gunshot Sound Effect.mp3" volume 3.0
 "lumpi" "what the hell does that do-"
@@ -462,35 +462,88 @@ call battle_lumpi_wheelchair from _call_lumpiwheelchair_battle
 
 show realmexpansion with dissolve
 "lumpi/dobe/kare" "REALM EXPANSION:"
-"lumpi/dobe/kare" "FINITE SPACE!!! I EAT CHALK!!!!  SCENE OF ???? "
+"lumpi/dobe/kare" "ABSOLUTE DOMINION!!! I EAT CHALK!!!!  SCENE OF ???? "
+play sound "eaglaxle-glass-shattering-461637.mp3" volume 3.0
 "lumpi" "HA!!! MINE WINS "
 "lumpi" "within this space you cannot escape nor hide "
 play sound "audio/scary-siren-air-raid-tornado-nuke-7010.mp3"  fadein 1.0 volume 10.0 fadeout 03.0
 "dobe" "I CAST NUCLEAR BOMB"
 "lumpi" "ARE YOU A DUMBASS!! WE ARE TRAPPED IN HERE, YOU ARE GOING TO GET ALL OF US KILLED WITHIN THIS SPACE"
 play sound "audio/nuke-333673.mp3" volume 2.0
+stop music
 show lumpi_nuke with dissolve
 ""
 show lumpi_hurt with dissolve
+play music "Wind Sound SOUND EFFECT - No Copyright.mp3" fadein 1.0 volume 3.0
 "lumpi" "tsk we are outside again"
 "lumpi" "i wont even question how we survived"
-"lumpi" "i need to get rid of her before it gets worse"
-"lumpi" "...?"
+"kare" "oww"
+"dobe" "alteast we're out"
+"kare" "HEY can we atleast get a break??"
 "lumpi" "huh?"
+"lumpi" "THATS... uhm.. good idea actually"
+"kare" "finally..."
+"kare" "hey miss..."
+"lumpi" "lumpi"
+"lumpi" "don't go friendly with me twerp"
+"lumpi" "after this break im going to get rid of you for real this time"
+"kare" "miss whatever"
+"kare" "why the HELL are you trying to kill me"
+"lumpi" "because your existence is destabilizing the natural laws of this realm"
+"kare" "???"
+"kare" "could you explain a bit further?"
+"lumpi" "unfortunately thats it, thats what mother Order told me"
+"kare" "Order?"
+"kare" "who?"
+"lumpi" "for real!?!"
+"lumpi" "ergh"
+"lumpi" "enough of that..."
+"lumpi" "what i want to know is why you are still here after everything that has happened"
+"lumpi" "i know concepts don't physically die"
+"lumpi" "concepts born from phenomena that have existed since the beginning"
+"lumpi" "cannot truly end"
+"lumpi" "they disperse"
+"lumpi" "and the universe eventually gives them a new form"
+"lumpi" "newer concepts though..."
+"lumpi" "ones born from human created phenomena"
+"lumpi" "we are different"
+"lumpi" "which means whatever you are"
+"lumpi" "is something old"
+"lumpi" "something fundamental"
+"kare" "i am literally just a person"
+"lumpi" "no"
+"lumpi" "you are not"
+"lumpi" "a person would have died three times today already"
+"dobe" "she has a point"
+"kare" "whose side are you on"
+"dobe" "yours obviously"
+"dobe" "she still has a point though"
+"kare" "wait pause, what do you mean concepts?"
+"lumpi" "judging from our fight.. i threw you off from space"
+"lumpi" "i cut you a hundred times"
+"lumpi" "and you somehow survived a nuclear explosion"
+"lumpi" "wait how did that kid even set a nuclear explosion"
+"dobe" "idunno"
+"lumpi" "it seems your power influences other people and the environment around you"
+"lumpi" "Fiction?"
+"lumpi" "Entropy?"
+"lumpi" "no.."
+"lumpi" "its all of that..."
+"lumpi" "meaning..."
+
+
+
 show butter_stand with dissolve
-"lumpi" "is that..."
+"..."
 play sound "20 February_2025.mp3"  fadein 1.0 volume 2.0 fadeout 03.0
 show butter_punch with dissolve
 "..."
-stop music
-play music "Wind Sound SOUND EFFECT - No Copyright.mp3" fadein 1.0 volume 5.0
 "kare" "augh.."
 hide butter_stand
 hide butter_punch with dissolve
 show lumpi_hurt with dissolve
-"lumpi" "finally being useful."
-"lumpi" "hey"
-"lumpi" "go get that tiny one ill get the main one"
+"lumpi" "wait, butter"
+"lumpi" "go get that tiny one over there"
 "butter" "..."
 "butter" "no"
 "butter" "im going for her, not you"
@@ -499,16 +552,13 @@ show sleep with dissolve
 
 show butter_scene with dissolve
 "butter" "..."
-"butter" "kare"
-"butter" "no..."
-"butter" "Chaos.."
-"butter" "go back where you should belong.."
+"butter" "kare... no, Chaos.."
 "butter" "stop this fatuous game of yours."
 "kare" "?"
 "butter" "stubborn as always"
 "butter" "everywhere you go, every atoms of you spread throughout all over the place, far and near,in every quarter, all over the map."
 "butter" "you will only bring annihilation to this world if you keep on living in here"
-"butter" "you have been quite the trouble after mother O has been absent."
+"butter" "you have been quite the trouble after mother has been absent."
 "butter" "where did you even find that pitiful body of yours"
 hide butter_scene
 show kare_scene with dissolve
@@ -525,7 +575,6 @@ show karebutterfight with dissolve
 "butter" "It must be that pile of flesh of yours that is the reason you fail to recall."
 "butter" "worry not, i will beat the hell out of you until that empty head of yours resurrect it"
 
-call battle_serious_butter from _call_newenemy_battle
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 show karebutterfight2 with dissolve
 "kare" "gaughh!!!!!"
@@ -586,6 +635,7 @@ play sound "Laser sound effects.mp3" fadein 1.0 fadeout 1.0 volume 3.0
 "kare" "haaah..."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 "butter" "HAAAH!!!!!!"
+call battle_serious_butter from _call_newenemy_battle
 show portal_kick with dissolve 
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 "kare" "AH"
@@ -886,7 +936,6 @@ play sound "Big house fire sound effect.mp3" fadein 1.0 fadeout 3.0 volume 0.1
 "butter" "why do you want to stay here so bad.."
 "butter" "you are not suppose to be here."
 "butter" "concepts do not interfere directly, we exist alongside them"
-"butter" "we do not walk among them"
 "butter" "you know this, and you chose to ignore it"
 "butter" "you are natural"
 "butter" "a storm. a wildfire. the unpredictability of life"
@@ -998,7 +1047,9 @@ play sound "Big house fire sound effect.mp3" fadein 1.0 fadeout 3.0 volume 0.1
 "butter" "and that is exactly why you cannot stay here"
 "Chaos" "..."
 "Chaos" "maybe you are right"
+"Chaos" "..."
 "Chaos" "but does that make them any less fascinating?"
+"Chaos" "hehe~"
 "butter" "..."
 "butter" "no"
 "butter" "it doesn't"
@@ -1057,7 +1108,7 @@ show ava
 "butter" "which side are you fool"
 "butter" "and what kind of creation of whatever wears something like that"
 "ava" "i am in the humanity side!!!"
-"butter" "this brat right here is the one causing all this destruction"
+"butter" "this right here is the one causing all this destruction"
 "ava" "oh"
 "ava" "my bad gang"
 scene city
@@ -1287,12 +1338,13 @@ hide kare_stupid at right
 show lumpi_nuetral at left
 "lumpi" "ugh..."
 show order_neutral at right
-"Order" "Boundary.."
+"Order" "Dominion.."
 "lumpi" "dont even talk to me"
 "Order" "ooh? still a bit pissed at me?"
 "lumpi" "..."
 "Order" "and i thought we could work together again"
 "lumpi" "..."
+"Order" "come on give your big mother a hug"
 "lumpi" "hahh.. shut up"
 "Order" "if you say so"
 hide lumpi_nuetral
