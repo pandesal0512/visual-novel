@@ -23,6 +23,20 @@ image lumpiwheelchair_hit = "lumpiwheelchair_hit.png"
 
 image ava_idle = "ava_idle.png"
 image ava_hit = "ava_hit.png"
+
+image order_idle = "order_idle.png"
+image order_attack = "order_attack.png"
+image order_hit = "order_hit.png"
+image order_neutral = "order_neutral.png"
+
+image order_normal_sprite = "order_normal_sprite.png"
+image order_hard_sprite = "order_hard_sprite.png"
+image order_block_sprite = "order_block_sprite.png"
+image order_dodge_sprite = "order_dodge_sprite.png"
+image order_buff_sprite = "order_buff_sprite.png"
+image order_ultimate_sprite = "order_ultimate_sprite.png"
+image order_energy_sprite = "order_energy_sprite.png"
+
 image dobe_sprite = "dobe_sprite.png"
 image dobe_attack = "dobe_fight.png"
 
@@ -548,6 +562,15 @@ init python:
                 EnemyIntent("WRITTEN IN HISTORY", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("END OF AN ERA", damage=60, desc="every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now", animation="ava_ultimate_anim", type="attack", cooldown=6)
             ]
+        elif name.lower() == "order":
+            return [
+                EnemyIntent("correction", damage=8, desc="precise and deliberate", animation="order_normal_anim", type="attack"),
+                EnemyIntent("STRUCTURE", damage=10, desc="absolute foundation", animation="order_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("EQUILIBRIUM", damage=5, buff_type="damage", buff_duration=3, desc="restoring balance increases damage by 5 for 3 turns", animation="order_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("ABSOLUTE RULE", damage=15, desc="the weight of everything held in place. now released.", animation="order_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("INEVITABILITY", desc="order always finds a way around chaos", animation="order_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("FINAL ORDER", damage=30, desc="this ends now", animation="order_ultimate_anim", type="attack", cooldown=6)
+            ]
         return []
 
 screen battle_screen(bm):
@@ -1034,7 +1057,7 @@ label battle_engine(bm):
                 ease 0.1 xpos 0.55
                 ease 0.1 xpos 0.75
             $ renpy.show(bm.enemies[0].sprites["hit"], tag="enemy_0")
-            play sound "universfield-punch-02-123106.mp3"
+            play sound "audio/universfield-punch-02-123106.mp3"
             $ renpy.pause(0.4, hard=True)
             $ renpy.show(bm.enemies[0].sprites["idle"], tag="enemy_0")
             $ bm.take_damage(5, target="enemy", enemy_idx=0)
@@ -1090,7 +1113,7 @@ label kare_normal_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "universfield-punch-02-123106.mp3"
+        play sound "audio/universfield-punch-02-123106.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1111,7 +1134,7 @@ label kare_hard_anim(bm):
 
 label kare_block_anim(bm):
     show expression "kare_block_sprite" as player at fight_left
-    play sound "Berserk Clang Sound Effect.mp3"
+    play sound "audio/Berserk Clang Sound Effect.mp3"
     $ renpy.pause(1, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1161,7 +1184,7 @@ label chaos_normal_anim(bm):
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
     if not bm.is_dodged:
-        play sound "punch-140236.mp3"
+        play sound "audio/punch-140236.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1180,7 +1203,7 @@ label chaos_hard_anim(bm):
 
 label chaos_block_anim(bm):
     show expression "chaos_block_sprite" as player at fight_left
-    play sound "Berserk Clang Sound Effect.mp3"
+    play sound "audio/Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1240,7 +1263,7 @@ label butter_hard_anim(bm):
 
 label butter_block_anim(bm):
     $ renpy.show("butter_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    play sound "Berserk Clang Sound Effect.mp3"
+    play sound "audio/Berserk Clang Sound Effect.mp3"
     $ renpy.pause(1, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1355,7 +1378,7 @@ label lumpi_hard_anim(bm):
 
 label lumpi_block_anim(bm):
     $ renpy.show("lumpi_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
-    play sound "Berserk Clang Sound Effect.mp3"
+    play sound "audio/Berserk Clang Sound Effect.mp3"
     $ renpy.pause(1, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1432,17 +1455,17 @@ label lumpi_wheelchair_ultimate_anim(bm):
     $ renpy.pause(1, hard=True)
   
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    play sound  "lordsonny_two-debris-break-2-457507.mp3"
+    play sound "audio/lordsonny_two-debris-break-2-457507.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show("lumpi_wheelchair_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
     $ renpy.pause(0.2, hard=True)
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    play sound "lordsonny_two-debris-break-2-457507.mp3"
+    play sound "audio/lordsonny_two-debris-break-2-457507.mp3"
     $ renpy.pause(0.8, hard=True)
     $ renpy.show("lumpi_wheelchair_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
     $ renpy.pause(0.2, hard=True)
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
-    play sound "lordsonny_two-debris-break-2-457507.mp3"
+    play sound "audio/lordsonny_two-debris-break-2-457507.mp3"
     $ renpy.pause(1, hard=True)
     if not bm.is_dodged:
     
@@ -1513,6 +1536,77 @@ label ava_ultimate_anim(bm):
 
 label ava_energy_anim(bm):
     $ renpy.show("ava_energy_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.pause(0.5, hard=True)
+    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    return
+
+# --- ORDER ANIMATIONS ---
+label order_normal_anim(bm):
+    $ renpy.show("order_normal_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+        play sound "audio/magic-spark.mp3"
+        with flash
+    $ renpy.pause(0.5, hard=True)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label order_hard_anim(bm):
+    $ renpy.show("order_hard_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+        play sound "audio/magic-spark.mp3"
+        with flash
+        camera:
+            ease 0.1 zoom 1.05
+            ease 0.1 zoom 1.0
+    $ renpy.pause(0.8, hard=True)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label order_block_anim(bm):
+    $ renpy.show("order_block_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    play sound "audio/Berserk Clang Sound Effect.mp3"
+    $ renpy.pause(0.5, hard=True)
+    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    return
+
+label order_dodge_anim(bm):
+    $ renpy.show("order_dodge_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    $ renpy.pause(0.5, hard=True)
+    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    return
+
+label order_buff_anim(bm):
+    $ renpy.show("order_buff_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    play sound "audio/meditate-sound.mp3"
+    $ renpy.pause(0.8, hard=True)
+    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    return
+
+label order_ultimate_anim(bm):
+    $ renpy.show("order_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right])
+    if not bm.is_dodged:
+        show expression bm.player_sprites["hit"] as player at fight_left
+        play sound "audio/magic-spark.mp3"
+        with flash
+        camera:
+            ease 0.05 zoom 1.1
+            ease 0.05 zoom 1.0
+            ease 0.05 zoom 1.1
+            ease 0.05 zoom 1.0
+    $ renpy.pause(1.2, hard=True)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    show expression bm.player_sprites["idle"] as player at fight_left
+    return
+
+label order_energy_anim(bm):
+    $ renpy.show("order_energy_sprite", tag=current_enemy_tag, at_list=[fight_right])
     $ renpy.pause(0.5, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
@@ -1896,7 +1990,7 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
             else:
                 $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
-                play sound 'punch-140236.mp3' volume 2.0
+                play sound 'audio/punch-140236.mp3' volume 2.0
                 $ renpy.pause(0.5, hard=True)
                 $ bm.take_damage(5, target='enemy', enemy_idx=0)
                 $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
@@ -1937,7 +2031,7 @@ label butter_ava_battle2(skill_overrides=None):
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
-    $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
+    $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
@@ -2105,6 +2199,26 @@ label butter_ava_battle2(skill_overrides=None):
             for e in bm.enemies:
                 if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
                     e.dodge_active = False
+
+        # buildings collapsing drains Ava every turn
+        if not bm.enemies[1].is_dead:
+            python:
+                drain_amount = 33333
+                if bm.enemies[1].hp - drain_amount < 1:
+                    drain_amount = bm.enemies[1].hp - 1
+                if drain_amount > 0:
+                    bm.take_damage(drain_amount, target='enemy', enemy_idx=1)
+            if drain_amount > 0:
+                "the city crumbles... Ava takes [drain_amount] damage from destruction"
+                if bm.enemies[1].is_dead:
+                    show ava_hit as enemy_1
+                    "Ava" "my buildings..."
+                    "Ava" "..."
+                    renpy.hide("enemy_1")
+        if all(e.is_dead for e in bm.enemies):
+            window hide
+            jump .boss2_victory
+
         if not bm.enemies[1].is_dead:
             if bm.dodge_active:
                 $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
@@ -2131,11 +2245,34 @@ label butter_ava_battle2(skill_overrides=None):
         window hide
         jump .boss2_start_logic
     label .boss2_victory:
-        $ config.allow_skipping = True
-        $ battle_mode = False
-        $ quick_menu = True
         hide screen battle_screen
-        return
+        python:
+            for i in range(len(bm.enemies)):
+                renpy.hide("enemy_" + str(i))
+        hide player
+
+        # ORDER CUTSCENE
+        show order_neutral at center with dissolve
+        show chaos_idle as player at left with dissolve
+        "Order" "Chaos..."
+        "Order" "there you are"
+        "Order" "do you have any idea how much i have to fix right now"
+        "Chaos" "..."
+        "Order" "why did you come here"
+        "Chaos" "..."
+        "Chaos" "i wanted to know what it felt like"
+        "Chaos" "from the inside"
+        "Chaos" "actually there"
+        "Chaos" "not watching"
+        "Order" "..."
+        "Order" "and"
+        "Chaos" "it was not what i thought it would be"
+        "Order" "it never is"
+        hide order_neutral
+        hide player
+
+        # TRANSITION INTO ORDER BATTLE
+        jump .order_battle_start
     label .boss2_defeat:
         $ config.allow_skipping = True
         $ battle_mode = False
@@ -2144,6 +2281,254 @@ label butter_ava_battle2(skill_overrides=None):
         menu:
             'Retry Battle':
                 jump battle_boss_ava_butter_phase2
+
+    label .order_battle_start:
+        $ _skipping = None
+        $ config.allow_skipping = False
+        scene bg_boss2 at truecenter
+
+        # keep chaos's hp and energy from previous battle
+        $ order_intents = get_enemy_intents("order")
+        $ order_enemy = Enemy('Order', 600, {'idle': 'order_idle', 'attack': 'order_attack', 'hit': 'order_hit'}, order_intents)
+        $ bm.enemies = [order_enemy]
+        $ bm.player_energy = min(bm.player_max_energy, bm.player_energy)
+
+        # threshold flags
+        $ order_talked_75 = False
+        $ order_talked_50 = False
+        $ order_talked_25 = False
+
+        show expression bm.player_sprites["idle"] as player at fight_left
+        show order_idle as enemy_0 at fight_right
+
+    label .order_turn_start:
+        $ bm.prepare_turn()
+        show screen battle_screen(bm)
+
+    label .order_selection_phase:
+        $ result = ui.interact()
+        if result == 'execute':
+            jump .order_execution_phase
+        jump .order_selection_phase
+
+    label .order_execution_phase:
+        hide screen battle_screen
+        $ current_slot_idx = 0
+        $ bm.dodge_active = False
+
+    label .order_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
+        if current_slot_idx >= bm.current_max_slots:
+            jump .order_extra_turn
+        $ e_idx = 0
+
+    label .order_resolution_core:
+        if e_idx >= len(bm.enemies):
+            $ current_slot_idx += 1
+            jump .order_main_loop
+        $ enemy = bm.enemies[e_idx]
+        if enemy.is_dead:
+            $ e_idx += 1
+            jump .order_resolution_core
+        $ action = enemy.slots[current_slot_idx]
+        $ current_enemy_tag = "enemy_" + str(e_idx)
+        if action is None:
+            $ e_idx += 1
+            jump .order_resolution_core
+        elif isinstance(action, Skill):
+            $ skill = action
+            $ skill.current_cooldown = skill.cooldown
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if skill.type == "attack":
+                if enemy.dodge_active:
+                    $ bm.is_dodged = True
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_order_dodge
+                    $ dodge_anim = get_dodge_anim(enemy.name)
+                    call expression dodge_anim pass (bm) from _call_enemy_order_dodge
+                    $ enemy.dodge_active = False
+                    $ bm.is_dodged = False
+                else:
+                    $ bm.is_dodged = False
+                    if skill.animation:
+                        call expression skill.animation pass (bm) from _call_skill_order_attack
+                    $ damage = skill.damage + bm.get_total_buff_value("damage", target="player")
+                    $ bm.take_damage(damage, target="enemy", enemy_idx=e_idx)
+                    $ bm.gain_exp(damage * 5, character_type="player")
+                    "[skill.name] deals [damage] damage to Order!"
+
+                    # Check thresholds immediately after damage
+                    if not order_talked_75 and bm.enemies[0].hp <= int(bm.enemies[0].max_hp * 0.75):
+                        $ order_talked_75 = True
+                        hide screen battle_screen
+                        show order_neutral at right
+                        show chaos_idle as player at left
+                        "Chaos" "i could not stay away anymore"
+                        "Order" "i know"
+                        "Chaos" "its not fair"
+                        "Order" "no"
+                        hide order_neutral
+                        hide player
+                        show screen battle_screen(bm)
+
+                    if not order_talked_50 and bm.enemies[0].hp <= int(bm.enemies[0].max_hp * 0.50):
+                        $ order_talked_50 = True
+                        hide screen battle_screen
+                        show order_neutral at right
+                        show chaos_idle as player at left
+                        "Order" "you know you cannot stay here"
+                        "Chaos" "i know"
+                        "Order" "you have always been here"
+                        "Chaos" "thats not the same thing"
+                        "Order" "i know it is not"
+                        hide order_neutral
+                        hide player
+                        show screen battle_screen(bm)
+
+                    if not order_talked_25 and bm.enemies[0].hp <= int(bm.enemies[0].max_hp * 0.25):
+                        $ order_talked_25 = True
+                        hide screen battle_screen
+                        show order_neutral at right
+                        show chaos_idle as player at left
+                        "Chaos" "you keep saying we will figure it out"
+                        "Order" "..."
+                        "Chaos" "have you actually been trying"
+                        "Order" "..."
+                        "Order" "no"
+                        "Chaos" "..."
+                        "Order" "i kept thinking if nothing was breaking then nothing needed fixing"
+                        "Order" "i was wrong about that"
+                        "Chaos" "i dont need you to feel bad about it"
+                        "Chaos" "i just want it to actually change"
+                        "Order" "then it will"
+                        "Chaos" "you sound very sure"
+                        "Order" "i am not"
+                        "Order" "but we have been doing this long enough to figure something out"
+                        "Chaos" "yeah"
+                        hide order_neutral
+                        hide player
+                        show screen battle_screen(bm)
+
+                    if enemy.is_dead:
+                        "Order has been defeated"
+                        $ renpy.hide("enemy_0")
+                        window hide
+                        jump .order_victory
+            elif skill.type == "barrier":
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_order_barrier
+                $ bm.add_barrier(skill.damage)
+                "You gain [skill.damage] Defense"
+            elif skill.type == "dodge":
+                $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
+            elif skill.type == "buff":
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_order_buff
+                $ bm.add_buff(skill.buff_type, skill.damage, skill.buff_duration, target="player")
+            elif skill.type == "energy":
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_skill_order_energy
+                "You gained [skill.energy_regen] Energy"
+        elif isinstance(action, EnemyIntent):
+            $ intent = action
+            $ intent.current_cooldown = intent.cooldown
+            if intent.type == "attack":
+                if bm.dodge_active:
+                    $ bm.is_dodged = True
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_order_dodge
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_order_dodge_default
+                    $ p_name = "chaos"
+                    $ dodge_anim = get_dodge_anim(p_name)
+                    call expression dodge_anim pass (bm) from _call_player_order_dodge
+                    $ bm.dodge_active = False
+                    $ bm.is_dodged = False
+                else:
+                    $ bm.is_dodged = False
+                    if intent.animation:
+                        call expression intent.animation pass (bm) from _call_intent_order_attack
+                    else:
+                        call enemy_attack_anim(bm) from _call_intent_order_default
+                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ bm.take_damage(damage, target="player")
+                    $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
+                    "Order deals [damage] damage with [intent.name]!"
+            elif intent.type == "barrier":
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_order_barrier
+                $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
+                "Order gains [intent.damage] Defense"
+            elif intent.type == "dodge":
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_order_dodgeanim
+                $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
+            elif intent.type == "buff":
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_order_buffanim
+                $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+            elif intent.type == "energy":
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_order_energyanim
+
+        if bm.enemies[0].is_dead:
+            window hide
+            jump .order_victory
+        if bm.player_hp <= 0:
+            window hide
+            jump .order_defeat
+
+        window hide
+        $ renpy.pause(0.5, hard=True)
+        show expression bm.player_sprites["idle"] as player at fight_left
+        if not bm.enemies[0].is_dead:
+            show order_idle as enemy_0 at fight_right
+            $ e_idx += 1
+            jump .order_resolution_core
+        else:
+            jump .order_victory
+
+    label .order_extra_turn:
+        $ bm.reduce_cooldowns()
+        $ bm.update_buffs()
+
+        if bm.player_hp <= 0:
+            window hide
+            jump .order_defeat
+        window hide
+        jump .order_turn_start
+
+    label .order_victory:
+        $ config.allow_skipping = True
+        $ battle_mode = False
+        $ quick_menu = True
+        hide screen battle_screen
+        hide player
+        hide enemy_0
+        # final dialogue after fight ends
+        show order_neutral at right with dissolve
+        show chaos_idle as player at left with dissolve
+        "Order" "Chaos"
+        "Chaos" "..."
+        "Chaos" "the girl"
+        "Order" "i know"
+        "Chaos" "she was already gone when i went in"
+        "Order" "..."
+        "Order" "i will handle it"
+        "Chaos" "you are sure"
+        "Order" "yes"
+        "Chaos" "..."
+        "Chaos" "okay"
+        "Chaos" "..."
+        "Chaos" "okay"
+        return
 
 label battle_credits:
     scene black

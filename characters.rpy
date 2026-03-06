@@ -47,4 +47,6 @@ image butter_hit:
     pause 2.0
     "butter_idle"
 
+define flash = Fade(0.1, 0.0, 0.5, color="#fff")
+
 
