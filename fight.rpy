@@ -127,7 +127,6 @@ image sketchy_outline_img = Composite((100, 100),
     (98, 2), Solid("#6d6d6d", xsize=2,   ysize=96),  # right, 2px
 )
 image sketchy_bar_outline = Frame("sketchy_outline_img", 2, 2, 2, 2)
-define flash = Fade(0.1, 0.0, 0.5, color="#fff")
 # --- Transforms ---
 transform fight_left:
     xpos 0.35
@@ -610,6 +609,15 @@ init python:
                 EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("crashout", damage=25, desc="thats it im beating the shit out of you", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=6)
             ]
+        elif name.lower() == "order":
+            return [
+                EnemyIntent("correction", damage=8, desc="precise and deliberate", animation="order_normal_anim", type="attack"),
+                EnemyIntent("STRUCTURE", damage=10, desc="absolute foundation", animation="order_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("EQUILIBRIUM", damage=5, buff_type="damage", buff_duration=3, desc="restoring balance increases damage by 5 for 3 turns", animation="order_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("ABSOLUTE RULE", damage=15, desc="the weight of everything held in place. now released.", animation="order_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("INEVITABILITY", desc="order always finds a way around chaos", animation="order_dodge_anim", type="dodge", cooldown=3),
+                EnemyIntent("FINAL ORDER", damage=30, desc="this ends now", animation="order_ultimate_anim", type="attack", cooldown=6)
+            ]
         elif name.lower() == "ava":
             return [
                 EnemyIntent("poke", damage=6, desc="poke", animation="ava_normal_anim", type="attack"),
@@ -1023,7 +1031,8 @@ label battle_engine(bm):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_generic
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_eng
+                    if getattr(bm, "is_chaos", False):
+                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_eng
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]"
@@ -1035,10 +1044,13 @@ label battle_engine(bm):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_generic
                 $ actual_barrier = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_eng
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_eng
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False): "You gain [actual_barrier] Defense"
-                else: "You gain [skill.damage] Defense"
+                if getattr(bm, "is_chaos", False):
+                    "You gain [actual_barrier] Defense"
+                else:
+                    "You gain [skill.damage] Defense"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
@@ -1048,10 +1060,13 @@ label battle_engine(bm):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_generic
                 $ actual_buff = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_eng
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_eng
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False): "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
-                else: "[skill.name] Damage increased by [skill.damage] for [skill.buff_duration] turns."
+                if getattr(bm, "is_chaos", False):
+                    "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
+                else:
+                    "[skill.name] Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1276,29 +1291,42 @@ label kare_energy_anim(bm):
 # --- CHAOS ANIMATIONS ---
 label chaos_normal_anim(bm):
     show expression "chaos_normal_sprite" as player at fight_left
+    $ renpy.pause(0.15, hard=True)
+    show chaos_projectile_normal at chaos_projectile_fly
+    play sound "audio/magic-spark.mp3"
+    $ renpy.pause(0.25, hard=True)
+    hide chaos_projectile_normal
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    if not bm.is_dodged:
-        play sound "punch-140236.mp3"
-    $ renpy.pause(0.5, hard=True)
+        play sound "audio/punch-140236.mp3"
+    $ renpy.pause(0.4, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label chaos_hard_anim(bm):
     show expression "chaos_hard_sprite" as player at fight_left
+    $ renpy.pause(0.5, hard=True)
+    show chaos_projectile_hard at chaos_projectile_fly_hard
+    play sound "audio/magic-spark.mp3"
+    $ renpy.pause(0.2, hard=True)
+    hide chaos_projectile_hard
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    if not bm.is_dodged:
         play sound "audio/punch-140236.mp3"
-    $ renpy.pause(0.8, hard=True)
+        camera:
+            ease 0.1 zoom 1.15
+            ease 0.15 zoom 1.0
+    $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label chaos_block_anim(bm):
     show expression "chaos_block_sprite" as player at fight_left
-    play sound "Berserk Clang Sound Effect.mp3"
+    play sound "audio/Berserk Clang Sound Effect.mp3"
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
     return
@@ -1318,22 +1346,37 @@ label chaos_buff_anim(bm):
 
 label chaos_ultimate_anim(bm):
     show expression "chaos_ultimate_sprite" as player at fight_left
+    $ renpy.pause(0.3, hard=True)
+    show chaos_projectile_ultimate_1 at chaos_projectile_fly
+    play sound "audio/magic-spark.mp3"
+    $ renpy.pause(0.15, hard=True)
+    hide chaos_projectile_ultimate_1
+    show chaos_projectile_ultimate_2 at chaos_projectile_fly_2
+    play sound "audio/magic-spark.mp3"
+    $ renpy.pause(0.15, hard=True)
+    hide chaos_projectile_ultimate_2
+    show chaos_projectile_ultimate_3 at chaos_projectile_fly_3
+    play sound "audio/magic-spark.mp3"
+    $ renpy.pause(0.15, hard=True)
+    hide chaos_projectile_ultimate_3
     if not bm.is_dodged:
         $ renpy.show(bm.enemies[e_idx].sprites["hit"], tag=current_enemy_tag)
-    if not bm.is_dodged:
         play sound "audio/magic-spark.mp3"
-    $ renpy.pause(1.2, hard=True)
+        camera:
+            ease 0.1 zoom 1.2
+            ease 0.1 zoom 1.1
+            ease 0.1 zoom 1.0
+    $ renpy.pause(0.6, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
-    $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
+    if not bm.enemies[e_idx].is_dead:
+        $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
 
 label chaos_energy_anim(bm):
     show expression "chaos_energy_sprite" as player at fight_left
     $ renpy.pause(0.5, hard=True)
     show expression bm.player_sprites["idle"] as player at fight_left
-    return
-
-# --- BUTTER ANIMATIONS ---
+    return# --- BUTTER ANIMATIONS ---
 label butter_normal_anim(bm):
     $ renpy.show("butter_normal_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
     if not bm.is_dodged:
@@ -1977,7 +2020,8 @@ label butter_ava_battle(skill_overrides=None):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss1
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss1
+                    if getattr(bm, "is_chaos", False):
+                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss1
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -1989,10 +2033,13 @@ label butter_ava_battle(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss1
                 $ actual_barrier = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss1
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss1
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False): "You gain [actual_barrier] Defense!"
-                else: "You gain [skill.damage] Defense!"
+                if getattr(bm, "is_chaos", False):
+                    "You gain [actual_barrier] Defense!"
+                else:
+                    "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
@@ -2002,10 +2049,13 @@ label butter_ava_battle(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss1
                 $ actual_buff = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss1
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss1
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False): "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
-                else: "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
+                if getattr(bm, "is_chaos", False):
+                    "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
+                else:
+                    "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2209,7 +2259,8 @@ label butter_ava_battle2(skill_overrides=None):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss2
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss2
+                    if getattr(bm, "is_chaos", False):
+                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss2
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2221,10 +2272,13 @@ label butter_ava_battle2(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss2
                 $ actual_barrier = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss2
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss2
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False): "You gain [actual_barrier] Defense!"
-                else: "You gain [skill.damage] Defense!"
+                if getattr(bm, "is_chaos", False):
+                    "You gain [actual_barrier] Defense!"
+                else:
+                    "You gain [skill.damage] Defense!"
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
@@ -2234,10 +2288,13 @@ label butter_ava_battle2(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss2
                 $ actual_buff = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss2
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss2
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False): "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
-                else: "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
+                if getattr(bm, "is_chaos", False):
+                    "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
+                else:
+                    "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
             elif skill.type == "energy":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2347,18 +2404,18 @@ label butter_ava_battle2(skill_overrides=None):
         # buildings collapsing drains Ava every turn
         if not bm.enemies[1].is_dead:
             python:
-                drain_amount = 33333
+                store.drain_amount = 33333
                 if bm.enemies[1].hp - drain_amount < 1:
-                    drain_amount = bm.enemies[1].hp - 1
-                if drain_amount > 0:
+                    store.drain_amount = bm.enemies[1].hp - 1
+                if getattr(renpy.store, "drain_amount", 0) > 0:
                     bm.take_damage(drain_amount, target="enemy", enemy_idx=1)
-            if drain_amount > 0:
-                "the city crumbles... Ava takes [drain_amount] damage from destruction"
+            if getattr(renpy.store, "drain_amount", 0) > 0:
+                "the city crumbles... Ava takes [store.drain_amount] damage from destruction"
                 if bm.enemies[1].is_dead:
                     show ava_hit as enemy_1
                     "Ava" "my buildings..."
                     "Ava" "..."
-                    renpy.hide("enemy_1")
+                    $ renpy.hide("enemy_1")
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss2_victory
@@ -2479,7 +2536,8 @@ label order_battle_resolution_core:
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_order_attack
                 $ actual_damage = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_order
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_order
                 $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                 $ bm.gain_exp(actual_damage * 5, character_type="player")
                 "[skill.name] deals [actual_damage] damage to Order!"
@@ -2551,10 +2609,13 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_barrier
             $ actual_barrier = get_chaos_random_value(bm, skill)
-            if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_order
+            if getattr(bm, "is_chaos", False):
+                call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_order
             $ bm.add_barrier(actual_barrier)
-            if getattr(bm, "is_chaos", False): "You gain [actual_barrier] Defense"
-            else: "You gain [skill.damage] Defense"
+            if getattr(bm, "is_chaos", False):
+                "You gain [actual_barrier] Defense"
+            else:
+                "You gain [skill.damage] Defense"
         elif skill.type == "dodge":
             $ bm.dodge_active = True
             $ bm.dodge_expires_at_slot = current_slot_idx + 1
@@ -2562,7 +2623,8 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_buff
             $ actual_buff = get_chaos_random_value(bm, skill)
-            if getattr(bm, "is_chaos", False): call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_order
+            if getattr(bm, "is_chaos", False):
+                call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_order
             $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
         elif skill.type == "energy":
             if skill.animation:
