@@ -93,9 +93,12 @@ image card_chaos_hard = "card_chaos_hard.png"
 image card_chaos_dodge = "card_chaos_dodge.png"
 image card_chaos_ultimate = "card_chaos_ultimate.png"
 
-# --- Sketch UI Placeholders ---
-image bg = Solid("#ffffff")
-image ui_bg = Solid("#ffffff")
+image bg_butter    = Solid("#ffffff") 
+image bg_lumpi     = Solid("#ffffff")
+image bg_lumpi_wc  = Solid("#ffffff")
+image bg_serious   = Solid("#ffffff")
+image bg_boss1     = Solid("#ffffff")
+image bg_boss2     = Solid("#ffffff")
 
 # Helper to create an outline image (1px black border with transparent center)
 image sketchy_outline_img = Composite((100, 100),
@@ -195,6 +198,7 @@ init python:
             self.barrier = 0
             self.buffs = []
             self.dodge_active = False
+            self.dodge_expires_at_slot = -1
             self.is_dead = False
 
         @property
@@ -230,6 +234,7 @@ init python:
             self.slots = []
 
             self.dodge_active = False
+            self.dodge_expires_at_slot = -1
             self.player_skills = []
             self.full_skill_pool = []
             self.skill_exp = 0
@@ -336,7 +341,8 @@ init python:
             self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
             self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 4)
-            self.dodge_active = False   
+            self.dodge_active = False
+            self.dodge_expires_at_slot = -1
 
             self.used_skills_this_turn = []
             self.selected_skill = None
@@ -351,7 +357,8 @@ init python:
             self.player_energy = min(self.player_max_energy, self.player_energy + 2)
 
             for enemy in self.enemies:
-                enemy.dodge_active = False  
+                enemy.dodge_active = False
+                enemy.dodge_expires_at_slot = -1
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
                     num_enemy_slots = self.current_max_slots // 2
@@ -507,12 +514,12 @@ init python:
             ]
         elif name.lower() == "law":
             return [
-                EnemyIntent("VERDICT", damage=10, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("ABSOLUTE RULE", damage=12, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("ENFORCEMENT", damage=10, buff_type="every law has consequences", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("BINDING JUDGMENT", damage=25, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("VERDICT", damage=6, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
+                EnemyIntent("ABSOLUTE RULE", damage=5, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
+                EnemyIntent("ENFORCEMENT", damage=4, buff_type="every law has consequences", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("SENTENCE", damage=80, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("SENTENCE", damage=25, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "lumpi":
             return [
@@ -528,7 +535,7 @@ init python:
                 EnemyIntent("Runover", damage=6, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
                 EnemyIntent("Reinforced Frame", damage=10, desc="Adds 10 Defense.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("Overdrive", damage=4, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("Turbo Charge", damage=7, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("Turbo Charge", damage=10, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("crashout", damage=25, desc="thats it im beating the shit out of you", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=6)
             ]
@@ -536,7 +543,7 @@ init python:
             return [
                 EnemyIntent("poke", damage=6, desc="poke", animation="ava_normal_anim", type="attack"),
                 EnemyIntent("ETERNAL RECORD", damage=8, desc="as long as a single soul remembers civilization, I cannot fall. history does not die easily.", animation="ava_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("RALLY", damage=15, buff_type="the spirit of a thousand civilizations surge through me. something something power of humanity.", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("RALLY", damage=15, buff_type="something something power of humanity.", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("CULTURAL IMPACT", damage=15, desc="a strike so significant it will be remembered for generations. probably.", animation="ava_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("WRITTEN IN HISTORY", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("END OF AN ERA", damage=60, desc="every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now", animation="ava_ultimate_anim", type="attack", cooldown=6)
@@ -546,7 +553,7 @@ init python:
 screen battle_screen(bm):
     $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
 
-    # Settings button in top right
+    # Settings button
     textbutton "Settings":
         xalign 0.5 yalign 2
         action ShowMenu("preferences")
@@ -563,7 +570,6 @@ screen battle_screen(bm):
         xmaximum 400
         text "[p_name]: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#747474"
         bar value bm.player_hp range bm.player_max_hp xmaximum 300
-
         hbox:
             spacing 20
             vbox:
@@ -571,7 +577,6 @@ screen battle_screen(bm):
             if bm.player_barrier > 0:
                 vbox:
                     text "Defense: [bm.player_barrier]" size 20 color "#797979"
-
         hbox:
             spacing 5
             for buff in bm.player_buffs:
@@ -582,7 +587,8 @@ screen battle_screen(bm):
 
     # ── Enemy stats: top right ──
     vbox:
-        xalign 0.95 yalign 0.05
+        xanchor 1.0 xpos 0.98
+        yalign 0.05
         spacing 10
         for e_idx, enemy in enumerate(bm.enemies):
             if not enemy.is_dead:
@@ -592,14 +598,11 @@ screen battle_screen(bm):
                     bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
                     if enemy.barrier > 0:
                         text "Defense: [enemy.barrier]" size 14 color "#6d6d6d" xalign 1.0
-
-                    # ENEMY SKILL PROGRESS BAR
                     hbox:
                         xalign 1.0
                         spacing 4
                         text "Skill Unlock: " size 12 color "#707070"
                         bar value enemy.skill_exp range enemy.skill_exp_max xmaximum 150 ysize 6 yalign 0.5
-
                     hbox:
                         xalign 1.0
                         spacing 5
@@ -608,86 +611,120 @@ screen battle_screen(bm):
                                 background Solid("#4b4b4b")
                                 padding (3, 1)
                                 text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
-
-
-    # ── Battle slots: top center ──
-    vbox:
+  
+    # ── Battle slots: centered ──
+    # ── Battle slots + CONFIRM in hbox so button tracks slot width ──
+    hbox:
         xalign 0.5 yalign 0.05
         spacing 10
-        text "Select a card below, then click an empty slot here:" size 16 color "#aaa" xalign 0.5
 
-        for e_idx, enemy in enumerate(bm.enemies):
-            if not enemy.is_dead:
-                frame:
-                    background Solid("#8888887f")
-                    foreground "sketchy_bar_outline"
-                    padding (10, 10)
-                    xalign 0.5
-                    vbox:
-                        spacing 5
-                        text "[enemy.name]'s Row" size 14 color "#333" xalign 0.0
-                        hbox:
-                            spacing 10
-                            for s_idx in range(bm.current_max_slots):
-                                $ action = enemy.slots[s_idx]
-                                if action is None:
-                                    $ can_click_slot = bm.selected_skill is not None
-                                    button:
-                                        action If(can_click_slot, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
-                                        background Solid("#eee")
-                                        foreground "sketchy_bar_outline"
-                                        padding (10, 5)
-                                        xminimum 100
-                                        yminimum 60
-                                        text "EMPTY" size 16 color "#747474" xalign 0.5 yalign 0.5
-                                elif isinstance(action, EnemyIntent):
-                                    button:
-                                        action [Function(bm.select_intent, action, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                                        background Solid("#ccc")
-                                        foreground "sketchy_bar_outline"
-                                        padding (10, 5)
-                                        xminimum 100
-                                        yminimum 60
-                                        vbox:
-                                            yalign 0.5
-                                            text "ENEMY" size 12 color "#616161" xalign 0.5
-                                            text "[action.name]" size 16 color "#747474" xalign 0.5
-                                elif isinstance(action, Skill):
-                                    $ can_replace = bm.selected_skill is not None and bm.selected_skill != action
-                                    button:
-                                        action If(can_replace,
-                                                Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx),
-                                                Function(bm.select_skill, action))
-                                        background Solid("#ddd")
-                                        foreground "sketchy_bar_outline"
-                                        padding (10, 5)
-                                        xminimum 100
-                                        yminimum 60
-                                        vbox:
-                                            yalign 0.5
-                                            text "YOU" size 12 color "#3d3d3d" xalign 0.5
-                                            text "[action.name]" size 16 color "#747474" xalign 0.5
+        null width 120
 
+        vbox:
+            spacing 10
+            text "Select a card below, then click an empty slot here:" size 16 color "#aaa" xalign 0.5
+            for e_idx, enemy in enumerate(bm.enemies):
+                if not enemy.is_dead:
+                    frame:
+                        background Solid("#8888887f")
+                        foreground "sketchy_bar_outline"
+                        padding (10, 10)
+                        xalign 0.5
+                        vbox:
+                            spacing 5
+                            text "[enemy.name]'s Row" size 14 color "#333" xalign 0.0
+                            hbox:
+                                spacing 10
+                                for s_idx in range(bm.current_max_slots):
+                                    $ action = enemy.slots[s_idx]
+                                    if action is None:
+                                        $ can_click_slot = bm.selected_skill is not None
+                                        button:
+                                            action If(can_click_slot, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
+                                            background Solid("#eee")
+                                            foreground "sketchy_bar_outline"
+                                            padding (10, 5)
+                                            xminimum 100
+                                            yminimum 60
+                                            text "EMPTY" size 16 color "#747474" xalign 0.5 yalign 0.5
+                                    elif isinstance(action, EnemyIntent):
+                                        button:
+                                            action [Function(bm.select_intent, action, e_idx, s_idx), SetField(bm, "selected_skill", None)]
+                                            background Solid("#ccc")
+                                            foreground "sketchy_bar_outline"
+                                            padding (10, 5)
+                                            xminimum 100
+                                            yminimum 60
+                                            vbox:
+                                                yalign 0.5
+                                                text "ENEMY" size 12 color "#616161" xalign 0.5
+                                                text "[action.name]" size 16 color "#747474" xalign 0.5
+                                    elif isinstance(action, Skill):
+                                        $ can_replace = bm.selected_skill is not None and bm.selected_skill != action
+                                        button:
+                                            action If(can_replace,
+                                                    Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx),
+                                                    Function(bm.select_skill, action))
+                                            background Solid("#ddd")
+                                            foreground "sketchy_bar_outline"
+                                            padding (10, 5)
+                                            xminimum 100
+                                            yminimum 60
+                                            vbox:
+                                                yalign 0.5
+                                                text "YOU" size 12 color "#3d3d3d" xalign 0.5
+                                                text "[action.name]" size 16 color "#747474" xalign 0.5
+
+        vbox:
+            yalign 0.0
+            null height 30
+            textbutton "CONFIRM":
+                background Solid("#7e7e7e")
+                hover_background Solid("#555")
+                padding (20, 14)
+                text_size 24
+                text_color "#fff"
+                text_bold True
+                text_outlines []
+                action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
+
+    # ── Intent description: completely separate, never affects hbox ──
+    if bm.selected_intent:
+        frame:
+            background Solid("#8888887f")
+            foreground "sketchy_bar_outline"
+            xalign 0.5 ypos 0.28
+            padding (20, 15)
+            xmaximum 700
+            vbox:
+                spacing 6
+                text "[bm.enemies[bm.selected_enemy_index].name]: [bm.selected_intent.name]" size 20 color "#333" xalign 0.5 bold True
+                if bm.selected_intent.damage > 0:
+                    if bm.selected_intent.type == "attack":
+                        text "Projected Damage: [bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
+                    elif bm.selected_intent.type == "barrier":
+                        text "Projected Defense: [bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
+                    elif bm.selected_intent.type == "buff":
+                        text "Damage Buff: +[bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
+                text "[bm.selected_intent.desc]" size 14 color "#555" xalign 0.5 text_align 0.5
+           
 
 
     # ── Skill cards: bottom ──
     vbox:
         xalign 0.5 ypos 0.98 yanchor 1.0
         spacing 5
-
         hbox:
             xalign 0.5
             spacing 4
             text "Next skill: " size 13 color "#777777"
             bar value bm.skill_exp range bm.skill_exp_max xmaximum 600 ysize 8 yalign 0.5
-
         hbox:
             xalign 0.5
             spacing 15
             for skill in bm.player_skills:
                 $ is_selected = bm.selected_skill == skill
                 $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-
                 button:
                     action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
                     hovered SetField(bm, "hovered_skill", skill)
@@ -699,10 +736,8 @@ screen battle_screen(bm):
                     padding (0, 0)
                     xsize 140
                     ysize 180
-
                     if skill.card_image:
                         add skill.card_image
-
                     if skill.current_cooldown > 0:
                         add Solid("#00000088")
                         text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
@@ -710,83 +745,50 @@ screen battle_screen(bm):
                         add Solid("#00000055")
                         text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
-    # ── Confirm / Clear buttons ──
-    textbutton "CONFIRM":
-        xalign 0.95 yalign 0.8
-        background Solid("#7e7e7e")
-        padding (20, 10)
-        text_size 30
-        text_color "#fff"
-        text_bold True
-        text_outlines []
-        action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
-
-    # ── POPUPS ──
+    # ── Skill popup (left side, unchanged) ──
     $ display_skill = None
     if bm.hovered_skill and bm.hovered_skill == bm.selected_skill:
         $ display_skill = bm.hovered_skill
     elif bm.selected_skill and bm.selected_skill in bm.used_skills_this_turn:
         $ display_skill = bm.selected_skill
 
-    if display_skill or bm.selected_intent:
-        if display_skill:
-            frame:
-                background Solid("#8888887f")
-                foreground "sketchy_bar_outline"
-                xpos 0.15 yalign 0.5
-                xanchor 0.5
-                padding (30, 30)
-                xminimum 400
-                vbox:
-                    spacing 15
-                    if display_skill.card_image:
-                        add display_skill.card_image xalign 0.5
-                    text "[display_skill.name]" size 30 color "#333" xalign 0.5 bold True
-                    text "Cost: [display_skill.cost] Energy" size 20 color "#444" xalign 0.5
-                    if display_skill.damage > 0:
-                        if display_skill.type == "barrier":
-                            text "Defense: [display_skill.damage]" size 20 color "#444" xalign 0.5
-                        elif display_skill.type == "buff":
-                            text "Damage Buff: +[display_skill.damage]" size 20 color "#444" xalign 0.5
-                        else:
-                            text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
-                    text "[display_skill.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
-                    if display_skill.cooldown > 0:
-                        text "Cooldown: [display_skill.cooldown] turns" size 18 color "#444" xalign 0.5
-
-                    if display_skill in bm.used_skills_this_turn:
-                        $ e_idx, s_idx = bm.get_skill_slot_info(display_skill)
-                        if e_idx != -1:
-                            null height 20
-                            textbutton "REMOVE FROM SLOT":
-                                action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                                xalign 0.5
-                                background Solid("#eee")
-                                foreground "sketchy_bar_outline"
-                                padding (15, 10)
-                                text_size 24
-                                text_color "#333"
-                                text_bold True
-
-        if bm.selected_intent:
-            frame:
-                background Solid("#8888887f")
-                foreground "sketchy_bar_outline"
-                xpos 0.85 yalign 0.5
-                xanchor 0.5
-                padding (30, 30)
-                xminimum 400
-                vbox:
-                    spacing 15
-                    text "[bm.enemies[bm.selected_enemy_index].name]'s Intent: [bm.selected_intent.name]" size 30 color "#333" xalign 0.5 bold True
-                    if bm.selected_intent.damage > 0:
-                        if bm.selected_intent.type == "attack":
-                            text "Projected Damage: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
-                        elif bm.selected_intent.type == "barrier":
-                            text "Projected Defense: [bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
-                        elif bm.selected_intent.type == "buff":
-                            text "Damage Buff: +[bm.selected_intent.damage]" size 20 color "#444" xalign 0.5
-                    text "[bm.selected_intent.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
+    if display_skill:
+        frame:
+            background Solid("#8888887f")
+            foreground "sketchy_bar_outline"
+            xpos 0.15 yalign 0.5
+            xanchor 0.5
+            padding (30, 30)
+            xminimum 400
+            vbox:
+                spacing 15
+                if display_skill.card_image:
+                    add display_skill.card_image xalign 0.5
+                text "[display_skill.name]" size 30 color "#333" xalign 0.5 bold True
+                text "Cost: [display_skill.cost] Energy" size 20 color "#444" xalign 0.5
+                if display_skill.damage > 0:
+                    if display_skill.type == "barrier":
+                        text "Defense: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                    elif display_skill.type == "buff":
+                        text "Damage Buff: +[display_skill.damage]" size 20 color "#444" xalign 0.5
+                    else:
+                        text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
+                text "[display_skill.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
+                if display_skill.cooldown > 0:
+                    text "Cooldown: [display_skill.cooldown] turns" size 18 color "#444" xalign 0.5
+                if display_skill in bm.used_skills_this_turn:
+                    $ e_idx, s_idx = bm.get_skill_slot_info(display_skill)
+                    if e_idx != -1:
+                        null height 20
+                        textbutton "REMOVE FROM SLOT":
+                            action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
+                            xalign 0.5
+                            background Solid("#eee")
+                            foreground "sketchy_bar_outline"
+                            padding (15, 10)
+                            text_size 24
+                            text_color "#333"
+                            text_bold True
 
     # ── ENERGY WARNING ──
     if bm.show_energy_warning:
@@ -870,6 +872,12 @@ label battle_engine(bm):
 
 
     label .engine_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .engine_turn_end
 
@@ -923,6 +931,7 @@ label battle_engine(bm):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -973,6 +982,7 @@ label battle_engine(bm):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_generic
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1335,6 +1345,7 @@ label lumpi_hard_anim(bm):
     $ renpy.show("lumpi_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
     $ renpy.pause(1, hard=True)
     $ renpy.show("lumpi_hard_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
+    play sound "audio/daviddumaisaudio-sword-slash-with-metallic-impact-185435.mp3"
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
@@ -1523,7 +1534,7 @@ label simple_battle_graphics(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_butter at truecenter
     show kare_idle as player at fight_left
     show butter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
@@ -1566,7 +1577,7 @@ label lumpi_battle(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_lumpi at truecenter
     show kare_idle as player at fight_left
     show lumpi_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
@@ -1576,10 +1587,10 @@ label lumpi_battle(skill_overrides=None):
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 250, enemy_sprites, lumpi_intents)
     $ skill_overrides = skill_overrides or {
-        "slap":             {"damage": 8, "cost": 1},
-        "punch":            {"damage": 14, "cost": 3,"cooldown": 3},
-        "super cool kick":  {"damage": 25, "cost": 5, "cooldown": 4},
-        "Defense":          {"damage": 9, "cost": 2, "cooldown": 2},
+        "slap":             {"damage": 1000, "cost": 1},
+        "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
+        "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
+        "Defense":          {"damage": 8, "cost": 2, "cooldown": 2},
         "Focus":            {"damage": 5, "cost": 3, "buff_duration": 3, "cooldown": 3},
         "yummers":          {"energy_regen": 5, "cooldown": 2},
         "evade":            {"cost": 3, "cost": 2, "cooldown": 2},
@@ -1612,7 +1623,7 @@ label lumpiwheelchair_battle(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_lumpi_wc at truecenter
     show kare_idle as player at fight_left
     show lumpiwheelchair_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
@@ -1622,10 +1633,10 @@ label lumpiwheelchair_battle(skill_overrides=None):
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 300, enemy_sprites, lumpi_intents)
     $ skill_overrides = skill_overrides or {
-        "slap":             {"damage": 8, "cost": 1},
-        "punch":            {"damage": 14, "cost": 3,"cooldown": 3},
-        "super cool kick":  {"damage": 25, "cost": 5, "cooldown": 4},
-        "Defense":          {"damage": 9, "cost": 2, "cooldown": 2},
+        "slap":             {"damage": 1000, "cost": 1},
+        "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
+        "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
+        "Defense":          {"damage": 8, "cost": 2, "cooldown": 2},
         "Focus":            {"damage": 5, "cost": 3, "buff_duration": 3, "cooldown": 3},
         "yummers":          {"energy_regen": 5, "cooldown": 2},
         "evade":            {"cost": 3, "cost": 2, "cooldown": 2},
@@ -1657,7 +1668,7 @@ label newenemy_battle(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_serious at truecenter
     show kare_idle as player at fight_left
     show seriousbutter_idle as enemy_0 at fight_right
     $ renpy.pause(0.5, hard=True)
@@ -1700,7 +1711,7 @@ label butter_ava_battle(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_boss1 at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
@@ -1730,6 +1741,12 @@ label butter_ava_battle(skill_overrides=None):
         $ bm.dodge_active = False
 
     label .boss1_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .boss1_extra_turn
         $ e_idx = 0
@@ -1781,6 +1798,7 @@ label butter_ava_battle(skill_overrides=None):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1831,6 +1849,7 @@ label butter_ava_battle(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss1
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -1859,6 +1878,13 @@ label butter_ava_battle(skill_overrides=None):
         $ e_idx += 1
         jump .boss1_resolution_core
     label .boss1_extra_turn:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
+
         if not bm.enemies[0].is_dead and not bm.enemies[1].is_dead and not ava_attacked_once:
             $ ava_attacked_once = True
             if bm.enemies[0].dodge_active:
@@ -1907,7 +1933,7 @@ label butter_ava_battle2(skill_overrides=None):
     camera:
         perspective False
         gl_depth False
-    scene bg at truecenter
+    scene bg_boss2 at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
     $ ava_intents = get_enemy_intents("ava")
@@ -1936,6 +1962,12 @@ label butter_ava_battle2(skill_overrides=None):
         $ bm.dodge_active = False
 
     label .boss2_main_loop:
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
+            $ bm.dodge_active = False
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
         if current_slot_idx >= bm.current_max_slots:
             jump .boss2_extra_turn
         $ e_idx = 0
@@ -1987,6 +2019,7 @@ label butter_ava_battle2(skill_overrides=None):
             elif skill.type == "dodge":
                 $ bm.is_dodged = False
                 $ bm.dodge_active = True
+                $ bm.dodge_expires_at_slot = current_slot_idx + 1
             elif skill.type == "buff":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2037,6 +2070,7 @@ label butter_ava_battle2(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_dodge_boss2
                 $ enemy.dodge_active = True
+                $ enemy.dodge_expires_at_slot = current_slot_idx + 1
             elif intent.type == "buff":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -2065,24 +2099,30 @@ label butter_ava_battle2(skill_overrides=None):
         $ e_idx += 1
         jump .boss2_resolution_core
     label .boss2_extra_turn:
-        if bm.dodge_active:
-            $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
-            $ dodge_anim = get_dodge_anim(p_name)
-            $ bm.is_dodged = True
-            call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
-          
+        if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
             $ bm.dodge_active = False
-            $ bm.is_dodged = False
-        else:
-            show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
-                ease 0.2 xpos 0.35
-                ease 0.2 xpos 0.85
-            play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
-            $ renpy.pause(1.0, hard=True)
-            show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
-            $ bm.take_damage(50, target='player')
-            $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
-            'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
+        python:
+            for e in bm.enemies:
+                if e.dodge_active and current_slot_idx > e.dodge_expires_at_slot:
+                    e.dodge_active = False
+        if not bm.enemies[1].is_dead:
+            if bm.dodge_active:
+                $ p_name = "chaos" if "chaos" in bm.player_sprites["idle"] else "kare"
+                $ dodge_anim = get_dodge_anim(p_name)
+                $ bm.is_dodged = True
+                call expression dodge_anim pass (bm) from _call_player_dodge_anim_boss2_extra
+                $ bm.dodge_active = False
+                $ bm.is_dodged = False
+            else:
+                show ava_attack as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0):
+                    ease 0.2 xpos 0.35
+                    ease 0.2 xpos 0.85
+                play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
+                $ renpy.pause(1.0, hard=True)
+                show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
+                $ bm.take_damage(50, target='player')
+                $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
+                'ava attacks for 50 damage! (Your HP: [bm.player_hp])'
         if bm.player_hp <= 0:
             window hide
             jump .boss2_defeat

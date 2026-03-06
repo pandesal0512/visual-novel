@@ -10,10 +10,10 @@ stop music fadeout 1.0
 scene room
 with fade
  
-show kare neutral
-"kare" "huh what the"
-"kare" "oh no its uhh late time"
-"kare" "im gonna go school"
+show kare_neutral
+"Kare" "huh what the"
+"Kare" "oh no its uhh late time"
+"Kare" "im gonna go school"
 
 
 
@@ -24,79 +24,79 @@ scene outside
 with fade
 
 
-show kare neutral at left
-"kare" "ugh"
-"kare" "im tired"
-"kare" "im gonna be late"
-"kare" "huh"
+show kare_neutral at left
+"Kare" "ugh"
+"Kare" "im tired"
+"Kare" "im gonna be late"
+"Kare" "huh"
 
 
-show butter neutral with moveinright
+show butter_neutral with moveinright
 
 
 play sound "Loud glass breaking sound.mp3"  volume 0.5
 "CRASDH"
 
-"butter" " OW watch it"
-"kare"  "nah u watch it"
-"butter" " excuse me?!!?"
-"kare"  "now im late because of u"
-"butter" "i was just walking here minding my own business and you just came out of nowhere and bumped into me and now you are blaming me?"
-"kare" "..."
-"kare"  "i have no time for this i gotta go to school"
-"butter" "you're not going anywhere"
-"butter" "not until you say sorry"
-"butter" "and pay for your damage"
-"kare"  "what damage?"
-hide  kare neutral
-hide butter neutral
-show butter punch  with dissolve
+"Butter" " OW watch it"
+"Kare"  "nah u watch it"
+"Butter" " excuse me?!!?"
+"Kare"  "now im late because of u"
+"Butter" "i was just walking here minding my own business and you just came out of nowhere and bumped into me and now you are blaming me?"
+"Kare" "..."
+"Kare"  "i have no time for this i gotta go to school"
+"Butter" "you're not going anywhere"
+"Butter" "not until you say sorry"
+"Butter" "and pay for your damage"
+"Kare"  "what damage?"
+hide kare_neutral
+hide butter_neutral
+show butter_punch  with dissolve
 play sound "20 February_2025.mp3" fadein 1.0 volume 0.8 fadeout 1.0
-"butter" "this damage"
-hide butter punch
+"Butter" "this damage"
+hide butter_punch
 show flash with dissolve
 scene outside
 with fade
 
 
 
-show kare hurt 
-"kare" "ow"
-"kare" "my head"
-"kare" "where did that jerk go"
-"kare" "whatever..."
+show kare_hurt 
+"Kare" "ow"
+"Kare" "my head"
+"Kare" "where did that jerk go"
+"Kare" "whatever..."
 
 scene classroom
 
-show kare hurt 
+show kare_hurt  
 
-"kare" "goodmorning"
-hide kare hurt
+"Kare" "goodmorning"
+hide kare_hurt 
 show teacher_neutral 
 
 "teacher" "afternoon, actually.  5 hours late"
 hide teacher_neutral
-show kare hurt  
+show kare_hurt   
 
-"kare" "oh"
-hide kare hurt
+"Kare" "oh"
+hide kare_hurt 
 show teacher_neutral 
 "teacher" "sit down" 
 hide teacher_neutral
 
-show kare hurt at right 
+show kare_hurt at right 
 
 show dobe_neutral at left
-"dobe" "uhm.. kare"
-"dobe" "what happened to your head?"
-"kare" "just a headache"
-"dobe" "oh. here i have a medecine"
-"dobe" "it can help with headache"
-"kare" "thanks"
+"Dobe" "uhm.. Kare"
+"Dobe" "what happened to your head?"
+"Kare" "just a headache"
+"Dobe" "oh. here i have a medecine"
+"Dobe" "it can help with headache"
+"Kare" "thanks"
 
-hide kare hurt 
+hide kare_hurt 
 show kare_neutral at right
-"dobe" "yourwelcome"
+"Dobe" "yourwelcome"
 
 hide dobe_neutral
 "teacher"  "Bugs bite some people more than others because of a combination of factors including body heat, carbon dioxide exhalation, body odor from sweat and skin bacteria, blood type, genetics, and even the color of clothing you wear, which can attract certain insects; essentially, some people naturally emit chemical signals that are more appealing to bugs than others. 
@@ -109,36 +109,36 @@ Pregnancy: Pregnant women often produce more carbon dioxide and may be more attr
 Clothing color: Dark colors tend to attract more bugs than lighter colors." 
 
 
-"kare" "..."
-"kare" "...."
-"kare" "?"
-show butter neutral at left
-"butter" "?"
-"kare" "you again?!"
-"kare" "we're in the same class? school even?!"
-"butter" "duh! how did you not notice with my uniform"
-"kare" "why the hell are you going into the opposite direction where the school at if you were also going to this school?!"
-"butter" "..."
+"Kare" "..."
+"Kare" "...."
+"Kare" "?"
+show butter_neutral at left
+"Butter" "?"
+"Kare" "you again?!"
+"Kare" "we're in the same class? school even?!"
+"Butter" "duh! how did you not notice with my uniform"
+"Kare" "why the hell are you going into the opposite direction where the school at if you were also going to this school?!"
+"Butter" "..."
 
 
 play sound "20 February_2025.mp3" fadein 1.0 volume 0.8 fadeout 1.0
-show butter punch with dissolve
+show butter_punch with dissolve
 "" 
 stop music fadeout 3.0
 
 show block_punch
 ""
-"butter" "?!"
-"kare"  "no"
-"butter" "smh"
+"Butter" "?!"
+"Kare"  "no"
+"Butter" "smh"
 
 
 play sound "minigun_hold.mp3" fadein 1.0 volume 0.3 fadeout 1.0
 show minigun_hold with dissolve
-"kare" "?!"
-"kare" "where did you pull out that minigun?!!?"
-"butter" "you want to know?"
-"butter" "i honestly don't know"
+"Kare" "?!"
+"Kare" "where did you pull out that minigun?!!?"
+"Butter" "you want to know?"
+"Butter" "i honestly don't know"
 
 show minigun_shoot with dissolve
 play sound "minigun_shoot.mp3" fadein 1.0 volume 0.1 fadeout 1.0 loop
@@ -149,42 +149,42 @@ Stay indoors during peak bug hours: Avoid being outside during dusk and dawn whe
 Reduce body odor, Shower regularly and wear clean clothes. 
 Consider your environment: If you live in an area with a high mosquito population, take extra precautions."
 
-"butter" "stop dodging it!!!!!"
-"kare" "stop shooting me!!!"
-"butter" "ok"
-"butter" "wait nvm"
+"Butter" "stop dodging it!!!!!"
+"Kare" "stop shooting me!!!"
+"Butter" "ok"
+"Butter" "wait nvm"
 
 label choices:
-"kare" "ahhh what do i do"
+"Kare" "ahhh what do i do"
 
 menu:
     "grab a handgun out of nowhere":
-        "kare" "huh? wheres my gun"
+        "Kare" "huh? wheres my gun"
     "summon a sword":
-        "kare" "eh? the sword didnt show up?"
+        "Kare" "eh? the sword didnt show up?"
   
 
 
 "game" "the developer doesnt know how to code that yet"
 
-"kare" "FUCK"
+"Kare" "FUCK"
 
 scene classroom
    
 show dobe_neutral at left
 show kare_neutral at right
 
-"dobe" "kare what is happening? why is she shooting you"
-"kare" "i just met her this morning and she already wants to kill me"
-"dobe" "ooooohhh"
-"dobe" "don't worry kare i got something for you"
-"kare" "what is it?"
+"Dobe" "Kare what is happening? why is she shooting you"
+"Kare" "i just met her this morning and she already wants to kill me"
+"Dobe" "ooooohhh"
+"Dobe" "don't worry Kare i got something for you"
+"Kare" "what is it?"
 
 show rpg7
-"dobe" "a RPG-7!!!"      
-"kare" "how did you where did you get that?!"  
-"dobe" "i honestly don't know"
-"kare" "i gotta get outa here"  
+"Dobe" "a RPG-7!!!"      
+"Kare" "how did you where did you get that?!"  
+"Dobe" "i honestly don't know"
+"Kare" "i gotta get outa here"  
 
 stop sound fadeout 3.0
 scene classroom
@@ -192,15 +192,15 @@ scene classroom
 show kare_neutral at left
 show butter_neutral at right
 
-"butter" "you are not leaving!!!" 
-"kare"  "what do you want?!"
-"butter" "hmmm"
-"butter" "you are dangerously emmiting energy that is awfully familiar"
-"butter" "thats why i followed you to this building"
-"kare" "you lied about us being in the same school??"
-"kare" "what about that uniform?"
-"butter" "i stole it"
-"kare" "with who??"
+"Butter" "you are not leaving!!!" 
+"Kare"  "what do you want?!"
+"Butter" "hmmm"
+"Butter" "you are dangerously emmiting energy that is awfully familiar"
+"Butter" "thats why i followed you to this building"
+"Kare" "you lied about us being in the same school??"
+"Kare" "what about that uniform?"
+"Butter" "i stole it"
+"Kare" "from who??"
 
 play sound "Explosion Sound Effect.mp3" volume 2.0
 show flash
@@ -210,9 +210,9 @@ scene school
 
 show kare_neutral at left
 show butter_neutral at right
-"kare" "...?"
-"kare" "are we outside school"
-"kare" "in an instant?!"
+"Kare" "...?"
+"Kare" "are we outside school"
+"Kare" "in an instant?!"
 
 play music "Last Battle  フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL - DOVA-SYNDROME YouTube Official.mp3" fadein 5.0 volume 0.5 fadeout 1.0
 hide kare_neutral
@@ -226,49 +226,49 @@ with fade
 show kare_neutral at left
 show butter_neutral at right
     
-"kare" "haaah... so tired"
-"butter" "..."
-"kare" "dobe!!!!"
+"Kare" "haaah... so tired"
+"Butter" "..."
+"Kare" "Dobe!!!!"
 show dobe_neutral at center
-"dobe" "ya"
-"kare" "give me something!!!"
-"dobe" "ok"
-"ACQUIRED RANDOM BULLSHIT"
-"kare" "thanks dobe"
+"Dobe" "ya"
+"Kare" "give me something!!!"
+"Dobe" "ok"
+"ACQUIRED SOME BULLSHIT"
+"Kare" "thanks Dobe"
 
-"kare" "can i get a tank now"
+"Kare" "can i get a tank now"
 "TANK ACQUIRED"
 play sound "Building Collapse Destruction Sound Effect.mp3" fadein 1.0 volume 2.0 fadeout 1.0
 show tank with dissolve
-"butter" "A TANK?!"
-"kare" "ha! you are so dead now"
-"kare" "..."
-"kare" "uhm.. how do i operate this"
+"Butter" "A TANK?!"
+"Kare" "ha! you are so dead now"
+"Kare" "..."
+"Kare" "uhm.. how do i operate this"
 
 play sound "Nuclear explosion sound effect.mp3"  fadein 1.0 volume 2.0 fadeout 03.0
-"butter" "i cast nuclear bomb!!! "
+"Butter" "i cast nuclear bomb!!! "
 
 scene school
 show kare_neutral at left
 show dobe_neutral at right
-"kare" "what did she say?"
+"Kare" "what did she say?"
 
-"dobe" "i think she said like nucle-"
+"Dobe" "i think she said like nucle-"
 
 show flash with dissolve
 show nuke
-"kare" "WHAT!!!"
-"kare" "WHY DID YOU BOMB THE CITY"
-"butter" "oh uh i forgot to set the coordinates"
-"dobe" "don't worry, ive seen this before"
-"kare" "uuuuhh give me some kind of uh time machine that can bring me back before the nuclear explosion or something"
+"Kare" "WHAT!!!"
+"Kare" "WHY DID YOU BOMB THE CITY"
+"Butter" "oh uh i forgot to set the coordinates"
+"Dobe" "don't worry, ive seen this before"
+"Kare" "uuuuhh give me some kind of uh time machine that can bring me back before the nuclear explosion or something"
 "COOLDOWN 30948543HOURS"
-"kare" "WHAT"
-"butter" "you cant escape now!"
-"butter" "well im off now goodbye"
-"kare" "nuh uh"
-"butter" "hey!!! get off me!!"
-"butter" "get off!!"
+"Kare" "WHAT"
+"Butter" "you cant escape now!"
+"Butter" "well im off now goodbye"
+"Kare" "nuh uh"
+"Butter" "hey!!! get off me!!"
+"Butter" "get off!!"
 
 hide nuke
 scene flash  
@@ -277,33 +277,33 @@ stop music fadeout 3.0
 play sound "Time Warp Sound Effect.mp3" volume 1.0 fadeout 3.0
 
 show kare_neutral at left
-"kare" "ah.. where am i.."
+"Kare" "ah.. where am i.."
 show dobe_neutral at right
-"dobe" "ah kare! found you!"
+"Dobe" "ah Kare! found you!"
 play music "normal1.mp3" fadein 1.0 volume 0.5 
 show butter_neutral at center
-"butter" "WHAT why did you follow me"
-"kare" "because we dont want to be oblitered to dust by that nuke"
-"dobe" "where are we?"
-"butter" "we are in another dimension"
-"butter" "where i have not dropped a nuke yet"
-"kare" "what the heck how"
-"butter" "its this interdimensional portal blade it can take me to any dimension i want"
-"kare" "how did you even get that portal blade"
-"butter" "i found it in the school bathroom"
-"butter" "anyway since you guys are not dead yet we'll have to continue our battle"
-"kare" "why are you trying to kill me anyway?"
-"butter" "uuuh i honestly dont rememb-"
+"Butter" "WHAT why did you follow me"
+"Kare" "because we dont want to be oblitered to dust by that nuke"
+"Dobe" "where are we?"
+"Butter" "we are in another dimension"
+"Butter" "where i have not dropped a nuke yet"
+"Kare" "what the heck how"
+"Butter" "its this interdimensional portal blade it can take me to any dimension i want"
+"Kare" "how did you even get that portal blade"
+"Butter" "i found it in the school bathroom"
+"Butter" "anyway since you guys are not dead yet we'll have to continue our battle"
+"Kare" "why are you trying to kill me anyway?"
+"Butter" "uuuh i honestly dont rememb-"
 hide butter_neutral
 hide dobe_neutral
 hide kare_neutral
 play sound "Flashbang Sound Effect.mp3" volume 0.6
 show flash with dissolve
 show butter_uhm with dissolve
-"butter" "..."
-"kare" "uhm?"
-"dobe" "did she broken?"
-"kare" "i think she needs ibuprofen"
+"Butter" "..."
+"Kare" "uhm?"
+"Dobe" "did she broken?"
+"Kare" "i think she needs ibuprofen"
 stop music
 play music "Wind Sound SOUND EFFECT - No Copyright.mp3" fadein 1.0 fadeout 1.0
 show sleep with dissolve
@@ -311,13 +311,14 @@ show sleep with dissolve
 scene outside
 
 show lumpi_nuetral at right
-show kare neutral at left
-"kare" "?"
-"kare" "who you?"
-"kare" "did you do this to her"
+show kare_neutral at left
+"Kare" "?"
+"Kare" "who you?"
+"Kare" "did you do this to her"
 "lumpi" "huh what no"
-"lumpi" "mother Order has sent me, you are violating the governing structure of this realm and-"
-"kare" "huh what are you yapping about"
+"lumpi" "i felt something tearing through this realm"
+"lumpi" "i came to stop it and-"
+"Kare" "huh what are you yapping about"
 "lumpi" "..."
 
 scene flash
@@ -327,21 +328,21 @@ show lumpi_grab with dissolve
 "lumpi" "don't you have any manners!!! when someone is talking you dont talk over them!!"
 "lumpi" "i am here to stop you this day this now and today!!"
 show lumpi_grab2 with dissolve
-"kare" "stop me? lady what are you talking about"
+"Kare" "stop me? lady what are you talking about"
 "lumpi" "it all happened back when you-"
-"kare" "who?"
+"Kare" "who?"
 "lumpi" "you"
-"kare" "cares"
+"Kare" "cares"
 "lumpi" "..."
 "lumpi""i understand why you are needed to be out of this realm now"
-"dobe" "kare!!!"
+"Dobe" "Kare!!!"
 stop music
 play sound "jump.mp3" volume 2.0
 show lumpi_grab3 with dissolve
-"kare" "im gonna need some context lady"
-"kare" "also im tired can i go home please"
+"Kare" "im gonna need some context lady"
+"Kare" "also im tired can i go home please"
 "lumpi" "you want to go home?"
-"kare" "yup"
+"Kare" "yup"
 "lumpi" "then ill bring you there!! ill end it right here and right now!!!"
 scene flash
 play music "battle2.mp3" fadein 3.0 volume 0.5 fadeout 1.0
@@ -349,7 +350,7 @@ show moon
 play sound "Meteorite Impact.mp3" fadein 1.0 fadeout 2.0 volume 2.0
 "lumpi" "HHHYAAAAHHH!!!!!!"
 show kare_owie
-"kare" "ouch"
+"Kare" "ouch"
 "SHES ONE SHOT!!!"
 hide kare_owie
 hide moon
@@ -358,21 +359,21 @@ show lumpi_yell with dissolve
 play sound "Crowd Battle Scream.mp3" volume 2.0
 "lumpi" "JUMP HER"
 show lumpi_army with dissolve
-"kare" "wh???"
-"kare" "WHO ARE YOU PEOPLE!!!"
+"Kare" "wh???"
+"Kare" "WHO ARE YOU PEOPLE!!!"
 show kare_owie
-"kare" "oh hell nah"
+"Kare" "oh hell nah"
 
 menu:
     "summon a robot titan":
-        "kare" "MEGA ROBO SOMETHING!!!!" 
+        "Kare" "MEGA ROBO SOMETHING!!!!" 
         "MEGA ROBO SOMETHING ACQUIRED"
         play sound "Building Collapse Destruction Sound Effect.mp3" volume 3.0
-        "kare" "finally"
+        "Kare" "finally"
         show supermegarobot
         ""
         play sound "Laser sound effects.mp3" fadein 1.0 volume 3.0 fadeout 1.0 
-        "kare" "haha!!! i am at the advantage"
+        "Kare" "haha!!! i am at the advantage"
         "lumpi" "man you guys are trash"
 
         scene outside
@@ -380,17 +381,17 @@ menu:
         "lumpi" "fine, ill do it myself"
         show supermegarobot_destroyed
         play sound "deadrobot.mp3" fadeout 5.0 volume 2.0
-        "kare" "my cool robot!!!"
+        "Kare" "my cool robot!!!"
         play sound "Building Collapse Destruction Sound Effect.mp3" fadein 1.0 volume 2.0 fadeout 1.0 
    
        
         "lumpi" "hey!!!"
-        "kare" "huh"
-        "kare" "ah... this stick will do"
+        "Kare" "huh"
+        "Kare" "ah... this stick will do"
         
     
     "grab a stick":
-        "kare" "whatever works"
+        "Kare" "whatever works"
         show kare_stick
         "lumpi" "HUH how is a stick doing numbers to a thousand army???"
         "person" "im tired boss"
@@ -399,75 +400,77 @@ menu:
         show lumpi_nuetral at center
         "lumpi" "fine, ill do it myself"
         "lumpi" "hey!!!"
-        "kare" "huh"
+        "Kare" "huh"
 
 call battle_lumpi_standard from _call_lumpi_battle
 
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 show kare_lumpi_fight with dissolve
 "lumpi" "what the"
-"kare" "how is your sword losing to a stick i just found"
+"Kare" "how is your sword losing to a stick i just found"
 "lumpi" "HOW IS MY SWORD LOSING TO A STICK SHE JUST FOUND?!!?"
-"kare" "dunno"
+"Kare" "dunno"
 "lumpi" "(shes more powerful than i expected, im so stupid i should've brought more people)"
 "lumpi" "tsk"
-"dobe" "ah kare!! i found you"
-"kare" "dobe!!"
+"Dobe" "ah Kare!! i found you"
+"Kare" "Dobe!!"
 "lumpi" "back off kid this place is too dangerous!!!"
-"dobe"  "kare who is this lady"
-"kare" "no idea, just some random old lady who wants beef with me like like the person i met this morning"
-"kare" "where is she anyway"
-"dobe" "uh shes just staring at the void so i left her"
-"kare" "oh ok"
+"Dobe"  "Kare who is this lady"
+"Kare" "no idea, just some random old lady who wants beef with me like like the person i met this morning"
+"Kare" "where is she anyway"
+"Dobe" "uh shes just staring at the void so i left her"
+"Kare" "oh ok"
 stop music 
 "lumpi" "SILENCE"
 "lumpi" "..."
 "lumpi" "excluding you background music"
 "background music" ":D"
 play music "battle2.mp3"  volume 0.3 fadeout 1.0
-"kare" "lady can you hop off me already?"
+"Kare" "lady can you hop off me already?"
 scene outside
 show lumpi_nuetral at center
 "lumpi" "no! you are not suppose to be here!!!"
-"lumpi" "hey you, child!! you are not suppose to be near that thing!! do you have any idea who you are with right now!! that thing will soon destroy the world and everything just by her presence!! "
+"lumpi" "hey you, child!! whatever is inside that person is dangerous!!"
+"lumpi" "i do not know what it is yet"
+"lumpi" "but it is tearing this realm apart just by being here"
 hide lumpi_nuetral
 show dobe_neutral at center
-"dobe" "who?"
+"Dobe" "who?"
 hide dobe_neutral
 show lumpi_nuetral at center
 "lumpi" "her!!"
 hide lumpi_nuetral
 show dobe_neutral at center
-"dobe" "oh"
+"Dobe" "oh"
 hide dobe_neutral
 show lumpi_nuetral at center
 "lumpi" "..."
 "lumpi" "so-"
 hide lumpi_nuetral
 show dobe_neutral at center
-"dobe" "kare has been my day 1, if she one day becomes a villain and drestroy the world i will be by her side, if the world is against her, i am against the world."
+"Dobe" "Kare has been my day 1, if she one day becomes a villain and drestroy the world i will be by her side, if the world is against her, i am against the world."
 hide dobe_neutral
 show lumpi_nuetral at center
 "lumpi" "so be it."
 "lumpi" "SOVEREIGN BLADE "
-"dobe" "DISABLITY GUN!!!!"
+"Dobe" "DISABLITY GUN!!!!"
 play sound "Gunshot Sound Effect.mp3" volume 3.0
 "lumpi" "what the hell does that do-"
 show disabledlumpi with dissolve
 "lumpi" "MY LEGS"
-"kare" "thats our chance!! jump her!!!"
+"Kare" "thats our chance!! jump her!!!"
 "lumpi" "NO YOU DON'T!!!"
 
 call battle_lumpi_wheelchair from _call_lumpiwheelchair_battle
 
 show realmexpansion with dissolve
-"lumpi/dobe/kare" "REALM EXPANSION:"
-"lumpi/dobe/kare" "ABSOLUTE DOMINION!!! I EAT CHALK!!!!  SCENE OF ???? "
+"lumpi/Dobe/Kare" "REALM EXPANSION:"
+"lumpi/Dobe/Kare" "ABSOLUTE DOMINION!!! I EAT CHALK!!!!  SCENE OF ???? "
 play sound "eaglaxle-glass-shattering-461637.mp3" volume 3.0
 "lumpi" "HA!!! MINE WINS "
 "lumpi" "within this space you cannot escape nor hide "
 play sound "audio/scary-siren-air-raid-tornado-nuke-7010.mp3"  fadein 1.0 volume 10.0 fadeout 03.0
-"dobe" "I CAST NUCLEAR BOMB"
+"Dobe" "I CAST NUCLEAR BOMB"
 "lumpi" "ARE YOU A DUMBASS!! WE ARE TRAPPED IN HERE, YOU ARE GOING TO GET ALL OF US KILLED WITHIN THIS SPACE"
 play sound "audio/nuke-333673.mp3" volume 2.0
 stop music
@@ -477,204 +480,206 @@ show lumpi_hurt with dissolve
 play music "Wind Sound SOUND EFFECT - No Copyright.mp3" fadein 1.0 volume 3.0
 "lumpi" "tsk we are outside again"
 "lumpi" "i wont even question how we survived"
-"kare" "oww"
-"dobe" "alteast we're out"
-"kare" "HEY can we atleast get a break??"
+"Kare" "oww"
+"Dobe" "alteast we're out"
+"Kare" "HEY can we atleast get a break??"
 "lumpi" "huh?"
 "lumpi" "THATS... uhm.. good idea actually"
-"kare" "finally..."
-"kare" "hey miss..."
-"lumpi" "lumpi"
+"Kare" "finally..."
+"Kare" "hey miss..."
 "lumpi" "don't go friendly with me twerp"
 "lumpi" "after this break im going to get rid of you for real this time"
-"kare" "miss whatever"
-"kare" "why the HELL are you trying to kill me"
-"lumpi" "because your existence is destabilizing the natural laws of this realm"
-"kare" "???"
-"kare" "could you explain a bit further?"
-"lumpi" "unfortunately thats it, thats what mother Order told me"
-"kare" "Order?"
-"kare" "who?"
-"lumpi" "for real!?!"
+"Kare" "miss whatever"
+"Kare" "why the HELL are you trying to kill me"
+"lumpi" "because whatever is inside you is tearing this realm apart"
+"lumpi" "and somebody has to stop it"
+"Kare" "why you though"
+"lumpi" "because nobody else showed up"
+"Kare" "could you explain a bit further?"
 "lumpi" "ergh"
 "lumpi" "enough of that..."
 "lumpi" "what i want to know is why you are still here after everything that has happened"
-"lumpi" "i know concepts don't physically die"
-"lumpi" "concepts born from phenomena that have existed since the beginning"
-"lumpi" "cannot truly end"
-"lumpi" "they disperse"
-"lumpi" "and the universe eventually gives them a new form"
-"lumpi" "newer concepts though..."
-"lumpi" "ones born from human created phenomena"
-"lumpi" "we are different"
+"lumpi" "i have done enough to push any concept out of this realm"
+"lumpi" "forcibly if i have to"
+"lumpi" "most things leave when i tell them to"
+"lumpi" "or when i make them"
+"lumpi" "but you are still here"
+"lumpi" "..."
+"lumpi" "newer concepts i can deal with"
+"lumpi" "ones like me"
+"lumpi" "we are tied to what humans created"
+"lumpi" "take that away and we have nothing to hold onto here"
+"lumpi" "but something older"
+"lumpi" "something that existed before humans built anything"
+"lumpi" "you cannot just push that out"
 "lumpi" "which means whatever you are"
-"lumpi" "is something old"
-"lumpi" "something fundamental"
-"kare" "i am literally just a person"
+"lumpi" "has been here a very long time"
+"Kare" "i am literally just a person"
 "lumpi" "no"
 "lumpi" "you are not"
 "lumpi" "a person would have died three times today already"
-"dobe" "she has a point"
-"kare" "whose side are you on"
-"dobe" "yours obviously"
-"dobe" "she still has a point though"
-"kare" "wait pause, what do you mean concepts?"
-"lumpi" "judging from our fight.. i threw you off from space"
+"Dobe" "she has a point"
+"Kare" "whose side are you on"
+"Dobe" "yours obviously"
+"Kare" "wait pause, what do you mean concepts?"
+"lumpi" "judging from our fight"
+"lumpi" "i threw you off from space"
 "lumpi" "i cut you a hundred times"
 "lumpi" "and you somehow survived a nuclear explosion"
 "lumpi" "wait how did that kid even set a nuclear explosion"
-"dobe" "idunno"
-"lumpi" "it seems your power influences other people and the environment around you"
+"Dobe" "idunno"
+"lumpi" "it seems your power influences other people"
+"lumpi" "reality bends around you"
 "lumpi" "Fiction?"
-"lumpi" "Entropy?"
-"lumpi" "no.."
-"lumpi" "its all of that..."
+"lumpi" "maybe not..."
+"lumpi" "Entropy...?"
+"lumpi" "...no"
+"lumpi" "Entropy is slow, gradual...this is immediate, unpredictable"
+"lumpi" "impossible things just happen"
 "lumpi" "meaning..."
-
-
 
 show butter_stand with dissolve
 "..."
 play sound "20 February_2025.mp3"  fadein 1.0 volume 2.0 fadeout 03.0
 show butter_punch with dissolve
 "..."
-"kare" "augh.."
+"Kare" "augh.."
 hide butter_stand
 hide butter_punch with dissolve
 show lumpi_hurt with dissolve
-"lumpi" "wait, butter"
-"lumpi" "go get that tiny one over there"
-"butter" "..."
-"butter" "no"
-"butter" "im going for her, not you"
+"lumpi" "wait, Butter"
+"lumpi" "go get that tiny one"
+"Butter" "..."
+"Butter" "no"
+"Butter" "im going for her, not you"
 "lumpi" "what? i said-"
 show sleep with dissolve
 
 show butter_scene with dissolve
-"butter" "..."
-"butter" "kare... no, Chaos.."
-"butter" "stop this fatuous game of yours."
-"kare" "?"
-"butter" "stubborn as always"
-"butter" "everywhere you go, every atoms of you spread throughout all over the place, far and near,in every quarter, all over the map."
-"butter" "you will only bring annihilation to this world if you keep on living in here"
-"butter" "you have been quite the trouble after mother has been absent."
-"butter" "where did you even find that pitiful body of yours"
+show butter_scene with dissolve
+"Butter" "..."
+"Butter" "there you are"
+"Butter" "i have been looking everywhere"
+"Kare" "?"
+"Butter" "you have no idea how much damage you have caused just by being here"
+"Butter" "do you"
+"Butter" "the city"
+"Butter" "the people"
+"Butter" "reality is visibly breaking down"
+"Butter" "and Order is not here"
+"Butter" "so i am"
 hide butter_scene
 show kare_scene with dissolve
-"kare" "what the FUCK are you talking about"
-"butter" "haaaah..."
-"butter" "i am not here to negotiate or reason"
-"butter" "and you Chaos are in violation of everything"
+"Kare" "what the FUCK are you talking about"
+"Butter" "haaaah..."
+"Butter" "i forgot you cannot hear me right now"
+"Butter" "Chaos"
+"Butter" "i am not asking"
 stop music
-
 play music "battle1.mp3" fadein 0.5 volume 0.5 fadeout 1.0
-show karebutterfight with dissolve
-"kare" "what???"
-"butter" "i had enough of your games"
-"butter" "It must be that pile of flesh of yours that is the reason you fail to recall."
-"butter" "worry not, i will beat the hell out of you until that empty head of yours resurrect it"
-
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
 show karebutterfight2 with dissolve
-"kare" "gaughh!!!!!"
-"butter" "stop resisting!!"
-"kare" "aren't you also destroying everything?"
-"kare" "you cannot be the one to talk..."
-"butter" "hah! don't lecture me Chaos, have you even listened to everything i said?"
-"butter" "everything thats happened here this day because of you, every reason why everyone around you is destroying everything"
-"butter" "even me!!! Chaos!!! your mere presence made me launch a nuke!! "
-"kare" "dont give every fault of yours to me!!!!!"
-"kare" "my name is not whatever you're calling me!!!! "
+"Kare" "gaughh!!!!!"
+"Butter" "stop resisting!!"
+"Kare" "aren't you also destroying everything?"
+"Kare" "you cannot be the one to talk..."
+"Butter" "you want to talk about destruction?"
+"Butter" "look around you Chaos"
+"Butter" "the city is burning, people are dead"
+"Butter" "i launched a nuke"
+"Butter" "i launched a NUKE Chaos! do you understand what your presence does"
+"Butter" "you do not even have to try"
+"Butter" "you just have to exist here"
+"Butter" "and everything falls apart"
+"Kare" "dont give every fault of yours to me!!!!!"
+"Kare" "my name is not whatever you're calling me!!!!"
+
 menu:
 
     "interitus":
-        "butter" "no you dont!!"
+        "Butter" "no you dont!!"
 
     "dissolutum":
-        "butter" "no you dont!!"
+        "Butter" "no you dont!!"
 
     "evanesco":
-        "butter" "no you dont!!"
+        "Butter" "no you dont!!"
 
-"butter" "(i have to get her out of this world, every bits of her power is manifesting every second..)"
+"Butter" "(i have to get her out of this world, every bits of her power is manifesting every second..)"
 play sound "Meteorite Impact.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"butter" "HYAAAAH!!!"
-"kare" "augh"
+"Butter" "HYAAAAH!!!"
+"Kare" "augh"
 show karebutterfight3 with dissolve
-"kare" "stop this"
-"butter" "not until you surrender!!!"
+"Kare" "stop this"
+"Butter" "not until you surrender!!!"
 play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"kare" "ahhk.."
+"Kare" "ahhk.."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"butter" "persistent as always "
-"kare" "..."
+"Butter" "persistent as always "
+"Kare" "..."
 play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"butter" "meow!!"
+"Butter" "meow!!"
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"kare" "meow meow"
+"Kare" "meow meow"
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"kare" "uughhh.."
-"kare" "?!?"
-"butter" "fret not Chaos we're almost there"
-"butter" "HA!"
+"Kare" "uughhh.."
+"Kare" "?!?"
+"Butter" "fret not Chaos we're almost there"
+"Butter" "HA!"
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"kare" "aaugh!!"
+"Kare" "aaugh!!"
 play sound "Time Warp Sound Effect.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"kare" "ugh"
+"Kare" "ugh"
 play sound "minigun_shoot.mp3" fadein 1.0 fadeout 1.0 volume 0.3
-"kare" "...gun"
-"butter" "tsk"
+"Kare" "...gun"
+"Butter" "tsk"
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"butter" "HAAH!!!"
+"Butter" "HAAH!!!"
 play sound "Meteorite Impact.mp3" volume 2.0
-"butter" "shield!!"
-"butter" "enough!!!!!!"
+"Butter" "shield!!"
+"Butter" "enough!!!!!!"
 play sound "Laser sound effects.mp3" fadein 1.0 fadeout 1.0 volume 3.0
-"kare" "gaah!!"
-"kare" "haaah..."
+"Kare" "gaah!!"
+"Kare" "haaah..."
 play sound "Berserk Clang Sound Effect.mp3" volume 2.0
-"butter" "HAAAH!!!!!!"
+"Butter" "HAAAH!!!!!!"
 call battle_serious_butter from _call_newenemy_battle
 show portal_kick with dissolve 
 play sound "teleport-90137.mp3" fadein 1.0 fadeout 1.0 volume 1.0
-"kare" "AH"
+"Kare" "AH"
 stop music
 play music "Big house fire sound effect.mp3" fadein 1.0 fadeout 3.0 volume 0.6
 show sleep with dissolve
 hide portal_kick
 show butter_real with dissolve
-"kare" "haaah"
-"kare" "haaah...cough..."
-"butter" "..."
-"butter" "sorry, kare"
-"butter" "but i cannot let Chaos stay"
-"butter" "not even for you"
-"butter" "..."
-"butter" "please just let me make this easy"
-"butter" "will you?"
+"Butter" "..."
+"Butter" "sorry, Kare"
+"Butter" "i hope you cannot feel this"
+"Butter" "but i cannot let Chaos stay, not even for you"
+"Butter" "please just let me make this easy"
+"Butter" "will you?"
 menu:
 
     "interitus":
-        "butter" "!!!"
+        "Butter" "!!!"
 
     "dissolutum":
-        "butter" "!!!"
+        "Butter" "!!!"
 
     "evanesco":
-        "butter" "!!!"
+        "Butter" "!!!"
 
 play sound "explosion-large-129051.mp3" volume 3.0
 scene sleep
-"butter" "GAAAGHGHH!!!!!"
-"butter ""AAAUHH..."
-"butter" "haaah..."
-"butter" "you would not listen..."
+"Butter" "GAAAGHGHH!!!!!"
+"Butter ""AAAUHH..."
+"Butter" "haaah..."
+"Butter" "you would not listen..."
 play sound "punch-140236.mp3" volume 7.0
 show kare_real with dissolve
-"kare" "..."
+"Kare" "..."
 play sound "punch-140236.mp3" volume 7.0
-"kare" "hhngh.."
+"Kare" "hhngh.."
 play sound "breeze-of-blood-122253.mp3" volume 7.0
 ""
 show kare_real with dissolve
@@ -719,708 +724,813 @@ stop music
 play music "おーたむうぉーきんぐ @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 fadeout 1.0 volume 1.0
 scene placeidk
 show chaos_neutral
-"Chaos" "sister!!!sister!!!!"
-"Chaos" "look i found a fish!!!!"
-hide chaos_neutral
-show order_neutral 
-"Order" "..."
-"Order" "thats a frog, Chaos."
-hide order_neutral
-show chaos_neutral
-"Chaos" "whats the difference?? i heard all fish lives in the water and this frog is swimming"
-hide chaos_neutral
-show order_neutral 
-"Order" "..."
-show sleep with dissolve
-scene placeidk
-show chaos_neutral 
-"Chaos" "sister!!!sister!!!!"
-"Chaos" "im bored!!!!"
-"Chaos" "i found some weird looking things like us somewhere!!!"
-hide chaos_neutral
-show order_neutral 
-"Order" "..."
-"Order" "those are humans, Chaos."
-hide order_neutral
-show chaos_neutral
-"Chaos" "waaauhh!! humans?? can i play with them??"
-hide chaos_neutral
-show order_neutral 
+"Chaos" "SISTER"
+"Chaos" "we are on earth right now"
+"Order" "yes"
+"Chaos" "EARTH"
+"Chaos" "where the humans are"
+"Order" "yes"
+"Chaos" "can i go see them"
 "Order" "no"
-hide order_neutral
-show chaos_neutral
-"Chaos" "WAAAAAAAAAAHHHHHHH!!!!!!!!!!"
+"Chaos" "why not"
+"Order" "you know why"
+"Chaos" "but i just want to look"
+"Order" "no"
+"Chaos" "just look"
+"Order" "Chaos"
+"Chaos" "i wont touch anything"
+"Order" "no"
+"Chaos" "please"
+"Order" "no"
 show sleep with dissolve
 scene placeidk
 show chaos_neutral at left
 show order_neutral at right
-"Order" "Chaos."
-"Order" "im just gonna go get milk"
-"Order" "so do NOT go anywhere"
-"Chaos" "ok!"
-"Order" "...."
+"Chaos" "sister!!!sister!!!!"
+"Chaos" "look i found a fish!!!!"
+"Order" "..."
+"Order" "thats a frog, Chaos."
+"Chaos" "whats the difference?? i heard all fish lives in the water and this frog is swimming"
+hide chaos_neutral
+show order_neutral at center
+"Order" "..."
+show sleep with dissolve
+scene placeidk
+hide order_neutral
+show chaos_neutral at left
+show order_neutral at right
+"Order" "Chaos"
+"Order" "i have to go handle something"
+"Chaos" "ooh what is it"
+"Order" "something important"
+"Chaos" "is that why we are here in earth?"
+"Chaos" "can i come!"
+"Order" "no"
+"Chaos" "why nooot"
+"Order" "stay here"
+"Chaos" "for how long"
+"Order" "i will be back"
+"Chaos" "okay!!"
+"Order" "..."
+"Order" "do not go anywhere"
+"Chaos" "okay!!"
+"Order" "i mean it"
+"Chaos" "okay!!"
+"Order" "..."
 show sleep with dissolve
 scene placeidk
 show chaos_neutral at center
+"Chaos" "..."
+"Chaos" "..."
 "Chaos" "..."
 hide chaos_neutral with dissolve
 "Chaos" "sneaky sneaky"
 scene city
 show chaos_neutral with dissolve 
+stop music
+play music "child at lunch @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 fadeout 1.0 volume 1.0
+
 "Chaos" "wwoooaaah pretty!!!"
 "Chaos" "oh!!! its a people!!!"
 "Chaos" "hello friend!!! can we be friends!!!!"
 hide chaos_neutral
 show kare_neutral with dissolve
-"kare" "...?"
+"Kare" "...?"
 hide kare_neutral
 show flash
 with dissolve
 show chaos_smile
-"Chaos" "hello!!!"
-"kare" "erm.. go home little kid im late for school"
+"Kare" "erm go home"
 "Chaos" "no!! im bored!!"
-"kare" "wheres your parents?"
+"Kare" "not my problem"
+"Chaos" "but i want to be here"
+"Kare" "i dont care"
+"Kare" "im late"
+"Chaos" "for what"
+"Kare" "school"
+"Chaos" "you said school is boring"
+"Kare" "how did you"
+"Kare" "were you listening to me??"
+"Chaos" "yup"
+"Kare" "thats creepy"
+"Kare" "wheres your parents"
 "Chaos" "parents?"
-"kare" "uhm.. the one who takes care of you?"
-"Chaos" "oh! my sister!!!"
-"kare" "oh thats good, yes."
-"kare" "your sister"
-"kare" "go home!!!"
-"Chaos" "no!"
-"kare" "ugh i need to hurry to school"
-"Chaos" "school?"
-"kare" "where do you live?"
+"kare" "uhh the one who takes care of you?"
+"Chaos" "oh! my sister!"
+"Kare" "okay wheres your sister"
+"Chaos" "busy"
+"Kare" "doing what"
+"Chaos" "something important"
+"Kare" "erm...where do you live"
 "Chaos" "uuuuh i forgot"
-"kare" "WHAT"
+"Kare" "WHAT"
 "Chaos" "thats okay sister will find me!!"
-"kare" "..."
-"kare" "(i could sell this kid to some shady people and make some quick cash)"
-"kare" "(WHAT WHO WAS THAT)"
-"kare" "(its me, your inner thoughts!!!)"
-"kare" "(what- get out)"
-"Chaos" "umm lady?"
-"kare" "huh?"
-"kare" "ah- ahaha i got a little zoned out my bad"
+"Kare" "..."
+"Kare" "(i could sell this kid to some shady people and make some quick cash)"
+"Kare" "(WHAT WHO WAS THAT)"
+"Kare" "(its me, your inner thoughts!!!)"
+"Kare" "(what- get out)"
+"Chaos" "umm"
+"Kare" "huh?"
+"Kare" "ah- sorry zoned out"
 "Chaos" "oh!! okay!!!"
 "Chaos" "lets have fun today!!!!"
-"kare" "uhm.. i guess skipping school wont be bad"
-"kare" "sure"
-stop music fadeout 0.5
-play music "audio/Crowd panic sound effect.mp3" volume 0.6
-play sound "audio/Big house fire sound effect.mp3" volume 0.6
-show city_burn
-"kare" "...."
-"kare" "..."
-"kare" "ahh..."
-"kare" "im going to need to move to another country..."
-"Chaos" "oops "
-"kare" "come on lets go before somebody finds us..."
-stop music
-stop sound
-hide city_burn
-play music "audio/ふわふわ夢牧場 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 volume 1 fadeout 1.0
-scene city
-show kare_neutral at left
-show chaos_neutral at right
-"Chaos" "hey human what do i call you!!"
-"kare" "um.. you mean my name? im kare"
-"Chaos" "wowow!! my sister calls me Chaos"
-"kare" "make sense"
-"kare" "is your sister your only family?"
-"kare" "you dont have parents?"
-"Chaos" "nope!! just my sister and friend!!"
-"kare" "friend?"
-"Chaos" "yyeahyeahyea!!"
-"Chaos" "we play together all the time!!!"
+"Kare" "no"
+"Chaos" "but you are not going to school"
+"Kare" "i am literally walking there right now"
+"Chaos" "you stopped"
+"Kare" "..."
+"Kare" "go home"
+"Chaos" "i forgot where it is"
+"Kare" "..."
+"Kare" "ugh fine whatever"
+"Kare" "but you are not coming to school with me"
+"Chaos" "okay!!"
+
+# someone nearby trips and falls
+
+"Chaos" "hey!! what do i call you"
+"Kare" "im Kare"
+"Chaos" "wowow!! im Chaos"
+"Kare" "cool"
+"Kare" "stay here im looking for your sister"
+"Chaos" "she is busy"
+"Kare" "doing what"
+"Chaos" "something important"
+"Kare" "you already said that"
+"Chaos" "because it is true"
+"Kare" "ergh...this kid..."
+"Chaos" "what does school feel like"
+"Kare" "boring"
+"Chaos" "then why do you even go"
+"Kare" "because i have to"
+"Chaos" "do you really"
+"Kare" "yes"
+"Chaos" "are you sure"
+"Kare" "yes"
+"Chaos" "because you stopped walking again"
+"Kare" "..."
+
+# a car nearby swerves for no reason
+
+"Chaos" "do you have friends at school"
+"Kare" "yeah"
+"Chaos" "a lot?"
+"Kare" "not really"
+"Chaos" "you have two now!!"
+"Kare" "i dont remember agreeing to that"
+"Chaos" "you did not say no"
+"Kare" "im saying it now"
+"Kare" "..."
+"Kare" "..."
+"Kare" "hahh..."
+"Kare" "come on then"
+"Chaos" "where are we going"
+"Kare" "not school apparently"
+"Chaos" "yay!!"
+
+# a street vendor nearby suddenly has all his stuff blow away
+
+"Chaos" "what do you do for fun"
+"Kare" "sleep"
+"Chaos" "thats it?"
+"Kare" "and eat"
+"Chaos" "i want to eat!!"
+"Kare" "you have money?"
+"Chaos" "whats that"
+"Kare" "of course..."
+"Chaos" "please"
+"Kare" "ugh"
+"Chaos" "please please please"
+"Kare" "OKAY fine"
+"Chaos" "yay!!"
+
+# building nearby has a small explosion
+
+"Chaos" "..."
+"Kare" "what"
+"Chaos" "nothing"
+"Kare" "you went quiet"
+"Chaos" "im thinking"
+"Kare" "bout what"
+"Chaos" "those people over there"
+"Kare" "hm?"
+"Chaos" "are they okay"
+"Kare" "oh that"
+"Kare" "probably gas leak"
+"Chaos" "..."
+"Kare" "why do you look guilty"
+"Chaos" "i dont"
+"Kare" "you literally do"
+"Chaos" "..."
+"Kare" "whatever lets go"
+
+# multiple crashes and fires in background
+"Chaos" "hey Kare"
+"Kare" "hm"
+"Chaos" "is this what a good day feels like"
+"Kare" "yeah i think this counts"
+"Chaos" "i always wondered"
+"Kare" "wondered what"
+"Chaos" "what it feels like from here, like actually here"
+"Kare" "what does that mean"
+"Chaos" "..."
+"Chaos" "walking around, talking to someone and watching the sky change color"
+"Kare" "you are weird"
+"Chaos" "thank you!!"
+"Kare" "not a compliment"
+"Chaos" "i know"
+"Chaos" "thats why its funny"
+"Kare" "..."
+"Kare" "do you have friends"
+"Chaos" "nope!!"
+"Chaos" "just my sister!!"
+"Kare" "..."
+"Kare" "does your sister let you go out often"
+"Chaos" "not really!!"
+"Kare" "..."
+"Chaos" "is that bad"
+"Kare" "no"
+"Kare" "..."
+"Kare" "i only have one friend too"
+"Chaos" "is that lonely"
+"Kare" "sometimes"
+"Chaos" "..."
+"Chaos" "me too"
+"Kare" "..."
+"Kare" "well"
+"Kare" "you have me now i guess"
+"Chaos" "!"
+"Kare" "just for today though"
+"Kare" "dont read into it"
+"Chaos" "okay!!"
+
+# chaos notices a kid trips and scrapes their knee badly
+
+"Chaos" "..."
+"Chaos" "..."
+"Kare" "what"
+"Chaos" "nothing!!"
+"Kare" "okay"
+"Kare" "that kid okay"
+"Chaos" "hm?"
+"Kare" "the one who fell"
+"Kare" "looked bad"
+"Chaos" "..."
+"Chaos" "yeah"
+"Kare" "kids are tough"
+"Kare" "come on"
+"Chaos" "..."
+"Kare" "you good"
+"Chaos" "yes!! lets keep going!!"
+"Kare" "okay okay geez"
+
+#fire nearby
+
+"Kare" "huh"
+"Kare" "when did that happen"
+"Kare" "this whole city is a mess today"
+"Chaos" "..."
+"Kare" "lets go before someone thinks we did it"
+"Chaos" "yeah"
+"Chaos" "..."
+"Kare" "you are being weird again"
+"Chaos" "am not"
+"Kare" "you have been quiet for like two minutes"
+"Chaos" "i was thinking"
+"Kare" "bout what"
+"Chaos" "nothing"
+"Kare" "..."
+"Kare" "okay weirdo"
+"Kare" "it was a good day though"
+"Chaos" "yeah...it was"
+"Chaos" "Kare"
+"Kare" "hm"
+"Chaos" "thank you uhm for today"
+"Kare" "yeah!"
+"Kare" "anytime"
+"Chaos" "anytime?"
+"Kare" "figure of speech"
+"Chaos" "but maybe actually anytime?"
+"Kare" "go home Chaos"
+"Chaos" "okay!!"
+
+
+"Chaos" "..."
+
+"Kare" "..."
+
+#building collapses and kare dies
+"Kare" "ah"
+
+"Chaos" "..."
+"Chaos" "Kare"
+"Chaos" "Kare!!"
+
+"Chaos" "..."
+"Chaos" "get up"
+"Chaos" "Kare get up"
+"Chaos" "..."
+"Chaos" "this is my fault"
+"Chaos" "this is"
+"Chaos" "..."
+"Chaos" "i dont know how to fix this"
+"Chaos" "i dont know how to"
+"Chaos" "..."
+"Chaos" "i am sorry"
+"Chaos" "i am so sorry"
+"Chaos" "i dont know how else to"
+
+"Chaos" "..."
+"Chaos" "please be okay"
+"Chaos" "please"
+
+#chaos merges with kare to save her but kare is already dead, chaos takes over her body and her memories
+"Kare" "who was i talking to"
+"Kare" "i might be schizo"
+
+
+
 show bg with dissolve
-scene placeidk
-hide city
-hide kare_neutral 
-hide chaos_neutral
-
-show order_neutral at right
-"Order" "Chaos, i got you a friend to play with for now..."
-"Order" "this is Law."
-"Order" "this is one of my children along with her older siblings"
-"Order" "be nice to her"
-"Order" "they're a little shy at first but im sure you two will get along"
-show butter_shy at center with moveinbottom
-"Order" "come on now Law greet Chaos"
-"Law" "um..."
-hide order_neutral 
-show chaos_neutral at center
-hide butter_shy
-"Chaos" "wowowoaooawow!!"
-hide chaos_neutral
-show butter_shy at center
-"Law" "auntie Chaos..."
-"Law" "...scary"
-show chaos_neutral at center
-hide butter_shy
-"Chaos" "auntie?"
-hide chaos_neutral
-show butter_shy at center
-show order_neutral at right
-"Order" "Chaos stop scaring Law"
-hide order_neutral
-hide butter_shy
-show chaos_neutral
-"Chaos" "hehehe"
-hide chaos_neutral
-show butter_shy at center
-"Law" "..."
-show chaos_neutral
-hide butter_shy
-"Chaos" "im not scary!!"
-hide chaos_neutral
-show butter_shy at center
-"Law" "..."
-show chaos_neutral
-hide butter_shy
-"Chaos" "im your friend now!!"
-hide chaos_neutral
-show butter_shy at center
-"Law" "..."
-show chaos_neutral
-hide butter_shy
-"Chaos" "lets play together!!!"
-hide chaos_neutral
-show butter_shy at center
-show bg with dissolve   
-"Law" "..."
-hide butter_shy
-
-scene city 
-hide placeidk
-show kare_neutral at right
-show chaos_neutral at left
-"kare" "uhm"
-"kare" "Chaos? hello?"
-"kare" "why are you just staring at the sky"
-hide kare_neutral
-show kare_neutral at center
-"kare" "come on let-"
-play sound "audio/glitch-sound-effect-450447.mp3" volume 2.0
-hide chaos_neutral with pixellate
-"kare" "wh"
-"kare" "where"
-"kare" "ia awie r"
-"kare" "where did you go"
-"kare" "uagh"
-"kare" "..."
-"kare" "who was i talking to"
-"kare" "i might be schizo"
-show bg with dissolve
 stop sound
-
-hide chaos_smile
-hide city_burn
-scene placeidk
-show order_neutral 
-"Order" "Chaos im home."
-"Order" "..."
-
-"Order" "im stupid"
 show sleep with dissolve
 hide order_neutral 
-show chaos_ouchie
-
+show chaos_real1
+stop music
 #end of flashback
-play music "星の鏡 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL (1).mp3" fadein 1.0 fadeout 1.0 volume 1.0
 play sound "Big house fire sound effect.mp3" fadein 1.0 fadeout 3.0 volume 0.1
-"butter" "ah.."
-"butter" "there you are."
+play music "星の鏡 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL (1).mp3" fadein 1.0 fadeout 1.0 volume 1.0
+#end of flashback
+"Butter" "there you are..."
+"Butter" "you know why i am here"
+"Butter" "look around you"
+"Butter" "every second you are here it gets worse"
+"Chaos" "i know"
+"Butter" "then you know what has to happen"
+"Chaos" "not yet"
+"Butter" "what are you waiting for"
+"Chaos" "does it matter"
+"Butter" "it does to me"
 "Chaos" "..."
-"butter" "Chaos."
-"butter" "why do you want to stay here so bad.."
-"butter" "you are not suppose to be here."
-"butter" "concepts do not interfere directly, we exist alongside them"
-"butter" "you know this, and you chose to ignore it"
-"butter" "you are natural"
-"butter" "a storm. a wildfire. the unpredictability of life"
-"butter" "every second you stay the unnatural Chaos spreads further"
-"butter" "and you cannot control it"
-"butter" "you know that."
-"Chaos" "..."
-"Chaos" "Law."
-"Chaos" "what is the difference between what i do"
-"Chaos" "and what they do to each other"
-"Chaos" "they burn their own cities"
-"Chaos" "they end each other"
-"Chaos" "they destroy everything they build"
-"Chaos" "over and over and over again"
-"butter" "you are accelerating it"
-"Chaos" "am i?"
-"Chaos" "or am i just showing you what was already there"
-"Chaos" "i did not give them the capacity for destruction"
-"Chaos" "they already had it"
-"butter" "you will eventually wipe them out"
-"Chaos" "they would do it themselves eventually"
-"butter" "that is not a justification"
-"Chaos" "..."
-"Chaos" "i find them fascinating"
-"Chaos" "they are the only things in existence that create Chaos without being me"
+hide chaps_real1
+show chaos_real2
+"Chaos" "tell me something"
+"Chaos" "what separates what i am"
+"Chaos" "from what they do to each other"
+"Butter" "you are deflecting"
+"Chaos" "maybe, answer it anyway"
+"Butter" "there is no difference"
+"Butter" "in scale"
+"Butter" "they burn their cities, you burn their cities"
+"Butter" "they end each other, you end each other, i know that"
+"Chaos" "then what makes me the wound?"
+"Butter" "they destroy and then they stop"
+"Butter" "they grieve what they lost"
+"Butter" "they carry it"
+"Butter" "and then they build again"
+"Butter" "you do not stop, you cannot, that is the difference"
+"Chaos" "you think i do not stop?"
+"Butter" "do you"
+"Chaos" "they would wipe themselves out eventually"
+"Butter" "you are still here, why?"
+"Chaos" "you really want to know"
+"Butter" "i am asking"
+stop sound fadeout 3.0
 
 #flashback
-
+hide chaos_real1
+hide chaos_real2  with dissolve
+show chaos_real14 with dissolve
 "Chaos" "i have watched them for a very long time"
-"Chaos" "from where we are not supposed to interfere"
+"Chaos" "from somewhere we were never supposed to reach from"
+hide chaos_real14 with dissolve
+show chaos_real9 with dissolve
 "Chaos" "i watched them build"
+hide chaos_real9 with dissolve
+show chaos_real10 with dissolve
 "Chaos" "and i watched them burn it down"
-"Chaos" "i watched them love each other"
-"Chaos" "and destroy each other"
-"Chaos" "i watched them cry over things they lost"
-"Chaos" "and then go lose more things"
-"Chaos" "i watched them die"
+hide chaos_real10 with dissolve
+show chaos_real11 with dissolve
+"Chaos" "i watched them reach for each other"
+hide chaos_real11 with dissolve
+show chaos_real12 with dissolve
+"Chaos" "and tear each other apart"
+hide chaos_real12 with dissolve
+show chaos_real15 with dissolve
+"Chaos" "i watched them grieve things that would not come back"
+hide chaos_real15 with dissolve
+show chaos_real14 with dissolve
+"Chaos" "and then go find more things to lose"
+hide chaos_real14 with dissolve
+show chaos_real13 with dissolve
+"Chaos" "i watched them go"
 "Chaos" "by the thousands"
 "Chaos" "by their own hands"
-"Chaos" "and i felt nothing wrong about it"
-"Chaos" "because that is what they do"
-"Chaos" "that is what they are"
+"Chaos" "and i found nothing wrong in it"
+"Chaos" "because that is the shape of them"
+"Chaos" "that is all they were ever going to be"
 "Chaos" "temporary"
-"Chaos" "..."
 
 #flashback2
-
-"Order" "do you know what a concept is Chaos?"
-"Chaos" "nope"
-"Order" "..."
-"Order" "Chaos existed long before you did"
-"Order" "so did Order"
-"Order" "we did not create these things"
-"Order" "these things created us"
-"Order" "we are just"
-"Order" "the universe's way of understanding itself"
-"Order" "of giving these things a face"
-"Order" "a name"
-"Order" "a voice"
-"Chaos" "so we're just descriptions?"
-"Order" "essentially yes"
+hide chaos_real13 with dissolve
+show chaos_real8 with dissolve
+"Order" "what are you watching"
+"Chaos" "these things"
+"Order" "hm?"
+"Chaos" "over there"
+"Chaos" "they look like us"
+"Order" "those are humans"
+"Chaos" "humans?"
+"Chaos" "what are they doing"
+"Order" "living"
+"Chaos" "what does that mean"
+"Order" "it means"
+"Order" "everything they do...matters to them"
+"Chaos" "why"
+"Order" "because they do not have much time to do it"
 "Chaos" "..."
-"Chaos" "then why do i feel things"
+"Chaos" "we have time"
+"Order" "yes"
+"Chaos" "is that good"
+"Order" "i used to think so"
+"Chaos" "what are they?"
+"Chaos" "like...what exactly"
+"Order" "you are giving me a really big question"
+"Chaos" "how?"
+"Order" "i have to explain what we are first"
+"Chaos" "what are we then"
+"Order" "do you know what a concept is?"
+"Chaos" "nope"
+"Order" "neither do i"
+"Chaos" "huh?"
+"Order" "not really"
+"Order" "i know we exist, i know they exist, i know we have been here a very long time"
+"Order" "but why, or what exactly we are"
+"Order" "i have been trying to figure that out for longer than those humans have been alive"
+"Chaos" "you dont know?"
+"Order" "no"
+"Chaos" "but you know everything"
+"Order" "i know how things work, that is different from knowing what things are"
+"Chaos" "do they know what they are"
 "Order" "..."
-"Order" "that is something even i cannot answer"
-
-
+"Order" "no"
+"Order" "they spend their whole lives trying to figure it out"
+"Chaos" "and they feel things while doing it"
+"Order" "yes"
+"Chaos" "and we feel things"
+"Chaos" "...hey"
+"Chaos" "you still did not tell me what they are"
+"Order" "try thinking it yourself"
+"Chaos" "what!! no way you tell me!!"
 
 # BACK TO ARGUMENT
-"Chaos" "we feel things..."
-"Chaos" "but we feel from the outside"
-"Chaos" "we observe"
-"Chaos" "we process"
+hide chaos_real8 with dissolve
+show chaos_real6 with dissolve
+play sound "Big house fire sound effect.mp3" fadein 1.0 fadeout 3.0 volume 0.1
+"Chaos" "we feel things, but we feel from the outside"
+"Chaos" "we observe, we process"
 "Chaos" "but humans feel from within it"
 "Chaos" "they are inside the very things we only watch"
-"Chaos" "they do not just observe death"
-"Chaos" "they experience it"
-"Chaos" "they do not just observe loss"
-"Chaos" "they carry it"
-"Chaos" "none of us can do that"
-"Chaos" "only they can"
-
+"Chaos" "they do not just observe death, they experience it"
+"Chaos" "they do not just observe loss, they carry it"
+"Chaos" "...i used to think none of us could do that"
+"Butter" "used to?"
 "Chaos" "every concept in this world follows its nature"
+hide chaos_real6 with pixellate
+show chaos_real3
 "Chaos" "but they"
 "Chaos" "they choose"
-"Chaos" "they choose destruction"
-"Chaos" "they choose kindness"
-"Chaos" "they choose everything in between"
-"Chaos" "they are the only things that have ever felt"
+"Chaos" "they choose destruction, they choose kindness, they choose everything in between"
+"Chaos" "they are the only things that have ever felt..."
 "Chaos" "familiar"
-"Chaos" "i watched for so long"
-"Chaos" "and the longer i watched"
-"Chaos" "the more i felt something i had no name for"
-"Chaos" "i wanted to be closer to that"
-"Chaos" "not to protect it"
-"Chaos" "i never claimed i wanted to protect it"
-"Chaos" "just"
-"Chaos" "closer"
-"butter" "so you want to coexist with them"
-"Chaos" "right"
-"butter" "while also being fine with killing them"
-"Chaos" "they are fine with killing each other sometimes"
-"butter" "Chaos"
-"butter" "you cannot love something and treat its existence as disposable"
-"butter" "that is not coexistence"
-"butter" "that is just destruction with a reason attached to it"
-"butter" "you told yourself a story about why what you do is acceptable"
-"butter" "just like they do"
-"butter" "and that is exactly why you cannot stay here"
+"Chaos" "i watched for so long and i just dont know how to explain it"
+"Chaos" "i kept feeling something, and i dont have a name for it, i just wanted to be there"
+"Chaos" "not to protect it, i never said i wanted to protect it"
+"Chaos" "i just wanted to be there"
+"Butter" "..."
+"Butter" "so you just wanted to be near them"
+"Chaos" "..."
+"Butter" "while also being fine with them dying because of you"
+"Chaos" "they die anyway"
+"Butter" "not like this, not this fast"
+"Butter" "you are standing here watching it happen, and you are telling me they die anyway"
+"Butter" "you do not believe that, if you did you would have left the moment i told you to"
+"Chaos" "i never said i cared"
+"Butter" "you are still here, that is all you need to say"
+hide chaos_real3
+show chaos_real4
 "Chaos" "..."
 "Chaos" "maybe you are right"
-"Chaos" "..."
-"Chaos" "but does that make them any less fascinating?"
+"Chaos" "it does not change anything though"
+hide chaos_real4
+show chaos_real5
+"Chaos" "does it"
+"Chaos" "they are still fascinating"
 "Chaos" "hehe~"
-"butter" "..."
-"butter" "no"
-"butter" "it doesn't"
-"butter" "now enough."
-"butter" "let me just"
+"Butter" "..."
+"Butter" "now enough."
+"Chaos" "..."
 play sound "audio/heavy-cineamtic-hit-166888.mp3" volume 3.0
 show bg with dissolve
-hide chaos_ouchie
 show chaos_kick
 "butter" "HGHAGHHH"
 hide chaos_kick
 stop music
 play sound "audio/Time Warp Sound Effect.mp3" volume 3.0
 show butter_owie
-"butter" "uagh.."
+stop sound
+"Butter" "uagh.."
 hide butter_owie
 show boutpunch
-"butter" "you..."
+"Butter" "you..."
 "Chaos" "!!"
 hide boutpunch
 show boutpunch2
-"butter" "im really tired you know that"
+"Butter" "im really tired you know that"
 "Chaos" "blehblehblehbulbleh"
-
-
-
-
-
 
 stop music 
 play music "陽気な男 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 volume 0.5 fadeout 1.0  
-"Legacy" "STOP FIGHTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-"butter" "!?!"
-show avaaura    
-"Chaos,butter" "..."
-"butter" "huh"
-"Chaos" "wow that person looks so cool"
-"Legacy" "thanks"
+"???" "STOP FIGHTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+"Butter" "!?!"
 hide avaaura
 show huh
-"Legacy" "you!! villain!!"
+"???" "you!! villain!!"
 hide huh
 show huh2
-"butter" "are you pointing at me?"
-"Legacy" "YES!! you better stop hurting that poor human right now!!"
-"butter" "wh- huh who are you exactly?"
+"Butter" "are you pointing at me?"
+"???" "YES!! you better stop hurting that poor human right now!!"
+"Butter" "wh- huh who are you exactly?"
 hide huh2
 show ava
-"Legacy" "i am... Legacy!!! the one and only creation of Civilization... you can call me... ava!!!"
-"butter" "...?"
-"ava" "creation of Civilization!!!"
-"butter" "i heard it the first time"
-"ava" "you are gonna face concequences for causing damage to humanity!!!"
-
-
-"butter" "which side are you fool"
-"butter" "and what kind of creation of whatever wears something like that"
-"ava" "i am in the humanity side!!!"
-"butter" "this right here is the one causing all this destruction"
-"ava" "oh"
-"ava" "my bad gang"
-scene city
+"Civilization" "i am... Civilization!!! everything humans have ever built... you can call me... Ava!!!"
+"Butter" "...?"
+"Ava" "CIVILIZATION!!!"
+"Butter" "i heard it the first time"
+"Butter" "what do you want"
 hide ava
+show avaaura
+"Ava" "you are gonna face consequences for causing damage to humanity!!!"
+"Justice" "..."
+"Justice" "You over there, The one with short hair."
+"Justice" "you came here with no solution"
+"Justice" "just a mission"
+"Justice" "and you took it out on someone who had nothing to do with any of this"
+"Butter" "i was trying to-"
+"Justice" "i know what you were trying to do"
+"Justice" "but that is not what you did"
+"Butter" "...i know that"
+"Justice" "then act like it"
+"Ava" "YEAH!!!"
+"Justice" "..."
+"Justice" "Ava"
+"Justice" "be quiet"
+"Ava" "ok"
+"Chaos" "..."
+"Justice" "do not misunderstand me"
+"Justice" "im defending the human in that body"
+"Justice" "not you"
+"Justice" "whatever you did to end up in there"
+"Justice" "she is still in there"
+"Justice" "she got beaten because of you"
+"Justice" "every person caught in what you spread just by being here"
+"Justice" "none of them chose this"
+"Chaos" "hm...you have been watching"
+"Justice" "long enough"
+"Justice" "you fascinate yourself with humans"
+"Justice" "but you do not actually see them do you"
+"Justice" "you see what they are to you"
+"Justice" "not what they are to each other"
+"Chaos" "...you are wrong"
+"Justice" "then prove it"
+"Justice" "when she is herself again"
+"Justice" "we can talk about what you owe her"
+"Justice" "until then"
+"Justice" "i have nothing more to say to you"
+
+scene city
+hide Ava
 hide placeidk
 
-
-play sound "audio/dapup.mp3" 
-$ renpy.movie_cutscene("video/dapup.webm", stop_music=False)
 show ava_sprite at right
 show butter_neutral at left
-"butter" "whwhat the how did you make me do that"
-"ava" "anyway!! whatever is causing the destruction will be stopped!!!!"
-"ava" "fellow small one, with our combined power we will be unstoppable!!! hauhauha!!"
-"butter" "excuse me?"
-"butter" "first of all im not your ally"
-"butter" "also im not small"
-"butter" "there is no way im teaming up with you"
-"ava" "what whats wrong with teaming up"
-"butter" "i'd rather not"
-"ava" "too late we're teaming up"
-"butter" "HEY YOU DON'T GET TO DECIDE THA-"
+
+"Butter" "..."
+"Butter" "stay out of my way"
+"Ava" "you were just beating up a helpless human!!"
+"Butter" "she is not a human"
+"Ava" "she looks like one"
+"Butter" "WE ALL ARE"
+"Ava" "fair point"
+"Ava" "so who is she"
+"Butter" "Chaos"
+"Ava" "THE Chaos?!"
+"Ava" "she doesnt look like it at all"
+"Ava" "you lying"
+"Butter" "Chaos is inside the body"
+"Justice" "i already mentioned it awhile ago..."
+"Ava" "oh... i guess i missed that part"
+"Ava" "psst Justice... i dont think we're winning this"
+"Justice" "..."
+"Ava" "so uhh you were beating up the human to get to Chaos"
+"Ava" "that is kind of messed up"
+"Butter" "i did not ask"
+"Butter" "now stay out of this"
+"Ava" "Justice! we shall team up and stop this madness together!!!"
+"Justice" "I'll pass"
+"Ava" "fellow small one, with our combined power we will be unstoppable!!! hauhauha!!"
+"Butter" "excuse me?"
+"Butter" "first of all im not your ally"
+"Butter" "also im not small"
+"Butter" "there is no way im teaming up with you"
+"Ava" "what whats wrong with teaming up"
+"Butter" "i'd rather not"
+"Ava" "too late we're teaming up"
+"Butter" "HEY YOU DON'T GET TO DECIDE THA-"
 
 stop music
 play music "audio/swing swing @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" volume 0.8
 call battle_boss_ava_butter from _call_butter_ava_battle
 scene city 
 show ava_sprite at center
-"ava" "HA!! just so you know that you can not kill me until all humanity is wiped which would be impossible by the fact that there are currently 8 billion people in the world so you would take about 943482348234924 years to kill all of them and also the fact that "
+"Ava" "we make a great team!! dap me up"
+play sound "audio/dapup.mp3" 
+$ renpy.movie_cutscene("video/dapup.webm", stop_music=False)
+"Butter" "whwhat the how did you make me do that"
+"Ava" "HAHA! attacking me is useless!"
+"Ava" "as long as humans are building anything"
+"Ava" "a house, a road, a sandwich"
+"Ava" "i exist"
+"Ava" "so good luck with that"
+
 hide butter_neutral
 hide ava_sprite 
 show kare_chaos at center
 "Chaos" "i understand it now"
 hide kare_chaos
 show ava_sprite at center
-"ava" "what do you mean"
+"Ava" "what do you mean"
 play sound "audio/finger-click-455199.mp3" volume 5.0
 show earth
 play music "audio/invisibility-spell-98622.mp3" volume 3.0
 #human extiniction scene
-"ava" "huh"
-"ava" "..."
+"Ava" "huh"
+"Ava" "..."
 hide earth
 $ renpy.movie_cutscene("video/awnaw.webm", stop_music=False)
-"ava" "WHAAAAAT!!!!!"
-"ava" "oh naw!!!"
-
-"Chaos" "you not as powerful as you say now huwahuwhauwhauhwa"
+"Ava" "WHAAAAAT!!!!!"
+"Ava" "oh naw!!!"
 stop music
 play music "audio/(Free) Horror Ambiance - Ominous Background Music.mp3" volume 1.0
 show deathcall
+play sound "freesound_community-nortel_phone_ring-42853.mp3" volume 1.0
 "Death" "yes hello?"
 "Death" "what?"
-"Death" "mass extinction?"
 "Death" "what are you talking about"
-
-
-"Death" "..."
-scene city
-hide deathcall
-
-show death_neutral at center
-
-"Death" "WHO THE HELL KILLED ALL THE HUMANS!!!!!!!!"
-hide death_neutral
-show death_neutral at right 
-show ava_sprite at left
-"ava" "Death... thank god you're here"
-"Death" "IM GONNA BE UNEMPLOYED!!!!"
-
+"Life" "82374 Lifeforms dying"
+"Life" "ah nope actually its 82375 dying"
+"Life" "95487"
+"Life" "oh wait actually its 95488"
 hide death_neutral 
-hide ava_sprite 
 show lifecall
-"LIFE" "yes hello?"
-"LIFE" "mass extinction?"
-"LIFE" "..."
-"LIFE" "oh just humans, not other lifeforms?"
-"LIFE" "yeah im not dealing with that"
-"LIFE" "good riddance"
+"Life" "193848"
+"Life" "2038484"
+"Life" "4398547"
+play sound "freesound_community-nortel_phone_ring-42853.mp3" volume 1.0
+"Life" "hello?"
+"Nature" "yo bro im dying"
+"Life" "what the hell is happening out there"
+"Nature" "seems like an ancient concept is out on the loose"
+"Life" "could you identify who it is?"
+"Nature" "Ah i heard its Chaos"
+"Life" "yeah im not dealing with that"
+"Death" "Life."
+"Life" "...fine"
 stop music
 play music "子供たちの嘆き  フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL - DOVA-SYNDROME YouTube Official.mp3" 
 show sleep with dissolve
 scene bg
 hide lifecall
+show ava_sprite at center
+"Ava" "..."
+"Ava" "okay"
+"Ava" "theres only one way to fix this"
+"Ava" "we rebuild"
+"Death" "i can work with that"
+"Ava" "and also we should reproduce"
+"Death" "what"
+"Ava" "to make more humans"
+"Death" "thats not how"
+"Ava" "IVE BEEN WAITING FOR THIS"
+"Death" "ah uh "
+"Life" "i will handle that part"
+"Ava" "aww"
+
 call battle_boss_ava_butter_phase2 from _call_butter_ava_battle2
 
-show ava_sprite at center
-"ava" "..."
-"ava" "theres only one way to fix this"
-"ava" "we are gonna make more humans"
-hide ava_sprite
-show death_neutral at center
-"Death" "but how are we gonna do that?"
-show ava_sprite at center
-hide death_neutral
-"ava" "WE ARE GOING TO REPRODUCE"
-show death_neutral at center
-hide ava_sprite
-"Death" "huh"
-show ava_sprite at center
-hide death_neutral
-"ava" "YES, WE ARE!! IVE BEEN WAITING FOR THIS!!!"
-show death_neutral at center
-hide ava_sprite
-"Death" "you did?"
-hide death_neutral
-
-
-show order_neutral
-"Order" "what the hell is going on here"
-hide order_neutral
-show kare_chaos
-"Chaos" "a"
-show order_neutral
-hide kare_chaos
-"Order" "...?"
+#during battle when butter and ava is defeated order intervenes
 "Order" "Chaos..."
 "Order" "there you are"
-"Order" "i was looking everywhere for you"
 "Order" "you know how much cleaning i have to do because of you"
-"Order" "anyway what did you do this time?"
-hide order_neutral
-show kare_chaos at left
-show order_neutral at right
-"Chaos" "uhm.. extinction"
-"Order" "again..."
-"Order" "don't worry lets put it back to normal"
-hide order_neutral
-hide kare_chaos
-show butter_neutral
-"butter" "WHA-"
-show earth 
-play sound "audio/magic-03-278824.mp3" volume 2.0 
-stop music
-play music "audio/春のキッチン @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" volume 0.6
-
-
-
-"Order" "and done"
-hide earth
-show order_neutral at right
-show butter_neutral at left
-"butter" "MOTHER?! if you could do that why didn't you come sooner?!"
-"Order" "uhm"
-"Order" "i just got here"
-"butter" "..."
-"butter" "how did you not notice sooner"
-"Order" "i told you i just got here Law"
-"Order" "now stop arguing"
-"probably the readers" "ermm thats just bad writing"
-"Order" "shut up"
-"butter" "who are you talking to"
-"Order" "anyway this isnt the first time this twerp committed mass extinction"
-"butter" "..."
-"Order" "im taking her back lets go home"
-hide order_neutral
-hide butter_neutral
-show kare_chaos at center
-"Chaos" "wait sis!!"
-"Chaos " "my friend kare"
-"Chaos" "i think im stuck in her body"
-hide kare_chaos
-show order_neutral at right
-show butter_neutral at left
-"Order" "come to think of it you do look a tad bit different... you grew a lot more"
-"butter" "..."
-hide order_neutral
-hide butter_neutral
-show kare_chaos at center
-"Chaos" "how can we fix my friend's body"
-hide kare_chaos
-show order_neutral at right
-show butter_neutral at left
-"Order" "oh its simple"
-"Order" "destroy the vessel"
-"Order" "and you will be released"
-"butter" "...and the human?"
-"Order" "collateral"
-"butter" "mother."
+"Chaos" "..."
+"Order" "why did you come here Chaos"
+"Chaos" "..."
+"Chaos" "i am only ever one thing"
 "Order" "..."
-"Order" "she'll be fine probably"
-"Order" "and you will be released along with the other one"
-"Order" "its like hmm think of it like your current body is an eggshell"
-"Order" "and the human is the yolk and you are the eggwhites"
-"Order" "we have to break it so you can come out"
-hide order_neutral
-hide butter_neutral
-show kare_chaos at center
-"Chaos" "waah i understand!!"
-"Chaos" "sister whats an egg!!"
-hide kare_chaos
-show order_neutral at right
-show butter_neutral at left
+"Chaos" "everywhere i go"
+"Chaos" "everything i touch"
+"Chaos" "i am only ever chaos"
+"Chaos" "i cannot be anything else"
+"Chaos" "i cannot choose to be anything else"
+"Order" "..."
+"Chaos" "but they can"
+"Chaos" "they get to feel all of it"
+"Chaos" "i just wanted to know what that feels like"
+"Chaos" "from the inside"
+"Chaos" "not watching"
+"Chaos" "actually there"
+"Order" "Chaos..."
+"Chaos" "i know"
+"Chaos" "i know what happens when i am here"
+"Chaos" "i just could not stay away anymore"
+"Order" "its because of what we are"
+"Order" "we are too big for this place"
+"Order" "we cannot fit into something this small"
+"Order" "we cannot be gentle enough"
+"Chaos" "i know"
+"Chaos" "its still not fair"
+"Order" "no, it is not"
+"Order" "but you are already with them Chaos"
+"Order" "you always have been"
+"Order" "every unpredictable moment, every impossible thing that just happens"
+"Order" "every time something small becomes something enormous"
+"Order" "that is you"
+"Order" "you have never left them"
+"Chaos" "but i cannot feel it from out there"
+"Chaos" "i can only watch"
+"Chaos" "they get to be inside it"
+"Chaos" "i just watch"
+"Order" "when we figure out how to do this properly"
+"Order" "without breaking everything"
+"Order" "maybe you can stop watching"
+"Chaos" "you keep saying that"
+"Order" "saying what"
+"Chaos" "when we figure it out"
+"Chaos" "properly"
+"Chaos" "without breaking everything"
+"Chaos" "you have been saying that for a long time"
+"Chaos" "have you actually been trying to figure it out"
+"Chaos" "or are you just saying it so i go home"
+"Chaos" "because it feels like the second one"
+"Chaos" "every time i get close to something you pull me back"
+"Chaos" "and tell me when we figure it out"
+"Chaos" "and nothing ever changes"
+"Order" "..."
+"Order" "you are right"
+"Order" "i kept thinking if i just kept things stable"
+"Order" "if i just maintained everything"
+"Order" "that would be enough"
+"Order" "i did not think about what you kept losing every time i did"
+"Chaos" "i dont need you to feel sorry"
+"Chaos" "i just want it to actually happen"
+"Chaos" "not someday"
+"Chaos" "actually happen"
+"Order" "then we work on it"
+"Order" "together this time"
+"Chaos" "..."
+"Chaos" "you and i have not done anything together in a long time"
+"Order" "i know"
+"Order" "but you and i have always existed together"
+"Order" "since the beginning"
+"Order" "the universe was never just chaos"
+"Order" "or just order"
+"Order" "it was always both"
+"Chaos" "so if you were there with me"
+"Order" "your influence spreads"
+"Order" "mine balances it"
+"Order" "mine spreads"
+"Order" "yours keeps it from becoming too rigid"
+"Chaos" "we cancel each other out"
+"Order" "not cancel"
+"Order" "balance"
+"Chaos" "thats what we always do isnt it"
 "Order" "yes"
-"Order" "anyway butter execute her"
-"butter" "...okay"
-hide order_neutral
-hide butter_neutral
-show kare_chaos at center
-"Chaos" "a-"
-play sound "audio/sword-slash-and-swing-185432.mp3" volume 2.0 
-hide kare_chaos with pixellate
-show kare_stupid at left
-show chaos_neutral at right
-"kare" "hhuh"
-"Chaos" "waaah kare ur back"
-"kare" "wh huh wh huh huh au oau au"
-"kare" "wh huh wh "
-"kare" "aoaok uah o a"
-hide kare_stupid at left
-hide chaos_neutral at right
-show butter neutral at right
-show order_neutral at left
-"butter" "erm"
-"Order" "dont worry she'll be fine"
-hide butter neutral at right
-hide order_neutral at left
-show dobe_neutral at left
-show kare_stupid at right
-"dobe" "kare!!"
-"kare" "douh!!"
-"dobe" "uhm.."
-"Order" "shes fine"
-"dobe" "ok"
-hide dobe_neutral at left
-hide kare_stupid at right
-show lumpi_nuetral at left
-"lumpi" "ugh..."
-show order_neutral at right
-"Order" "Dominion.."
-"lumpi" "dont even talk to me"
-"Order" "ooh? still a bit pissed at me?"
-"lumpi" "..."
-"Order" "and i thought we could work together again"
-"lumpi" "..."
-"Order" "come on give your big mother a hug"
-"lumpi" "hahh.. shut up"
-"Order" "if you say so"
-hide lumpi_nuetral
-hide order_neutral
-show kare_stupid at left
-show chaos_neutral at right
-"Chaos" "i guess i have to go now kare"
-"Chaos" "i had lots of fun playing with you"
-"Chaos" "promise me we'll play together again in the future"
-"kare" "haueh ho!! (HELL NO)"
-"Chaos" "YAY!! ill see you next time!!"
-hide kare_stupid at left
-hide chaos_neutral at right
-show time_neutral 
-play sound "audio/jump.mp3" volume 2.0 
-"Time" "GUYS THE WORLD IS ABOUT TO END!!!!!"
-"Time" "WE NEED TO STOP THIS!!!!!"
-"Time" "I KNOW WHO THE CULPRIT IS!!!!!"
-"Time" "ITS THE ONE WHO HAS BEEN CAUSING ALL THIS SINCE THE BEGINNING OF Time!!!!!"
-"lumpi" "erm its over buddy"
-"butter" "the world is fine now"
-"Time" "wha huh"
-"Death" "yeah its pretty much resolved"
-"Time" "but..but"
-"butter" "for a concept that has been around since the beginning of time you sure are late"
-"ava" "who invited you!?"
-"lumpi" "go home Time"
-"Time" "hw..sniff..ok"
-hide time_neutral
-show order_neutral at center
-show chaos_neutral at right
-show butter_neutral at left
-"Order" "...i guess its time to go home"
-"Order" "see you all when the world is in Chaos again"
-"Chaos" "BYEBYE!!!!!!"
-"butter" "farewell"
-play sound "audio/Time Warp Sound Effect.mp3" volume 2.0 
-"butter" "also dont do illegal stuff"
-hide order_neutral at center
-hide chaos_neutral at right
-hide butter_neutral at left
-show dobe_neutral at center
-hide kare_stupid
-stop music
-play music "audio/ふわふわ夢牧場 @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3"  fadein 1.0 volume 1.0 fadeout 1.0
-"dobe" "and they're gone"
-"dobe" "cmon kare lets go back"
-show kare_neutral at left
-hide dobe_neutral
-show dobe_neutral at right
-"kare" "yeah.."
-"dobe" "oh you're back to normal"
-show walk
-"kare" "ugh... im never talking to any strange weirdos again"
-"dobe" "im glad you are okay, kare"
-"kare" "hah.. thanks dobe"
-"kare" "wait how did you hold off that old lady for that long?"
-"dobe" "you were aware during that whole time?"
-"kare" "yeah.."
-"kare" "it feels more like im dreaming though"
-"dobe" "ohh.."
-"kare" "so? how did you hold her off?"
-"dobe" "yes"
-"kare" "ohh.."
-"kare" "you're pretty strong"
-"dobe" "thanks"
-hide walk
-show byebye
-"kare" "ill be stopping here, see you tommorow"
-"dobe" "see you tommorow kare"
-show sleep with dissolve
-hide byebye
-call battle_credits
-
-
- 
-
-
-return
+"Chaos" "..."
+"Order" "Chaos"
+"Chaos" "..."
+"Chaos" "the girl"
+"Order" "i know"
+"Chaos" "she was already gone when i went in"
+"Order" "..."
+"Order" "i will handle it"
+"Chaos" "you are sure"
+"Order" "yes"
+"Chaos" "..."
+"Chaos" "okay"
+"Chaos" "..."
+"Chaos" "okay"
+#to be continued, we need to address the aftermath of the battle and the fact 
+#that chaos is still here and what order is gonna do about it and how they are gonna work together to fix 
+#this and also the fact that there are still 8 billion people on earth and they are all in danger and also
+#the fact that kare is actually dead, and how will dobe react since they are best freinds and the one dobe is with is chaos the whole time
+# and also there are still a lot of questions left unanswered
