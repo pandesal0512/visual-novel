@@ -1239,48 +1239,59 @@ label battle_engine(bm):
             $ bm.total_skills_used_this_battle += 1
             $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
+            if (not getattr(bm, "is_chaos", False) and not getattr(skill, "is_chaos_skill", False)) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_attack_eng
                 elif skill.type == "barrier":
-                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DEFENSE") from _call_chaos_slot_barrier_eng
                 elif skill.type == "buff":
-                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "BUFF POWER") from _call_chaos_slot_buff_eng
                 elif skill.type == "energy":
-                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_eng
                 elif skill.type == "unravel":
                     $ skill_value = 0
-                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "UNRAVEL") from _call_chaos_slot_unravel_eng
                 elif skill.type == "fracture":
                     if enemy.barrier > 0:
                         $ skill_value = 0
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_fracture_eng
                 elif skill.type == "corrode":
                     $ skill_value = get_chaos_random_value(bm, skill)
-                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "CORROSION") from _call_chaos_slot_corrode_eng
                 elif skill.type == "inversion":
                     $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "INVERSION") from _call_chaos_slot_inversion_eng
                 elif skill.type == "collapse":
                     $ skill_value = 1
-                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "COLLAPSE") from _call_chaos_slot_collapse_eng
                 elif skill.type == "leech":
                     $ skill_value = 0
                     if enemy.buffs:
                         $ skill_value = enemy.buffs[0][1]
-                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "STOLEN POWER") from _call_chaos_slot_leech_eng
                 elif skill.type == "overload":
                     $ skill_value = enemy.barrier
-                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_eng
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "OVERLOAD") from _call_chaos_slot_overload_eng
 
             if skill.type == "attack":
-                if getattr(bm, "is_chaos", False):
-                    $ actual_damage = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_damage = store.locked_skill_value
                 else:
                     $ actual_damage = get_chaos_random_value(bm, skill)
                 if actual_damage == 1:
@@ -1308,14 +1319,14 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_generic
-                if getattr(bm, "is_chaos", False):
-                    $ actual_barrier = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_barrier = store.locked_skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
                 if actual_barrier == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "You gain [actual_barrier] Defense"
                 else:
                     "You gain [skill.damage] Defense"
@@ -1327,14 +1338,14 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_generic
-                if getattr(bm, "is_chaos", False):
-                    $ actual_buff = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_buff = store.locked_skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
                 if actual_buff == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
                 else:
                     "[skill.name] Damage increased by [skill.damage] for [skill.buff_duration] turns."
@@ -1342,11 +1353,11 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
-                if getattr(bm, "is_chaos", False):
-                    if skill_value == 1:
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    if store.locked_skill_value == 1:
                         $ bm.rolled_one_this_turn = True
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
-                    "You gained [skill_value] Energy"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + store.locked_skill_value)
+                    "You gained [store.locked_skill_value] Energy"
                 else:
                     "You gained [skill.energy_regen] Energy"
             elif skill.type == "unravel":
@@ -1363,14 +1374,14 @@ label battle_engine(bm):
                     $ enemy.barrier = 0
                     "You completely destroyed [enemy.name]'s barrier!"
                 else:
-                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
-                    "You dealt [skill_value] damage to [enemy.name]!"
+                    $ bm.take_damage(store.locked_skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [store.locked_skill_value] damage to [enemy.name]!"
             elif skill.type == "corrode":
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_corrode_anim_eng
                 $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
-                "You applied corrosion to [enemy.name] for [skill_value] turns!"
+                "You applied corrosion to [enemy.name] for [store.locked_skill_value] turns!"
             elif skill.type == "inversion":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -1404,7 +1415,7 @@ label battle_engine(bm):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_overload_anim_eng
                 if enemy.barrier > 0:
-                    $ dmg = enemy.barrier
+                    $ dmg = store.locked_skill_value
                     $ enemy.barrier = 0
                     $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
                     "Overload! [enemy.name] took [dmg] damage from their own barrier!"
@@ -2402,48 +2413,59 @@ label butter_ava_battle(skill_overrides=None):
             $ bm.total_skills_used_this_battle += 1
             $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
+            if (not getattr(bm, "is_chaos", False) and not getattr(skill, "is_chaos_skill", False)) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_attack_boss1
                 elif skill.type == "barrier":
-                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss1
                 elif skill.type == "buff":
-                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss1
                 elif skill.type == "energy":
-                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
                 elif skill.type == "unravel":
                     $ skill_value = 0
-                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss1
                 elif skill.type == "fracture":
                     if enemy.barrier > 0:
                         $ skill_value = 0
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss1
                 elif skill.type == "corrode":
                     $ skill_value = get_chaos_random_value(bm, skill)
-                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "CORROSION") from _call_chaos_slot_corrode_boss1
                 elif skill.type == "inversion":
                     $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "INVERSION") from _call_chaos_slot_inversion_boss1
                 elif skill.type == "collapse":
                     $ skill_value = 1
-                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss1
                 elif skill.type == "leech":
                     $ skill_value = 0
                     if enemy.buffs:
                         $ skill_value = enemy.buffs[0][1]
-                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss1
                 elif skill.type == "overload":
                     $ skill_value = enemy.barrier
-                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss1
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss1
 
             if skill.type == "attack":
-                if getattr(bm, "is_chaos", False):
-                    $ actual_damage = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_damage = store.locked_skill_value
                 else:
                     $ actual_damage = get_chaos_random_value(bm, skill)
                 if actual_damage == 1:
@@ -2472,14 +2494,14 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss1
-                if getattr(bm, "is_chaos", False):
-                    $ actual_barrier = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_barrier = store.locked_skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
                 if actual_barrier == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "You gain [actual_barrier] Defense!"
                 else:
                     "You gain [skill.damage] Defense!"
@@ -2491,14 +2513,14 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss1
-                if getattr(bm, "is_chaos", False):
-                    $ actual_buff = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_buff = store.locked_skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
                 if actual_buff == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
                 else:
                     "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
@@ -2506,11 +2528,11 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
-                if getattr(bm, "is_chaos", False):
-                    if skill_value == 1:
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    if store.locked_skill_value == 1:
                         $ bm.rolled_one_this_turn = True
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
-                    "You gained [skill_value] Energy!"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + store.locked_skill_value)
+                    "You gained [store.locked_skill_value] Energy!"
                 else:
                     "You gained [skill.energy_regen] Energy!"
             elif skill.type == "unravel":
@@ -2527,14 +2549,14 @@ label butter_ava_battle(skill_overrides=None):
                     $ enemy.barrier = 0
                     "You completely destroyed [enemy.name]'s barrier!"
                 else:
-                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
-                    "You dealt [skill_value] damage to [enemy.name]!"
+                    $ bm.take_damage(store.locked_skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [store.locked_skill_value] damage to [enemy.name]!"
             elif skill.type == "corrode":
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_corrode_anim_boss1
                 $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
-                "You applied corrosion to [enemy.name] for [skill_value] turns!"
+                "You applied corrosion to [enemy.name] for [store.locked_skill_value] turns!"
             elif skill.type == "inversion":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2568,7 +2590,7 @@ label butter_ava_battle(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_overload_anim_boss1
                 if enemy.barrier > 0:
-                    $ dmg = enemy.barrier
+                    $ dmg = store.locked_skill_value
                     $ enemy.barrier = 0
                     $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
                     "Overload! [enemy.name] took [dmg] damage from their own barrier!"
@@ -2816,48 +2838,59 @@ label butter_ava_battle2(skill_overrides=None):
             $ bm.total_skills_used_this_battle += 1
             $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
+            if (not getattr(bm, "is_chaos", False) and not getattr(skill, "is_chaos_skill", False)) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_attack_boss2
                 elif skill.type == "barrier":
-                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss2
                 elif skill.type == "buff":
-                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss2
                 elif skill.type == "energy":
-                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
                 elif skill.type == "unravel":
                     $ skill_value = 0
-                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss2
                 elif skill.type == "fracture":
                     if enemy.barrier > 0:
                         $ skill_value = 0
-                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss2
                 elif skill.type == "corrode":
                     $ skill_value = get_chaos_random_value(bm, skill)
-                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "CORROSION") from _call_chaos_slot_corrode_boss2
                 elif skill.type == "inversion":
                     $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "INVERSION") from _call_chaos_slot_inversion_boss2
                 elif skill.type == "collapse":
                     $ skill_value = 1
-                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss2
                 elif skill.type == "leech":
                     $ skill_value = 0
                     if enemy.buffs:
                         $ skill_value = enemy.buffs[0][1]
-                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss2
                 elif skill.type == "overload":
                     $ skill_value = enemy.barrier
-                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss2
+                    $ store.locked_skill_value = skill_value
+                    call chaos_number_anim(store.locked_skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss2
 
             if skill.type == "attack":
-                if getattr(bm, "is_chaos", False):
-                    $ actual_damage = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_damage = store.locked_skill_value
                 else:
                     $ actual_damage = get_chaos_random_value(bm, skill)
                 if actual_damage == 1:
@@ -2886,14 +2919,14 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss2
-                if getattr(bm, "is_chaos", False):
-                    $ actual_barrier = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_barrier = store.locked_skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
                 if actual_barrier == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "gained [actual_barrier] Defense"
                 else:
                     "gained [skill.damage] Defense"
@@ -2905,14 +2938,14 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss2
-                if getattr(bm, "is_chaos", False):
-                    $ actual_buff = skill_value
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    $ actual_buff = store.locked_skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
                 if actual_buff == 1:
                     $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
-                if getattr(bm, "is_chaos", False):
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                     "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
                 else:
                     "[skill.name] Damage increased by [skill.damage] for [skill.buff_duration] turns."
@@ -2920,11 +2953,11 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
-                if getattr(bm, "is_chaos", False):
-                    if skill_value == 1:
+                if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                    if store.locked_skill_value == 1:
                         $ bm.rolled_one_this_turn = True
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
-                    "gained [skill_value] Energy"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + store.locked_skill_value)
+                    "gained [store.locked_skill_value] Energy"
                 else:
                     "gained [skill.energy_regen] Energy"
             elif skill.type == "unravel":
@@ -2941,14 +2974,14 @@ label butter_ava_battle2(skill_overrides=None):
                     $ enemy.barrier = 0
                     "Ydestroyed [enemy.name]'s barrier"
                 else:
-                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
-                    "You dealt [skill_value] damage to [enemy.name]"
+                    $ bm.take_damage(store.locked_skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [store.locked_skill_value] damage to [enemy.name]"
             elif skill.type == "corrode":
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_corrode_anim_boss2
                 $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
-                "applied corrosion to [enemy.name] for [skill_value] turns"
+                "applied corrosion to [enemy.name] for [store.locked_skill_value] turns"
             elif skill.type == "inversion":
                 $ bm.is_dodged = False
                 if skill.animation:
@@ -2982,7 +3015,7 @@ label butter_ava_battle2(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_chaos_overload_anim_boss2
                 if enemy.barrier > 0:
-                    $ dmg = enemy.barrier
+                    $ dmg = store.locked_skill_value
                     $ enemy.barrier = 0
                     $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
                     "[enemy.name] took [dmg] damage from their own barrier"
@@ -3338,48 +3371,59 @@ label order_battle_resolution_core:
         $ bm.total_skills_used_this_battle += 1
         $ bm.skills_used_this_turn_types.append(skill.type)
         $ skill.current_cooldown = skill.cooldown
-        if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
+        if (not getattr(bm, "is_chaos", False) and not getattr(skill, "is_chaos_skill", False)) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
         # Chaos number animation triggers BEFORE skill animation
         if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
             $ skill_value = get_chaos_random_value(bm, skill)
             if skill.type == "attack":
-                call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_attack_order
             elif skill.type == "barrier":
-                call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "DEFENSE") from _call_chaos_slot_barrier_order
             elif skill.type == "buff":
-                call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "BUFF POWER") from _call_chaos_slot_buff_order
             elif skill.type == "energy":
-                call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_order
             elif skill.type == "unravel":
                 $ skill_value = 0
-                call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "UNRAVEL") from _call_chaos_slot_unravel_order
             elif skill.type == "fracture":
                 if enemy.barrier > 0:
                     $ skill_value = 0
-                call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "DAMAGE") from _call_chaos_slot_fracture_order
             elif skill.type == "corrode":
                 $ skill_value = get_chaos_random_value(bm, skill)
-                call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "CORROSION") from _call_chaos_slot_corrode_order
             elif skill.type == "inversion":
                 $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
-                call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "INVERSION") from _call_chaos_slot_inversion_order
             elif skill.type == "collapse":
                 $ skill_value = 1
-                call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "COLLAPSE") from _call_chaos_slot_collapse_order
             elif skill.type == "leech":
                 $ skill_value = 0
                 if enemy.buffs:
                     $ skill_value = enemy.buffs[0][1]
-                call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "STOLEN POWER") from _call_chaos_slot_leech_order
             elif skill.type == "overload":
                 $ skill_value = enemy.barrier
-                call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_order
+                $ store.locked_skill_value = skill_value
+                call chaos_number_anim(store.locked_skill_value, "OVERLOAD") from _call_chaos_slot_overload_order
 
         if skill.type == "attack":
-            if getattr(bm, "is_chaos", False):
-                $ actual_damage = skill_value
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                $ actual_damage = store.locked_skill_value
             else:
                 $ actual_damage = get_chaos_random_value(bm, skill)
             if actual_damage == 1:
@@ -3467,8 +3511,8 @@ label order_battle_resolution_core:
         elif skill.type == "barrier":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_barrier
-            if getattr(bm, "is_chaos", False):
-                $ actual_barrier = skill_value
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                $ actual_barrier = store.locked_skill_value
             else:
                 $ actual_barrier = get_chaos_random_value(bm, skill)
             if actual_barrier == 1:
@@ -3484,8 +3528,8 @@ label order_battle_resolution_core:
         elif skill.type == "buff":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_buff
-            if getattr(bm, "is_chaos", False):
-                $ actual_buff = skill_value
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                $ actual_buff = store.locked_skill_value
             else:
                 $ actual_buff = get_chaos_random_value(bm, skill)
             if actual_buff == 1:
@@ -3498,11 +3542,11 @@ label order_battle_resolution_core:
         elif skill.type == "energy":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
-            if getattr(bm, "is_chaos", False):
-                if skill_value == 1:
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
+                if store.locked_skill_value == 1:
                     $ bm.rolled_one_this_turn = True
-                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
-                "You gained [skill_value] Energy"
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + store.locked_skill_value)
+                "You gained [store.locked_skill_value] Energy"
             else:
                 "You gained [skill.energy_regen] Energy"
         elif skill.type == "unravel":
@@ -3517,13 +3561,13 @@ label order_battle_resolution_core:
                 $ enemy.barrier = 0
                 "You completely destroyed Order's barrier!"
             else:
-                $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
-                "You dealt [skill_value] damage to Order!"
+                $ bm.take_damage(store.locked_skill_value, target="enemy", enemy_idx=e_idx)
+                "You dealt [store.locked_skill_value] damage to Order!"
         elif skill.type == "corrode":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_corrode_anim_order
             $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
-            "You applied corrosion to Order for [skill_value] turns!"
+            "You applied corrosion to Order for [store.locked_skill_value] turns!"
         elif skill.type == "inversion":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_inversion_anim_order
@@ -3553,7 +3597,7 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_overload_anim_order
             if enemy.barrier > 0:
-                $ dmg = enemy.barrier
+                $ dmg = store.locked_skill_value
                 $ enemy.barrier = 0
                 $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
                 "Overload! Order took [dmg] damage from their own barrier!"
