@@ -201,7 +201,7 @@ init python:
         return scrambled
 
     def get_chaos_random_value(bm, skill):
-        if not getattr(bm, "is_chaos", False):
+        if not getattr(skill, "is_chaos_skill", False):
             if skill.type == "attack":
                 return skill.damage + bm.get_total_buff_value("damage", target="player")
             return skill.damage
@@ -240,7 +240,7 @@ init python:
         return name + "_dodge_anim"
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None, is_chaos_skill=False):
             self.name = name
             self.cost = cost
             self.damage = damage
@@ -253,6 +253,7 @@ init python:
             self.buff_type = buff_type
             self.buff_duration = buff_duration
             self.card_image = card_image
+            self.is_chaos_skill = is_chaos_skill
 
     class EnemyIntent:
         def __init__(self, name, damage=0, desc="", animation=None, type="attack", buff_type=None, buff_duration=0, card_image=None, cooldown=0):
@@ -304,7 +305,11 @@ init python:
         dobe_helps = False
         is_chaos = False
         is_shuffling = False
-        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False, skill_overrides=None):
+        kare_shuffle_mode = False
+        shuffled_slot_idx = -1
+        original_skill = None
+        chaos_pool = []
+        def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False, skill_overrides=None, kare_shuffle_mode=False):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
             self.player_energy = starting_energy
@@ -314,6 +319,7 @@ init python:
             self.tutorial = tutorial
             self.dobe_helps = dobe_helps
             self.is_chaos = is_chaos
+            self.kare_shuffle_mode = kare_shuffle_mode
             self.skill_overrides = skill_overrides or {}
 
             if isinstance(enemies, list):
@@ -357,6 +363,8 @@ init python:
         def initialize_skills(self, is_chaos):
             char_name = "chaos" if is_chaos else "kare"
             self.full_skill_pool = get_character_skills(char_name)
+            if self.kare_shuffle_mode:
+                self.chaos_pool = get_character_skills("chaos")
             for skill in self.full_skill_pool:
                 if skill.name in self.skill_overrides:
                     for attr, value in self.skill_overrides[skill.name].items():
@@ -460,6 +468,11 @@ init python:
             self.rolled_one_this_turn = False
             if self.player_barrier_blocked_turns > 0:
                 self.player_barrier_blocked_turns -= 1
+
+            # Kare Shuffle Logic: Revert last turn's shuffle
+            if self.kare_shuffle_mode and self.shuffled_slot_idx != -1:
+                self.player_skills[self.shuffled_slot_idx] = self.original_skill
+                self.shuffled_slot_idx = -1
 
             self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
@@ -617,21 +630,21 @@ init python:
             ]
         elif name.lower() == "chaos":
             return [
-                Skill("interitus", cost=3, damage=0, energy_regen=2, desc="1-20 damage... probably", animation="chaos_normal_anim", card_image="card_chaos_normal"),
-                Skill("Embrace", cost=5, damage=0, type="barrier", desc="1-50 Defense. who knows", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block"),
-                Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="everything falls apart eventually. might as well use it", animation="chaos_energy_anim", card_image="card_chaos_energy"),
-                Skill("Cataclysm", cost=7, damage=0, cooldown=0, desc="1-30 damage... maybe", animation="chaos_hard_anim", card_image="card_chaos_hard"),
-                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
-                Skill("playing rough", cost=6, damage=0, type="buff", buff_type="damage", buff_duration=3, desc="1-50 Damage Buff. or 1. who knows.", animation="chaos_buff_anim"),
-                Skill("??????", cost=25, damage=0, cooldown=0, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate"),
+                Skill("interitus", cost=3, damage=0, energy_regen=2, desc="1-20 damage... probably", animation="chaos_normal_anim", card_image="card_chaos_normal", is_chaos_skill=True),
+                Skill("Embrace", cost=5, damage=0, type="barrier", desc="1-50 Defense. who knows", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block", is_chaos_skill=True),
+                Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="everything falls apart eventually. might as well use it", animation="chaos_energy_anim", card_image="card_chaos_energy", is_chaos_skill=True),
+                Skill("Cataclysm", cost=7, damage=0, cooldown=0, desc="1-30 damage... maybe", animation="chaos_hard_anim", card_image="card_chaos_hard", is_chaos_skill=True),
+                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge", is_chaos_skill=True),
+                Skill("playing rough", cost=6, damage=0, type="buff", buff_type="damage", buff_duration=3, desc="1-50 Damage Buff. or 1. who knows.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("??????", cost=25, damage=0, cooldown=0, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate", is_chaos_skill=True),
 
-                Skill("Unravel", cost=4, type="unravel", desc="Strips all buffs currently on the enemy.", animation="chaos_buff_anim"),
-                Skill("Fracture", cost=5, type="fracture", desc="Destroys enemy barrier completely, or deals 1-10 damage.", animation="chaos_normal_anim"),
-                Skill("Corrode", cost=5, type="corrode", desc="Reduced damage for enemy's next 2-3 attacks.", animation="chaos_normal_anim"),
-                Skill("Inversion", cost=6, type="inversion", desc="Flips enemy damage buff to a penalty.", animation="chaos_buff_anim"),
-                Skill("Collapse", cost=8, type="collapse", desc="Nullifies enemy's very next action.", animation="chaos_block_anim"),
-                Skill("Leech", cost=6, type="leech", desc="Steals a buff from the enemy and applies it to yourself.", animation="chaos_buff_anim"),
-                Skill("Overload", cost=7, type="overload", desc="Enemy takes damage equal to their current barrier, then removes it.", animation="chaos_hard_anim")
+                Skill("Unravel", cost=4, type="unravel", desc="Strips all buffs currently on the enemy.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Fracture", cost=5, type="fracture", desc="Destroys enemy barrier completely, or deals 1-10 damage.", animation="chaos_normal_anim", is_chaos_skill=True),
+                Skill("Corrode", cost=5, type="corrode", desc="Reduced damage for enemy's next 2-3 attacks.", animation="chaos_normal_anim", is_chaos_skill=True),
+                Skill("Inversion", cost=6, type="inversion", desc="Flips enemy damage buff to a penalty.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Collapse", cost=8, type="collapse", desc="Nullifies enemy's very next action.", animation="chaos_block_anim", is_chaos_skill=True),
+                Skill("Leech", cost=6, type="leech", desc="Steals a buff from the enemy and applies it to yourself.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Overload", cost=7, type="overload", desc="Enemy takes damage equal to their current barrier, then removes it.", animation="chaos_hard_anim", is_chaos_skill=True)
             ]
         return []
 
@@ -808,6 +821,37 @@ label chaos_card_shuffle_anim(bm):
     # play sound "audio/reel_ding.mp3"
     $ renpy.pause(0.8, hard=True)
     $ bm.player_skills = _future_skills
+    $ bm.is_shuffling = False
+    hide screen chaos_card_reel_screen
+    return
+
+label kare_card_shuffle_anim(bm):
+    python:
+        bm.is_shuffling = True
+        # Select slot (not Slap at 0)
+        unlocked_count = len(bm.player_skills)
+        if unlocked_count > 1:
+            bm.shuffled_slot_idx = renpy.random.randint(1, unlocked_count - 1)
+            bm.original_skill = bm.player_skills[bm.shuffled_slot_idx]
+            future_chaos_skill = renpy.random.choice(bm.chaos_pool)
+
+            reel_card_lists = []
+            num_spins = 10
+            for i in range(unlocked_count):
+                if i == bm.shuffled_slot_idx:
+                    card_reel = [future_chaos_skill]
+                    for _ in range(num_spins):
+                        card_reel.append(renpy.random.choice(bm.chaos_pool))
+                else:
+                    card_reel = [bm.player_skills[i]] # No shuffle for others
+                reel_card_lists.append(card_reel)
+
+    show screen chaos_card_reel_screen(reel_card_lists, duration=1.5)
+    $ renpy.pause(1.5, hard=True)
+    $ renpy.pause(0.8, hard=True)
+    python:
+        if bm.shuffled_slot_idx != -1:
+            bm.player_skills[bm.shuffled_slot_idx] = future_chaos_skill
     $ bm.is_shuffling = False
     hide screen chaos_card_reel_screen
     return
@@ -1146,6 +1190,8 @@ label battle_engine(bm):
         show screen battle_screen(bm)
         if getattr(bm, "is_chaos", False):
             call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_eng
+        elif getattr(bm, "kare_shuffle_mode", False):
+            call kare_card_shuffle_anim(bm) from _call_kare_card_shuffle_eng
 
     label .engine_selection_phase:
         $ result = ui.interact()
@@ -1194,7 +1240,7 @@ label battle_engine(bm):
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
-            if getattr(bm, "is_chaos", False):
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
                     call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_eng
@@ -2260,7 +2306,7 @@ label newenemy_battle(skill_overrides=None):
         "yummers":          {"energy_regen": 5, "cooldown": 2},
         "evade":            {"cost": 3, "cost": 2, "cooldown": 2},
     }
-    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25, skill_overrides=skill_overrides)
+    $ bm = BattleManager(200, [butter], starting_slots=2, player_sprites=player_sprites, starting_energy=25, max_energy=25, skill_overrides=skill_overrides, kare_shuffle_mode=True)
     call battle_engine(bm) from _call_battle_engine_newenemy
     if _return == 'win':
         jump .newenemy_wins
@@ -2309,6 +2355,8 @@ label butter_ava_battle(skill_overrides=None):
         show screen battle_screen(bm)
         if getattr(bm, "is_chaos", False):
             call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss1
+        elif getattr(bm, "kare_shuffle_mode", False):
+            call kare_card_shuffle_anim(bm) from _call_kare_card_shuffle_boss1
     label .boss1_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2351,7 +2399,7 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
-            if getattr(bm, "is_chaos", False):
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
                     call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss1
@@ -2719,6 +2767,8 @@ label butter_ava_battle2(skill_overrides=None):
         show screen battle_screen(bm)
         if getattr(bm, "is_chaos", False):
             call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss2
+        elif getattr(bm, "kare_shuffle_mode", False):
+            call kare_card_shuffle_anim(bm) from _call_kare_card_shuffle_boss2
     label .boss2_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2761,7 +2811,7 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
-            if getattr(bm, "is_chaos", False):
+            if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
                 $ skill_value = get_chaos_random_value(bm, skill)
                 if skill.type == "attack":
                     call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss2
@@ -3227,6 +3277,8 @@ label order_battle_turn_start:
     show screen battle_screen(bm)
     if getattr(bm, "is_chaos", False):
         call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_order
+    elif getattr(bm, "kare_shuffle_mode", False):
+        call kare_card_shuffle_anim(bm) from _call_kare_card_shuffle_order
 
 label order_battle_selection_phase:
     $ result = ui.interact()
@@ -3272,7 +3324,7 @@ label order_battle_resolution_core:
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
         # Chaos number animation triggers BEFORE skill animation
-        if getattr(bm, "is_chaos", False):
+        if getattr(bm, "is_chaos", False) or getattr(skill, "is_chaos_skill", False):
             $ skill_value = get_chaos_random_value(bm, skill)
             if skill.type == "attack":
                 call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_order
