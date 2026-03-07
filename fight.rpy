@@ -502,19 +502,22 @@ init python:
 
                     # Special filtering for RECIDIVISM
                     recidivism_intent = next((i for i in available_intents if i.type == "recidivism"), None)
-                    if recidivism_intent and self.rolled_one_last_turn:
-                        # Skip normal intents and ONLY use RECIDIVISM once
-                        idx = available_indices.pop()
-                        enemy.slots[idx] = recidivism_intent
-                    else:
-                        # Standard random intent selection
+                    if recidivism_intent and not self.rolled_one_last_turn:
                         available_intents = [i for i in available_intents if i.type != "recidivism"]
-                        renpy.random.shuffle(available_intents)
-                        for _ in range(num_enemy_slots):
-                            if not available_intents:
-                                break
-                            idx = available_indices.pop()
-                            enemy.slots[idx] = available_intents.pop()
+
+                    renpy.random.shuffle(available_intents)
+
+                    # Ensure RECIDIVISM is prioritized if triggered
+                    if recidivism_intent and self.rolled_one_last_turn:
+                        if recidivism_intent in available_intents:
+                            available_intents.remove(recidivism_intent)
+                            available_intents.append(recidivism_intent) # Put at end to pop first
+
+                    for _ in range(num_enemy_slots):
+                        if not available_intents:
+                            break
+                        idx = available_indices.pop()
+                        enemy.slots[idx] = available_intents.pop()
 
         def take_damage(self, amount, target="player", enemy_idx=0):
             if target == "player":
@@ -674,7 +677,7 @@ init python:
                 EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("RECIDIVISM", damage=0, desc="if Chaos rolled a 1 last turn, deals 15 flat damage. resets after firing.", animation="serious_butter_hard_anim", type="recidivism"),
                 EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("ACCUMULATED WEIGHT", damage=0, desc="deals damage equal to the total number of turns that have passed x 3.", animation="serious_butter_ultimate_anim", type="accumulated_weight", cooldown=5),
+                EnemyIntent("ACCUMULATED WEIGHT", damage=0, desc="deals damage equal to the total number of turns that have passed.", animation="serious_butter_ultimate_anim", type="accumulated_weight", cooldown=5),
                 EnemyIntent("SENTENCE", damage=25, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "lumpi":
@@ -1512,7 +1515,7 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_accumulated
-                $ damage = bm.turn_count * 3
+                $ damage = bm.turn_count
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
@@ -2673,7 +2676,7 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_accumulated
-                $ damage = bm.turn_count * 3
+                $ damage = bm.turn_count
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
@@ -3084,7 +3087,7 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_accumulated
-                $ damage = bm.turn_count * 3
+                $ damage = bm.turn_count
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
@@ -3106,7 +3109,7 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_boss2_remember
-                $ heal = bm.last_drain_amount
+                $ heal = bm.last_drain_amount // 100
                 $ old_hp = enemy.hp
                 $ enemy.hp = min(enemy.max_hp, enemy.hp + heal)
                 $ actual_healed = enemy.hp - old_hp
@@ -3125,19 +3128,18 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2_foundation
-                $ stripped_value = 0
                 $ count = 0
                 python:
                     new_buffs = []
                     for b in enemy.buffs:
                         if b[0] == "corrosion" or b[1] < 0:
                             count += 1
-                            stripped_value += abs(b[1])
                         else:
                             new_buffs.append(b)
                     enemy.buffs = new_buffs
-                $ bm.add_barrier(stripped_value, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] stripped [count] debuffs and gained [stripped_value] Defense with FOUNDATION!"
+                $ barrier = count * 8
+                $ bm.add_barrier(barrier, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] stripped [count] debuffs and gained [barrier] Defense with FOUNDATION!"
             elif intent.type == "thousand_years":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -3641,7 +3643,7 @@ label order_battle_resolution_core:
         elif intent.type == "accumulated_weight":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_accumulated
-            $ damage = bm.turn_count * 3
+            $ damage = bm.turn_count
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
             "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
