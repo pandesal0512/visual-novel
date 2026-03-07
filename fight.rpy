@@ -182,8 +182,8 @@ transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
 transform reel_scroll_transform(duration, num_items, item_height):
-    ypos 0
-    easeout_expo duration ypos -((num_items - 1) * item_height)
+    ypos -((num_items - 1) * item_height)
+    easeout_expo duration ypos 0
 
 init python:
     import random
@@ -286,6 +286,7 @@ init python:
         tutorial = False
         dobe_helps = False
         is_chaos = False
+        is_shuffling = False
         def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False, skill_overrides=None):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
@@ -648,10 +649,9 @@ screen slot_machine(reel_items, label_text="", duration=2.0):
             xalign 0.5
             yalign 0.5
             text "[label_text]" size 16 color "#aaa" xalign 0.5
-            fixed:
+            viewport:
                 xsize 140
                 ysize 60
-                clip True
                 xalign 0.5
                 vbox:
                     xalign 0.5
@@ -665,11 +665,10 @@ screen slot_machine(reel_items, label_text="", duration=2.0):
 label chaos_slot_anim(final_value, label_text=""):
     python:
         symbols = "$#%^&*@!?~<>"
-        reel_items = []
+        reel_items = [str(final_value)]
         num_spins = 12
         for _ in range(num_spins):
             reel_items.append("".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))]))
-        reel_items.append(str(final_value))
 
     show screen slot_machine(reel_items, label_text, duration=1.5)
     $ renpy.pause(1.5, hard=True)
@@ -682,10 +681,9 @@ screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
         xalign 0.5 ypos 0.98 yanchor 1.0
         spacing 15
         for i, card_list in enumerate(reel_card_lists):
-            fixed:
+            viewport:
                 xsize 140
                 ysize 180
-                clip True
                 frame:
                     background Solid("#000000cc")
                     foreground "sketchy_bar_outline"
@@ -705,21 +703,19 @@ screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
 
 label chaos_card_shuffle_anim(bm):
     python:
+        bm.is_shuffling = True
         # Prepare 6 lists of cards for the reels
+        # Actual shuffle happens later so we need a preview of what it WILL be
+        _future_skills = list(bm.player_skills)
+        renpy.random.shuffle(_future_skills)
+
         reel_card_lists = []
         num_spins = 10
         for i in range(len(bm.player_skills)):
-            card_reel = []
+            card_reel = [_future_skills[i]]
             for _ in range(num_spins):
                 card_reel.append(renpy.random.choice(bm.full_skill_pool))
             reel_card_lists.append(card_reel)
-
-        # Shuffle the actual hand
-        renpy.random.shuffle(bm.player_skills)
-
-        # Add the final shuffled cards to the end of each reel list
-        for i, skill in enumerate(bm.player_skills):
-            reel_card_lists[i].append(skill)
 
     show screen chaos_card_reel_screen(reel_card_lists, duration=1.5)
     # Placeholder for sound effects
@@ -727,6 +723,8 @@ label chaos_card_shuffle_anim(bm):
     $ renpy.pause(1.5, hard=True)
     # play sound "audio/reel_ding.mp3"
     $ renpy.pause(0.8, hard=True)
+    $ bm.player_skills = _future_skills
+    $ bm.is_shuffling = False
     hide screen chaos_card_reel_screen
     return
 
@@ -907,28 +905,29 @@ screen battle_screen(bm):
         hbox:
             xalign 0.5
             spacing 15
-            for skill in bm.player_skills:
-                $ is_selected = bm.selected_skill == skill
-                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                button:
-                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
-                    hovered SetField(bm, "hovered_skill", skill)
-                    unhovered SetField(bm, "hovered_skill", None)
-                    at (card_selected_zoom if is_selected else card_idle_zoom)
-                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                    background (Solid("#0002") if is_selected else None)
-                    foreground "sketchy_bar_outline"
-                    padding (0, 0)
-                    xsize 140
-                    ysize 180
-                    if skill.card_image:
-                        add skill.card_image
-                    if skill.current_cooldown > 0:
-                        add Solid("#00000088")
-                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-                    elif skill in bm.used_skills_this_turn:
-                        add Solid("#00000055")
-                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+            if not getattr(bm, "is_shuffling", False):
+                for skill in bm.player_skills:
+                    $ is_selected = bm.selected_skill == skill
+                    $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+                    button:
+                        action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
+                        hovered SetField(bm, "hovered_skill", skill)
+                        unhovered SetField(bm, "hovered_skill", None)
+                        at (card_selected_zoom if is_selected else card_idle_zoom)
+                        sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
+                        background (Solid("#0002") if is_selected else None)
+                        foreground "sketchy_bar_outline"
+                        padding (0, 0)
+                        xsize 140
+                        ysize 180
+                        if skill.card_image:
+                            add skill.card_image
+                        if skill.current_cooldown > 0:
+                            add Solid("#00000088")
+                            text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+                        elif skill in bm.used_skills_this_turn:
+                            add Solid("#00000055")
+                            text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
     # ── Skill popup (left side, unchanged) ──
     $ display_skill = None
