@@ -924,39 +924,40 @@ screen battle_screen(bm):
 
     # ── Skill cards: bottom ──
     vbox:
-        xalign 0.5 ypos 0.98 yanchor 1.0
+        xalign 0.5 ypos 0.80 yanchor 1.0
         spacing 5
         hbox:
             xalign 0.5
             spacing 4
             text "Next skill: " size 13 color "#777777"
             bar value bm.skill_exp range bm.skill_exp_max xmaximum 600 ysize 8 yalign 0.5
-        hbox:
-            xalign 0.5
-            spacing 15
-            if not getattr(bm, "is_shuffling", False):
-                for skill in bm.player_skills:
-                    $ is_selected = bm.selected_skill == skill
-                    $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                    button:
-                        action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
-                        hovered SetField(bm, "hovered_skill", skill)
-                        unhovered SetField(bm, "hovered_skill", None)
-                        at (card_selected_zoom if is_selected else card_idle_zoom)
-                        sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                        background (Solid("#0002") if is_selected else None)
-                        foreground "sketchy_bar_outline"
-                        padding (0, 0)
-                        xsize 140
-                        ysize 180
-                        if skill.card_image:
-                            add skill.card_image
-                        if skill.current_cooldown > 0:
-                            add Solid("#00000088")
-                            text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-                        elif skill in bm.used_skills_this_turn:
-                            add Solid("#00000055")
-                            text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+
+    hbox:
+        xalign 0.5 ypos 0.98 yanchor 1.0
+        spacing 15
+        if not getattr(bm, "is_shuffling", False):
+            for skill in bm.player_skills:
+                $ is_selected = bm.selected_skill == skill
+                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+                button:
+                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
+                    hovered SetField(bm, "hovered_skill", skill)
+                    unhovered SetField(bm, "hovered_skill", None)
+                    at (card_selected_zoom if is_selected else card_idle_zoom)
+                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
+                    background (Solid("#0002") if is_selected else None)
+                    foreground "sketchy_bar_outline"
+                    padding (0, 0)
+                    xsize 140
+                    ysize 180
+                    if skill.card_image:
+                        add skill.card_image
+                    if skill.current_cooldown > 0:
+                        add Solid("#00000088")
+                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+                    elif skill in bm.used_skills_this_turn:
+                        add Solid("#00000055")
+                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
     # ── Skill popup (left side, unchanged) ──
     $ display_skill = None
