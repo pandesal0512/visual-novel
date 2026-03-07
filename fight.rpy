@@ -513,7 +513,7 @@ init python:
                             available_intents.remove(recidivism_intent)
                             available_intents.append(recidivism_intent) # Put at end to pop first
 
-                    for _ in range(num_enemy_slots):
+                    for _i in range(num_enemy_slots):
                         if not available_intents:
                             break
                         idx = available_indices.pop()
@@ -759,8 +759,8 @@ label chaos_slot_anim(final_value, label_text=""):
         symbols = "$#%^&*@!?~<>"
         reel_items = [str(final_value)]
         num_spins = 12
-        for _ in range(num_spins):
-            reel_items.append("".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))]))
+        for _i in range(num_spins):
+            reel_items.append("".join([renpy.random.choice(symbols + "0123456789") for _idx in range(len(str(final_value)))]))
 
     show screen slot_machine(reel_items, label_text, duration=1.5)
     $ renpy.pause(1.5, hard=True)
@@ -818,7 +818,7 @@ label chaos_card_shuffle_anim(bm):
         num_spins = 10
         for i in range(len(bm.player_skills)):
             card_reel = [_future_skills[i]]
-            for _ in range(num_spins):
+            for _i in range(num_spins):
                 card_reel.append(renpy.random.choice(bm.full_skill_pool))
             reel_card_lists.append(card_reel)
 
@@ -848,7 +848,7 @@ label kare_card_shuffle_anim(bm):
             for i in range(unlocked_count):
                 if i == bm.shuffled_slot_idx:
                     card_reel = [future_chaos_skill]
-                    for _ in range(num_spins):
+                    for _i in range(num_spins):
                         card_reel.append(renpy.random.choice(bm.chaos_pool))
                 else:
                     card_reel = [bm.player_skills[i]] # No shuffle for others
@@ -871,7 +871,7 @@ label chaos_number_anim(final_value, label_text=""):
     python:
         for i in range(25):
             if i < 22:
-                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(store.chaos_anim_len)])
+                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _i in range(store.chaos_anim_len)])
             else:
                 store.chaos_anim_val = str(final_value).zfill(store.chaos_anim_len)
             renpy.restart_interaction()
