@@ -184,7 +184,7 @@ transform card_idle_zoom:
 
 transform reel_scroll_transform(duration, num_items, item_height):
     ypos -((num_items - 1) * item_height)
-    easeout_expo duration ypos 0
+    easeout duration ypos 0
 
 init python:
     import random
@@ -206,14 +206,20 @@ init python:
                 return skill.damage + bm.get_total_buff_value("damage", target="player")
             return skill.damage
         if skill.type == "attack":
-            if skill.name == "interitus": return renpy.random.randint(1, 20)
-            if skill.name == "Cataclysm": return renpy.random.randint(1, 30)
-            if skill.name == "??????": return renpy.random.randint(1, 60)
-            return renpy.random.randint(1, 20)
+            base = 0
+            if skill.name == "interitus": base = renpy.random.randint(1, 20)
+            elif skill.name == "Cataclysm": base = renpy.random.randint(1, 30)
+            elif skill.name == "??????": base = renpy.random.randint(1, 60)
+            else: base = renpy.random.randint(1, 20)
+            return base + bm.get_total_buff_value("damage", target="player")
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
         if skill.type == "energy":
             return renpy.random.randint(1, 20)
+        if skill.type == "fracture":
+            return renpy.random.randint(1, 10)
+        if skill.type == "corrode":
+            return renpy.random.randint(2, 3)
         return skill.damage
 
 
@@ -277,6 +283,7 @@ init python:
             self.dodge_active = False
             self.dodge_expires_at_slot = -1
             self.is_dead = False
+            self.collapsed = False
 
         @property
         def intents(self):
@@ -335,6 +342,18 @@ init python:
                 if skill.name in self.skill_overrides:
                     for attr, value in self.skill_overrides[skill.name].items():
                         setattr(skill, attr, value)
+            if is_chaos:
+                # First 7 are the core skills in order
+                core_pool = self.full_skill_pool[:7]
+                new_pool = self.full_skill_pool[7:]
+                renpy.random.shuffle(new_pool)
+
+                self.full_skill_pool = []
+                for i in range(7):
+                    self.full_skill_pool.append(core_pool[i])
+                    if i < len(new_pool):
+                        self.full_skill_pool.append(new_pool[i])
+
             self.player_skills = self.full_skill_pool[:2]
             self.skill_exp = 0
 
@@ -437,6 +456,7 @@ init python:
             for enemy in self.enemies:
                 enemy.dodge_active = False
                 enemy.dodge_expires_at_slot = -1
+                enemy.collapsed = False
                 if not enemy.is_dead:
                     enemy.slots = [None] * self.current_max_slots
                     num_enemy_slots = self.current_max_slots // 2
@@ -570,8 +590,15 @@ init python:
                 Skill("Cataclysm", cost=7, damage=0, cooldown=0, desc="1-30 damage... maybe", animation="chaos_hard_anim", card_image="card_chaos_hard"),
                 Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge"),
                 Skill("playing rough", cost=6, damage=0, type="buff", buff_type="damage", buff_duration=3, desc="1-50 Damage Buff. or 1. who knows.", animation="chaos_buff_anim"),
-                Skill("??????", cost=25, damage=0, cooldown=0, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate")
+                Skill("??????", cost=25, damage=0, cooldown=0, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate"),
 
+                Skill("Unravel", cost=4, type="unravel", desc="Strips all buffs currently on the enemy.", animation="chaos_buff_anim"),
+                Skill("Fracture", cost=5, type="fracture", desc="Destroys enemy barrier completely, or deals 1-10 damage.", animation="chaos_normal_anim"),
+                Skill("Corrode", cost=5, type="corrode", desc="Reduced damage for enemy's next 2-3 attacks.", animation="chaos_normal_anim"),
+                Skill("Inversion", cost=6, type="inversion", desc="Flips enemy damage buff to a penalty.", animation="chaos_buff_anim"),
+                Skill("Collapse", cost=8, type="collapse", desc="Nullifies enemy's very next action.", animation="chaos_block_anim"),
+                Skill("Leech", cost=6, type="leech", desc="Steals a buff from the enemy and applies it to yourself.", animation="chaos_buff_anim"),
+                Skill("Overload", cost=7, type="overload", desc="Enemy takes damage equal to their current barrier, then removes it.", animation="chaos_hard_anim")
             ]
         return []
 
@@ -677,6 +704,19 @@ label chaos_slot_anim(final_value, label_text=""):
     hide screen slot_machine
     return
 
+screen chaos_number_indicator(label_text=""):
+    frame:
+        background Solid("#000000cc")
+        xpos 0.35 xanchor 0.5 ypos 0.15 yanchor 0.5
+        padding (20, 15)
+        foreground "sketchy_bar_outline"
+        vbox:
+            spacing 5
+            xalign 0.5
+            yalign 0.5
+            text "[label_text]" size 14 color "#aaa" xalign 0.5
+            text "[store.chaos_anim_val]" size 36 color "#ffffff" bold True xalign 0.5
+
 screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
     hbox:
         xalign 0.5 ypos 0.98 yanchor 1.0
@@ -729,6 +769,22 @@ label chaos_card_shuffle_anim(bm):
     hide screen chaos_card_reel_screen
     return
 
+label chaos_number_anim(final_value, label_text=""):
+    $ store.chaos_anim_len = max(2, len(str(final_value)))
+    $ store.chaos_anim_val = "?" * store.chaos_anim_len
+    show screen chaos_number_indicator(label_text)
+    python:
+        for i in range(25):
+            if i < 22:
+                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(store.chaos_anim_len)])
+            else:
+                store.chaos_anim_val = str(final_value).zfill(store.chaos_anim_len)
+            renpy.restart_interaction()
+            renpy.pause(0.04, hard=True)
+    $ renpy.pause(0.4, hard=True)
+    hide screen chaos_number_indicator
+    return
+
 screen battle_screen(bm):
     if getattr(bm, "is_chaos", False):
         timer 0.05 repeat True action [renpy.restart_interaction]
@@ -736,7 +792,7 @@ screen battle_screen(bm):
 
     # Settings button
     textbutton "Settings":
-        xalign 0.5 yalign 2
+        xalign 0.98 yalign 0.02
         action ShowMenu("preferences")
         text_size 24
         text_color "#555"
@@ -896,39 +952,40 @@ screen battle_screen(bm):
 
     # ── Skill cards: bottom ──
     vbox:
-        xalign 0.5 ypos 0.98 yanchor 1.0
+        xalign 0.5 ypos 0.80 yanchor 1.0
         spacing 5
         hbox:
             xalign 0.5
             spacing 4
             text "Next skill: " size 13 color "#777777"
             bar value bm.skill_exp range bm.skill_exp_max xmaximum 600 ysize 8 yalign 0.5
-        hbox:
-            xalign 0.5
-            spacing 15
-            if not getattr(bm, "is_shuffling", False):
-                for skill in bm.player_skills:
-                    $ is_selected = bm.selected_skill == skill
-                    $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                    button:
-                        action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
-                        hovered SetField(bm, "hovered_skill", skill)
-                        unhovered SetField(bm, "hovered_skill", None)
-                        at (card_selected_zoom if is_selected else card_idle_zoom)
-                        sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                        background (Solid("#0002") if is_selected else None)
-                        foreground "sketchy_bar_outline"
-                        padding (0, 0)
-                        xsize 140
-                        ysize 180
-                        if skill.card_image:
-                            add skill.card_image
-                        if skill.current_cooldown > 0:
-                            add Solid("#00000088")
-                            text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-                        elif skill in bm.used_skills_this_turn:
-                            add Solid("#00000055")
-                            text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+
+    hbox:
+        xalign 0.5 ypos 0.98 yanchor 1.0
+        spacing 15
+        if not getattr(bm, "is_shuffling", False):
+            for skill in bm.player_skills:
+                $ is_selected = bm.selected_skill == skill
+                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+                button:
+                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
+                    hovered SetField(bm, "hovered_skill", skill)
+                    unhovered SetField(bm, "hovered_skill", None)
+                    at (card_selected_zoom if is_selected else card_idle_zoom)
+                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
+                    background (Solid("#0002") if is_selected else None)
+                    foreground "sketchy_bar_outline"
+                    padding (0, 0)
+                    xsize 140
+                    ysize 180
+                    if skill.card_image:
+                        add skill.card_image
+                    if skill.current_cooldown > 0:
+                        add Solid("#00000088")
+                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+                    elif skill in bm.used_skills_this_turn:
+                        add Solid("#00000055")
+                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
     # ── Skill popup (left side, unchanged) ──
     $ display_skill = None
@@ -1087,8 +1144,44 @@ label battle_engine(bm):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+
+            # Chaos number animation triggers BEFORE skill animation
+            if getattr(bm, "is_chaos", False):
+                $ skill_value = get_chaos_random_value(bm, skill)
+                if skill.type == "attack":
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_eng
+                elif skill.type == "barrier":
+                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_eng
+                elif skill.type == "buff":
+                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_eng
+                elif skill.type == "energy":
+                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_eng
+                elif skill.type == "unravel":
+                    $ skill_value = 0
+                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_eng
+                elif skill.type == "fracture":
+                    if enemy.barrier > 0:
+                        $ skill_value = 0
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_eng
+                elif skill.type == "corrode":
+                    $ skill_value = get_chaos_random_value(bm, skill)
+                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_eng
+                elif skill.type == "inversion":
+                    $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_eng
+                elif skill.type == "collapse":
+                    $ skill_value = 1
+                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_eng
+                elif skill.type == "leech":
+                    $ skill_value = 0
+                    if enemy.buffs:
+                        $ skill_value = enemy.buffs[0][1]
+                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_eng
+                elif skill.type == "overload":
+                    $ skill_value = enemy.barrier
+                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_eng
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -1103,7 +1196,10 @@ label battle_engine(bm):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_generic
-                    $ actual_damage = get_chaos_random_value(bm, skill)
+                    if getattr(bm, "is_chaos", False):
+                        $ actual_damage = skill_value
+                    else:
+                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]"
@@ -1114,9 +1210,10 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_generic
-                $ actual_barrier = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_eng
+                    $ actual_barrier = skill_value
+                else:
+                    $ actual_barrier = get_chaos_random_value(bm, skill)
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense"
@@ -1130,9 +1227,10 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_generic
-                $ actual_buff = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_eng
+                    $ actual_buff = skill_value
+                else:
+                    $ actual_buff = get_chaos_random_value(bm, skill)
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -1142,18 +1240,83 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
-                $ actual_regen = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_eng
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
-                    "You gained [actual_regen] Energy"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy"
                 else:
                     "You gained [skill.energy_regen] Energy"
+            elif skill.type == "unravel":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_unravel_anim_eng
+                $ enemy.buffs = []
+                "You stripped [enemy.name] of all buffs!"
+            elif skill.type == "fracture":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_fracture_anim_eng
+                if enemy.barrier > 0:
+                    $ enemy.barrier = 0
+                    "You completely destroyed [enemy.name]'s barrier!"
+                else:
+                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [skill_value] damage to [enemy.name]!"
+            elif skill.type == "corrode":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_corrode_anim_eng
+                $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
+                "You applied corrosion to [enemy.name] for [skill_value] turns!"
+            elif skill.type == "inversion":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_inversion_anim_eng
+                python:
+                    for b in enemy.buffs:
+                        if b[0] == "damage":
+                            b[1] = -b[1]
+                            renpy.say(None, "You flipped [enemy.name]'s damage buff into a penalty!")
+                            break
+                    else:
+                        renpy.say(None, "Inversion failed: [enemy.name] has no damage buff.")
+            elif skill.type == "collapse":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_collapse_anim_eng
+                $ enemy.collapsed = True
+                "You collapsed [enemy.name]'s reality! Their next action is nullified."
+            elif skill.type == "leech":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_leech_anim_eng
+                if enemy.buffs:
+                    $ stolen = enemy.buffs.pop(0)
+                    $ bm.add_buff(stolen[0], stolen[1], stolen[2], target="player")
+                    "You stole [enemy.name]'s [stolen[0]] buff!"
+                else:
+                    "Leech failed: [enemy.name] has no buffs."
+            elif skill.type == "overload":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_overload_anim_eng
+                if enemy.barrier > 0:
+                    $ dmg = enemy.barrier
+                    $ enemy.barrier = 0
+                    $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
+                    "Overload! [enemy.name] took [dmg] damage from their own barrier!"
+                else:
+                    "Overload failed: [enemy.name] has no barrier."
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
+            if enemy.collapsed:
+                $ enemy.collapsed = False
+                "[enemy.name]'s action was nullified by Collapse!"
+                $ e_idx += 1
+                jump .engine_resolution_core
 
             if intent.type == "attack":
                 if bm.dodge_active:
@@ -1173,7 +1336,7 @@ label battle_engine(bm):
                         call expression intent.animation pass (bm) from _call_intent_anim_generic_generic
                     else:
                         call enemy_attack_anim(bm) from _call_intent_anim_default_generic
-                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
@@ -2079,8 +2242,44 @@ label butter_ava_battle(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+
+            # Chaos number animation triggers BEFORE skill animation
+            if getattr(bm, "is_chaos", False):
+                $ skill_value = get_chaos_random_value(bm, skill)
+                if skill.type == "attack":
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss1
+                elif skill.type == "barrier":
+                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss1
+                elif skill.type == "buff":
+                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss1
+                elif skill.type == "energy":
+                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
+                elif skill.type == "unravel":
+                    $ skill_value = 0
+                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss1
+                elif skill.type == "fracture":
+                    if enemy.barrier > 0:
+                        $ skill_value = 0
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss1
+                elif skill.type == "corrode":
+                    $ skill_value = get_chaos_random_value(bm, skill)
+                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_boss1
+                elif skill.type == "inversion":
+                    $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_boss1
+                elif skill.type == "collapse":
+                    $ skill_value = 1
+                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss1
+                elif skill.type == "leech":
+                    $ skill_value = 0
+                    if enemy.buffs:
+                        $ skill_value = enemy.buffs[0][1]
+                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss1
+                elif skill.type == "overload":
+                    $ skill_value = enemy.barrier
+                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss1
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -2096,7 +2295,10 @@ label butter_ava_battle(skill_overrides=None):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss1
-                    $ actual_damage = get_chaos_random_value(bm, skill)
+                    if getattr(bm, "is_chaos", False):
+                        $ actual_damage = skill_value
+                    else:
+                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2107,9 +2309,10 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss1
-                $ actual_barrier = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss1
+                    $ actual_barrier = skill_value
+                else:
+                    $ actual_barrier = get_chaos_random_value(bm, skill)
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense!"
@@ -2123,9 +2326,10 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss1
-                $ actual_buff = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss1
+                    $ actual_buff = skill_value
+                else:
+                    $ actual_buff = get_chaos_random_value(bm, skill)
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -2135,18 +2339,83 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
-                $ actual_regen = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
-                    "You gained [actual_regen] Energy!"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy!"
                 else:
                     "You gained [skill.energy_regen] Energy!"
+            elif skill.type == "unravel":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_unravel_anim_boss1
+                $ enemy.buffs = []
+                "You stripped [enemy.name] of all buffs!"
+            elif skill.type == "fracture":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_fracture_anim_boss1
+                if enemy.barrier > 0:
+                    $ enemy.barrier = 0
+                    "You completely destroyed [enemy.name]'s barrier!"
+                else:
+                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [skill_value] damage to [enemy.name]!"
+            elif skill.type == "corrode":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_corrode_anim_boss1
+                $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
+                "You applied corrosion to [enemy.name] for [skill_value] turns!"
+            elif skill.type == "inversion":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_inversion_anim_boss1
+                python:
+                    for b in enemy.buffs:
+                        if b[0] == "damage":
+                            b[1] = -b[1]
+                            renpy.say(None, "You flipped [enemy.name]'s damage buff into a penalty!")
+                            break
+                    else:
+                        renpy.say(None, "Inversion failed: [enemy.name] has no damage buff.")
+            elif skill.type == "collapse":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_collapse_anim_boss1
+                $ enemy.collapsed = True
+                "You collapsed [enemy.name]'s reality! Their next action is nullified."
+            elif skill.type == "leech":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_leech_anim_boss1
+                if enemy.buffs:
+                    $ stolen = enemy.buffs.pop(0)
+                    $ bm.add_buff(stolen[0], stolen[1], stolen[2], target="player")
+                    "You stole [enemy.name]'s [stolen[0]] buff!"
+                else:
+                    "Leech failed: [enemy.name] has no buffs."
+            elif skill.type == "overload":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_overload_anim_boss1
+                if enemy.barrier > 0:
+                    $ dmg = enemy.barrier
+                    $ enemy.barrier = 0
+                    $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
+                    "Overload! [enemy.name] took [dmg] damage from their own barrier!"
+                else:
+                    "Overload failed: [enemy.name] has no barrier."
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
+            if enemy.collapsed:
+                $ enemy.collapsed = False
+                "[enemy.name]'s action was nullified by Collapse!"
+                $ e_idx += 1
+                jump .boss1_resolution_core
 
             if intent.type == "attack":
                 if bm.dodge_active:
@@ -2166,7 +2435,7 @@ label butter_ava_battle(skill_overrides=None):
                         call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1
                     else:
                         call enemy_attack_anim(bm) from _call_intent_anim_default_boss1
-                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
@@ -2322,8 +2591,44 @@ label butter_ava_battle2(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+            if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+
+            # Chaos number animation triggers BEFORE skill animation
+            if getattr(bm, "is_chaos", False):
+                $ skill_value = get_chaos_random_value(bm, skill)
+                if skill.type == "attack":
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_boss2
+                elif skill.type == "barrier":
+                    call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_boss2
+                elif skill.type == "buff":
+                    call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss2
+                elif skill.type == "energy":
+                    call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
+                elif skill.type == "unravel":
+                    $ skill_value = 0
+                    call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_boss2
+                elif skill.type == "fracture":
+                    if enemy.barrier > 0:
+                        $ skill_value = 0
+                    call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_boss2
+                elif skill.type == "corrode":
+                    $ skill_value = get_chaos_random_value(bm, skill)
+                    call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_boss2
+                elif skill.type == "inversion":
+                    $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_boss2
+                elif skill.type == "collapse":
+                    $ skill_value = 1
+                    call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_boss2
+                elif skill.type == "leech":
+                    $ skill_value = 0
+                    if enemy.buffs:
+                        $ skill_value = enemy.buffs[0][1]
+                    call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_boss2
+                elif skill.type == "overload":
+                    $ skill_value = enemy.barrier
+                    call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss2
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -2339,7 +2644,10 @@ label butter_ava_battle2(skill_overrides=None):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss2
-                    $ actual_damage = get_chaos_random_value(bm, skill)
+                    if getattr(bm, "is_chaos", False):
+                        $ actual_damage = skill_value
+                    else:
+                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2350,9 +2658,10 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_barrier_boss2
-                $ actual_barrier = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_boss2
+                    $ actual_barrier = skill_value
+                else:
+                    $ actual_barrier = get_chaos_random_value(bm, skill)
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense!"
@@ -2366,9 +2675,10 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_buff_boss2
-                $ actual_buff = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_boss2
+                    $ actual_buff = skill_value
+                else:
+                    $ actual_buff = get_chaos_random_value(bm, skill)
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -2378,18 +2688,83 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
-                $ actual_regen = get_chaos_random_value(bm, skill)
                 if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
-                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
-                    "You gained [actual_regen] Energy!"
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy!"
                 else:
                     "You gained [skill.energy_regen] Energy!"
+            elif skill.type == "unravel":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_unravel_anim_boss2
+                $ enemy.buffs = []
+                "You stripped [enemy.name] of all buffs!"
+            elif skill.type == "fracture":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_fracture_anim_boss2
+                if enemy.barrier > 0:
+                    $ enemy.barrier = 0
+                    "You completely destroyed [enemy.name]'s barrier!"
+                else:
+                    $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
+                    "You dealt [skill_value] damage to [enemy.name]!"
+            elif skill.type == "corrode":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_corrode_anim_boss2
+                $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
+                "You applied corrosion to [enemy.name] for [skill_value] turns!"
+            elif skill.type == "inversion":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_inversion_anim_boss2
+                python:
+                    for b in enemy.buffs:
+                        if b[0] == "damage":
+                            b[1] = -b[1]
+                            renpy.say(None, "You flipped [enemy.name]'s damage buff into a penalty!")
+                            break
+                    else:
+                        renpy.say(None, "Inversion failed: [enemy.name] has no damage buff.")
+            elif skill.type == "collapse":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_collapse_anim_boss2
+                $ enemy.collapsed = True
+                "You collapsed [enemy.name]'s reality! Their next action is nullified."
+            elif skill.type == "leech":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_leech_anim_boss2
+                if enemy.buffs:
+                    $ stolen = enemy.buffs.pop(0)
+                    $ bm.add_buff(stolen[0], stolen[1], stolen[2], target="player")
+                    "You stole [enemy.name]'s [stolen[0]] buff!"
+                else:
+                    "Leech failed: [enemy.name] has no buffs."
+            elif skill.type == "overload":
+                $ bm.is_dodged = False
+                if skill.animation:
+                    call expression skill.animation pass (bm) from _call_chaos_overload_anim_boss2
+                if enemy.barrier > 0:
+                    $ dmg = enemy.barrier
+                    $ enemy.barrier = 0
+                    $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
+                    "Overload! [enemy.name] took [dmg] damage from their own barrier!"
+                else:
+                    "Overload failed: [enemy.name] has no barrier."
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
+
+            if enemy.collapsed:
+                $ enemy.collapsed = False
+                "[enemy.name]'s action was nullified by Collapse!"
+                $ e_idx += 1
+                jump .boss2_resolution_core
 
             if intent.type == "attack":
                 if bm.dodge_active:
@@ -2409,7 +2784,7 @@ label butter_ava_battle2(skill_overrides=None):
                         call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2
                     else:
                         call enemy_attack_anim(bm) from _call_intent_anim_default_boss2
-                    $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                    $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                     $ bm.take_damage(damage, target="player")
                     $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                     "[enemy.name] deals [damage] damage with [intent.name]!"
@@ -2605,8 +2980,45 @@ label order_battle_resolution_core:
     elif isinstance(action, Skill):
         $ skill = action
         $ skill.current_cooldown = skill.cooldown
-        if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+        if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+
+        # Chaos number animation triggers BEFORE skill animation
+        if getattr(bm, "is_chaos", False):
+            $ skill_value = get_chaos_random_value(bm, skill)
+            if skill.type == "attack":
+                call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_attack_order
+            elif skill.type == "barrier":
+                call chaos_number_anim(skill_value, "DEFENSE") from _call_chaos_slot_barrier_order
+            elif skill.type == "buff":
+                call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_order
+            elif skill.type == "energy":
+                call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_order
+            elif skill.type == "unravel":
+                $ skill_value = 0
+                call chaos_number_anim(skill_value, "UNRAVEL") from _call_chaos_slot_unravel_order
+            elif skill.type == "fracture":
+                if enemy.barrier > 0:
+                    $ skill_value = 0
+                call chaos_number_anim(skill_value, "DAMAGE") from _call_chaos_slot_fracture_order
+            elif skill.type == "corrode":
+                $ skill_value = get_chaos_random_value(bm, skill)
+                call chaos_number_anim(skill_value, "CORROSION") from _call_chaos_slot_corrode_order
+            elif skill.type == "inversion":
+                $ skill_value = bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                call chaos_number_anim(skill_value, "INVERSION") from _call_chaos_slot_inversion_order
+            elif skill.type == "collapse":
+                $ skill_value = 1
+                call chaos_number_anim(skill_value, "COLLAPSE") from _call_chaos_slot_collapse_order
+            elif skill.type == "leech":
+                $ skill_value = 0
+                if enemy.buffs:
+                    $ skill_value = enemy.buffs[0][1]
+                call chaos_number_anim(skill_value, "STOLEN POWER") from _call_chaos_slot_leech_order
+            elif skill.type == "overload":
+                $ skill_value = enemy.barrier
+                call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_order
+
         if skill.type == "attack":
             if enemy.dodge_active:
                 $ bm.is_dodged = True
@@ -2620,7 +3032,10 @@ label order_battle_resolution_core:
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_order_attack
-                $ actual_damage = get_chaos_random_value(bm, skill)
+                if getattr(bm, "is_chaos", False):
+                    $ actual_damage = skill_value
+                else:
+                    $ actual_damage = get_chaos_random_value(bm, skill)
                 $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                 $ bm.gain_exp(actual_damage * 5, character_type="player")
                 "[skill.name] deals [actual_damage] damage to Order!"
@@ -2691,9 +3106,10 @@ label order_battle_resolution_core:
         elif skill.type == "barrier":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_barrier
-            $ actual_barrier = get_chaos_random_value(bm, skill)
             if getattr(bm, "is_chaos", False):
-                call chaos_slot_anim(actual_barrier, "DEFENSE") from _call_chaos_slot_barrier_order
+                $ actual_barrier = skill_value
+            else:
+                $ actual_barrier = get_chaos_random_value(bm, skill)
             $ bm.add_barrier(actual_barrier)
             if getattr(bm, "is_chaos", False):
                 "You gain [actual_barrier] Defense"
@@ -2705,23 +3121,87 @@ label order_battle_resolution_core:
         elif skill.type == "buff":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_buff
-            $ actual_buff = get_chaos_random_value(bm, skill)
             if getattr(bm, "is_chaos", False):
-                call chaos_slot_anim(actual_buff, "BUFF POWER") from _call_chaos_slot_buff_order
+                $ actual_buff = skill_value
+            else:
+                $ actual_buff = get_chaos_random_value(bm, skill)
             $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
+            if getattr(bm, "is_chaos", False):
+                "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
+            else:
+                "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
         elif skill.type == "energy":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
-            $ actual_regen = get_chaos_random_value(bm, skill)
             if getattr(bm, "is_chaos", False):
-                call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_order
-                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
-                "You gained [actual_regen] Energy"
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                "You gained [skill_value] Energy"
             else:
                 "You gained [skill.energy_regen] Energy"
+        elif skill.type == "unravel":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_unravel_anim_order
+            $ enemy.buffs = []
+            "You stripped Order of all buffs!"
+        elif skill.type == "fracture":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_fracture_anim_order
+            if enemy.barrier > 0:
+                $ enemy.barrier = 0
+                "You completely destroyed Order's barrier!"
+            else:
+                $ bm.take_damage(skill_value, target="enemy", enemy_idx=e_idx)
+                "You dealt [skill_value] damage to Order!"
+        elif skill.type == "corrode":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_corrode_anim_order
+            $ bm.add_buff("corrosion", 5, skill_value, target="enemy", enemy_idx=e_idx)
+            "You applied corrosion to Order for [skill_value] turns!"
+        elif skill.type == "inversion":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_inversion_anim_order
+            python:
+                for b in enemy.buffs:
+                    if b[0] == "damage":
+                        b[1] = -b[1]
+                        renpy.say(None, "You flipped Order's damage buff into a penalty!")
+                        break
+                else:
+                    renpy.say(None, "Inversion failed: Order has no damage buff.")
+        elif skill.type == "collapse":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_collapse_anim_order
+            $ enemy.collapsed = True
+            "You collapsed Order's reality! Their next action is nullified."
+        elif skill.type == "leech":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_leech_anim_order
+            if enemy.buffs:
+                $ stolen = enemy.buffs.pop(0)
+                $ bm.add_buff(stolen[0], stolen[1], stolen[2], target="player")
+                "You stole Order's [stolen[0]] buff!"
+            else:
+                "Leech failed: Order has no buffs."
+        elif skill.type == "overload":
+            if skill.animation:
+                call expression skill.animation pass (bm) from _call_chaos_overload_anim_order
+            if enemy.barrier > 0:
+                $ dmg = enemy.barrier
+                $ enemy.barrier = 0
+                $ bm.take_damage(dmg, target="enemy", enemy_idx=e_idx)
+                "Overload! Order took [dmg] damage from their own barrier!"
+            else:
+                "Overload failed: Order has no barrier."
     elif isinstance(action, EnemyIntent):
         $ intent = action
         $ intent.current_cooldown = intent.cooldown
+
+        if enemy.collapsed:
+            $ enemy.collapsed = False
+            "Order's action was nullified by Collapse!"
+            $ e_idx += 1
+            jump order_battle_resolution_core
+
         if intent.type == "attack":
             if bm.dodge_active:
                 $ bm.is_dodged = True
@@ -2740,7 +3220,7 @@ label order_battle_resolution_core:
                     call expression intent.animation pass (bm) from _call_intent_order_attack
                 else:
                     call enemy_attack_anim(bm) from _call_intent_order_default
-                $ damage = intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx)
+                $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=e_idx)
                 "Order deals [damage] damage with [intent.name]!"
