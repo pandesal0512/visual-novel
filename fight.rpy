@@ -742,14 +742,15 @@ label chaos_card_shuffle_anim(bm):
     return
 
 label chaos_number_anim(final_value, label_text=""):
-    $ store.chaos_anim_val = "?" * len(str(final_value))
+    $ display_len = max(2, len(str(final_value)))
+    $ store.chaos_anim_val = "?" * display_len
     show screen chaos_number_indicator(label_text)
     python:
         for i in range(25):
             if i < 22:
-                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(len(str(final_value)))])
+                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(display_len)])
             else:
-                store.chaos_anim_val = str(final_value)
+                store.chaos_anim_val = str(final_value).zfill(display_len)
             renpy.restart_interaction()
             renpy.pause(0.04, hard=True)
     $ renpy.pause(0.4, hard=True)
@@ -1114,7 +1115,8 @@ label battle_engine(bm):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False):
@@ -1126,7 +1128,6 @@ label battle_engine(bm):
                 elif skill.type == "buff":
                     call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_eng
                 elif skill.type == "energy":
-                    $ skill_value = skill.energy_regen
                     call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_eng
 
             if skill.type == "attack":
@@ -1186,7 +1187,11 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
-                "You gained [skill.energy_regen] Energy"
+                if getattr(bm, "is_chaos", False):
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy"
+                else:
+                    "You gained [skill.energy_regen] Energy"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -2117,7 +2122,8 @@ label butter_ava_battle(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False):
@@ -2129,7 +2135,6 @@ label butter_ava_battle(skill_overrides=None):
                 elif skill.type == "buff":
                     call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss1
                 elif skill.type == "energy":
-                    $ skill_value = skill.energy_regen
                     call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
 
             if skill.type == "attack":
@@ -2190,7 +2195,11 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
-                "You gained [skill.energy_regen] Energy!"
+                if getattr(bm, "is_chaos", False):
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy!"
+                else:
+                    "You gained [skill.energy_regen] Energy!"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -2371,7 +2380,8 @@ label butter_ava_battle2(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             # Chaos number animation triggers BEFORE skill animation
             if getattr(bm, "is_chaos", False):
@@ -2383,7 +2393,6 @@ label butter_ava_battle2(skill_overrides=None):
                 elif skill.type == "buff":
                     call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_boss2
                 elif skill.type == "energy":
-                    $ skill_value = skill.energy_regen
                     call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
 
             if skill.type == "attack":
@@ -2444,7 +2453,11 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
-                "You gained [skill.energy_regen] Energy!"
+                if getattr(bm, "is_chaos", False):
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                    "You gained [skill_value] Energy!"
+                else:
+                    "You gained [skill.energy_regen] Energy!"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -2665,7 +2678,8 @@ label order_battle_resolution_core:
     elif isinstance(action, Skill):
         $ skill = action
         $ skill.current_cooldown = skill.cooldown
-        $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+        if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
         # Chaos number animation triggers BEFORE skill animation
         if getattr(bm, "is_chaos", False):
@@ -2677,7 +2691,6 @@ label order_battle_resolution_core:
             elif skill.type == "buff":
                 call chaos_number_anim(skill_value, "BUFF POWER") from _call_chaos_slot_buff_order
             elif skill.type == "energy":
-                $ skill_value = skill.energy_regen
                 call chaos_number_anim(skill_value, "ENERGY REGEN") from _call_chaos_slot_energy_order
 
         if skill.type == "attack":
@@ -2790,7 +2803,11 @@ label order_battle_resolution_core:
         elif skill.type == "energy":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
-            "You gained [skill.energy_regen] Energy"
+            if getattr(bm, "is_chaos", False):
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
+                "You gained [skill_value] Energy"
+            else:
+                "You gained [skill.energy_regen] Energy"
     elif isinstance(action, EnemyIntent):
         $ intent = action
         $ intent.current_cooldown = intent.cooldown
