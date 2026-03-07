@@ -112,7 +112,7 @@ image card_chaos_hard = "card_chaos_hard.png"
 image card_chaos_dodge = "card_chaos_dodge.png"
 image card_chaos_ultimate = "card_chaos_ultimate.png"
 
-image bg_butter    = Solid("#ffffff") 
+image bg_butter    = Solid("#ffffff")
 image bg_lumpi     = Solid("#ffffff")
 image bg_lumpi_wc  = Solid("#ffffff")
 image bg_serious   = Solid("#ffffff")
@@ -181,6 +181,10 @@ transform card_selected_zoom:
 transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
+transform reel_scroll_transform(duration, num_items, item_height):
+    ypos 0
+    easeout_expo duration ypos -((num_items - 1) * item_height)
+
 init python:
     import random
 
@@ -207,6 +211,8 @@ init python:
             return renpy.random.randint(1, 20)
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
+        if skill.type == "energy":
+            return renpy.random.randint(1, 20)
         return skill.damage
 
 
@@ -552,7 +558,7 @@ init python:
                 Skill("yummers", cost=0, energy_regen=10, type="energy", desc="Recover 5 energy.",cooldown=2, animation="kare_energy_anim", card_image="card_kare_energy"),
                 Skill("evade", cost=4, type="dodge", desc="Dodges next attack.", cooldown=4, animation="kare_dodge_anim", card_image="card_kare_dodge"),
                 Skill("super cool kick", cost=6, damage=20, cooldown=6, desc="kick thats it.", animation="kare_ultimate_anim", card_image="card_kare_ultimate")
-               
+
             ]
         elif name.lower() == "chaos":
             return [
@@ -629,35 +635,97 @@ init python:
             ]
         return []
 
-screen slot_machine(slot_display, label_text=""):
+screen slot_machine(reel_items, label_text="", duration=2.0):
     frame:
         background Solid("#000000cc")
         xalign 0.5 yalign 0.3
         padding (40, 30)
-        xsize 140
-        ysize 180
+        xsize 180
+        ysize 140
         foreground "sketchy_bar_outline"
         vbox:
-            spacing 10
+            spacing 6
             xalign 0.5
             yalign 0.5
             text "[label_text]" size 16 color "#aaa" xalign 0.5
-            text "[slot_display]" size 40 color "#ffffff" bold True xalign 0.5
+            frame:
+                xsize 140
+                ysize 60
+                background None
+                clip_content True
+                xalign 0.5
+                vbox:
+                    xalign 0.5
+                    spacing 0
+                    at reel_scroll_transform(duration, len(reel_items), 60)
+                    for item in reel_items:
+                        fixed:
+                            xsize 140 ysize 60
+                            text "[item]" size 40 color "#ffffff" bold True xalign 0.5 yalign 0.5
 
 label chaos_slot_anim(final_value, label_text=""):
-    $ slot_machine_display = "???"
-    show screen slot_machine(slot_machine_display, label_text)
     python:
         symbols = "$#%^&*@!?~<>"
-        for i in range(15):
-            if i < 10:
-                slot_machine_display = "".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))])
-            else:
-                slot_machine_display = str(final_value)
-            renpy.restart_interaction()
-            renpy.pause(0.05 + (i * 0.02), hard=True)
+        reel_items = []
+        num_spins = 12
+        for _ in range(num_spins):
+            reel_items.append("".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))]))
+        reel_items.append(str(final_value))
+
+    show screen slot_machine(reel_items, label_text, duration=1.5)
+    $ renpy.pause(1.5, hard=True)
     $ renpy.pause(0.5, hard=True)
     hide screen slot_machine
+    return
+
+screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
+    hbox:
+        xalign 0.5 ypos 0.98 yanchor 1.0
+        spacing 15
+        for i, card_list in enumerate(reel_card_lists):
+            frame:
+                background Solid("#000000cc")
+                foreground "sketchy_bar_outline"
+                padding (0, 0)
+                xsize 140
+                ysize 180
+                clip_content True
+                vbox:
+                    spacing 0
+                    at reel_scroll_transform(duration, len(card_list), 180)
+                    for card in card_list:
+                        fixed:
+                            xsize 140 ysize 180
+                            if card and card.card_image:
+                                add card.card_image
+                            else:
+                                text "???" size 40 color "#fff" xalign 0.5 yalign 0.5
+
+label chaos_card_shuffle_anim(bm):
+    python:
+        # Prepare 6 lists of cards for the reels
+        reel_card_lists = []
+        num_spins = 10
+        for i in range(len(bm.player_skills)):
+            card_reel = []
+            for _ in range(num_spins):
+                card_reel.append(renpy.random.choice(bm.full_skill_pool))
+            reel_card_lists.append(card_reel)
+
+        # Shuffle the actual hand
+        renpy.random.shuffle(bm.player_skills)
+
+        # Add the final shuffled cards to the end of each reel list
+        for i, skill in enumerate(bm.player_skills):
+            reel_card_lists[i].append(skill)
+
+    show screen chaos_card_reel_screen(reel_card_lists, duration=1.5)
+    # Placeholder for sound effects
+    # play sound "audio/reel_spin.mp3"
+    $ renpy.pause(1.5, hard=True)
+    # play sound "audio/reel_ding.mp3"
+    $ renpy.pause(0.8, hard=True)
+    hide screen chaos_card_reel_screen
     return
 
 screen battle_screen(bm):
@@ -726,7 +794,7 @@ screen battle_screen(bm):
                                 background Solid("#4b4b4b")
                                 padding (3, 1)
                                 text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
-  
+
     # ── Battle slots: centered ──
     # ── Battle slots + CONFIRM in hbox so button tracks slot width ──
     hbox:
@@ -822,7 +890,7 @@ screen battle_screen(bm):
                     elif bm.selected_intent.type == "buff":
                         text "Damage Buff: +[bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
                 text "[bm.selected_intent.desc]" size 14 color "#555" xalign 0.5 text_align 0.5
-           
+
 
 
     # ── Skill cards: bottom ──
@@ -973,6 +1041,8 @@ label battle_engine(bm):
                     renpy.hide("enemy_" + str(i))
 
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_eng
 
     label .engine_selection_phase:
         $ result = ui.interact()
@@ -1015,7 +1085,8 @@ label battle_engine(bm):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -1031,8 +1102,6 @@ label battle_engine(bm):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_generic
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False):
-                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_eng
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]"
@@ -1071,7 +1140,13 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
-                "You gained [skill.energy_regen] Energy"
+                $ actual_regen = get_chaos_random_value(bm, skill)
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_eng
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
+                    "You gained [actual_regen] Energy"
+                else:
+                    "You gained [skill.energy_regen] Energy"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -1144,9 +1219,6 @@ label battle_engine(bm):
     label .engine_turn_end:
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_eng
-            $ renpy.random.shuffle(bm.player_skills)
 
         if all(e.is_dead for e in bm.enemies):
             window hide
@@ -1561,7 +1633,7 @@ label lumpi_wheelchair_normal_anim(bm):
 
 label lumpi_wheelchair_hard_anim(bm):
     $ renpy.show("lumpi_wheelchair_hard_sprite", tag=current_enemy_tag, at_list=[fight_right,enemy_charge_right])
-    play sound "audio/car_crash-377291.mp3" 
+    play sound "audio/car_crash-377291.mp3"
     if not bm.is_dodged:
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(0.8, hard=True)
@@ -1591,7 +1663,7 @@ label lumpi_wheelchair_ultimate_anim(bm):
     # Phase 1: windup sprite for 1 second
     $ renpy.show("lumpi_wheelchair_ultimate_windup", tag=current_enemy_tag, at_list=[fight_right])
     $ renpy.pause(1, hard=True)
-  
+
     $ renpy.show("lumpi_wheelchair_ultimate_sprite", tag=current_enemy_tag, at_list=[fight_right, enemy_charge_right])
     play sound  "lordsonny_two-debris-break-2-457507.mp3"
     $ renpy.pause(0.8, hard=True)
@@ -1606,7 +1678,7 @@ label lumpi_wheelchair_ultimate_anim(bm):
     play sound "lordsonny_two-debris-break-2-457507.mp3"
     $ renpy.pause(1, hard=True)
     if not bm.is_dodged:
-    
+
         show expression bm.player_sprites["hit"] as player at fight_left
     $ renpy.pause(1.2, hard=True)
     $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
@@ -1832,7 +1904,7 @@ label lumpi_battle(skill_overrides=None):
         "yummers":          {"energy_regen": 5, "cooldown": 2},
         "evade":            {"cost": 3, "cost": 2, "cooldown": 2},
     }
-    
+
     $ bm = BattleManager(200, [lumpi], starting_slots=2, player_sprites=player_sprites, starting_energy=15, max_energy=15, skill_overrides=skill_overrides)
     call battle_engine(bm) from _call_battle_engine_lumpi
     if _return == 'win':
@@ -1967,6 +2039,8 @@ label butter_ava_battle(skill_overrides=None):
                     pos = Position(xalign=0.6 + (i * 0.15), ypos=0.8, yanchor=1.0)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss1
     label .boss1_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2003,7 +2077,8 @@ label butter_ava_battle(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -2020,8 +2095,6 @@ label butter_ava_battle(skill_overrides=None):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss1
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False):
-                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss1
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2060,7 +2133,13 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
-                "You gained [skill.energy_regen] Energy!"
+                $ actual_regen = get_chaos_random_value(bm, skill)
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_boss1
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
+                    "You gained [actual_regen] Energy!"
+                else:
+                    "You gained [skill.energy_regen] Energy!"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -2161,9 +2240,6 @@ label butter_ava_battle(skill_overrides=None):
             jump .boss1_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_boss1
-            $ renpy.random.shuffle(bm.player_skills)
 
         window hide
         jump .boss1_start_logic
@@ -2206,6 +2282,8 @@ label butter_ava_battle2(skill_overrides=None):
                     pos = Position(xalign=0.6 + (i * 0.15), ypos=0.8, yanchor=1.0)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss2
     label .boss2_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2242,7 +2320,8 @@ label butter_ava_battle2(skill_overrides=None):
         elif isinstance(action, Skill):
             $ skill = action
             $ skill.current_cooldown = skill.cooldown
-            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+            if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
 
             if skill.type == "attack":
                 if enemy.dodge_active:
@@ -2259,8 +2338,6 @@ label butter_ava_battle2(skill_overrides=None):
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss2
                     $ actual_damage = get_chaos_random_value(bm, skill)
-                    if getattr(bm, "is_chaos", False):
-                        call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_boss2
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2299,7 +2376,13 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
-                "You gained [skill.energy_regen] Energy!"
+                $ actual_regen = get_chaos_random_value(bm, skill)
+                if getattr(bm, "is_chaos", False):
+                    call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_boss2
+                    $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
+                    "You gained [actual_regen] Energy!"
+                else:
+                    "You gained [skill.energy_regen] Energy!"
 
         elif isinstance(action, EnemyIntent):
             $ intent = action
@@ -2397,9 +2480,6 @@ label butter_ava_battle2(skill_overrides=None):
             jump .boss2_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_boss2
-            $ renpy.random.shuffle(bm.player_skills)
 
         # buildings collapsing drains Ava every turn
         if not bm.enemies[1].is_dead:
@@ -2482,6 +2562,8 @@ label order_battle:
 label order_battle_turn_start:
     $ bm.prepare_turn()
     show screen battle_screen(bm)
+    if getattr(bm, "is_chaos", False):
+        call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_order
 
 label order_battle_selection_phase:
     $ result = ui.interact()
@@ -2521,7 +2603,8 @@ label order_battle_resolution_core:
     elif isinstance(action, Skill):
         $ skill = action
         $ skill.current_cooldown = skill.cooldown
-        $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
+        if not getattr(bm, "is_chaos", False) or skill.type != "energy":
+            $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
         if skill.type == "attack":
             if enemy.dodge_active:
                 $ bm.is_dodged = True
@@ -2536,8 +2619,6 @@ label order_battle_resolution_core:
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_order_attack
                 $ actual_damage = get_chaos_random_value(bm, skill)
-                if getattr(bm, "is_chaos", False):
-                    call chaos_slot_anim(actual_damage, "DAMAGE") from _call_chaos_slot_attack_order
                 $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                 $ bm.gain_exp(actual_damage * 5, character_type="player")
                 "[skill.name] deals [actual_damage] damage to Order!"
@@ -2629,7 +2710,13 @@ label order_battle_resolution_core:
         elif skill.type == "energy":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
-            "You gained [skill.energy_regen] Energy"
+            $ actual_regen = get_chaos_random_value(bm, skill)
+            if getattr(bm, "is_chaos", False):
+                call chaos_slot_anim(actual_regen, "ENERGY REGEN") from _call_chaos_slot_energy_order
+                $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + actual_regen)
+                "You gained [actual_regen] Energy"
+            else:
+                "You gained [skill.energy_regen] Energy"
     elif isinstance(action, EnemyIntent):
         $ intent = action
         $ intent.current_cooldown = intent.cooldown
@@ -2693,9 +2780,6 @@ label order_battle_resolution_core:
 label order_battle_extra_turn:
     $ bm.reduce_cooldowns()
     $ bm.update_buffs()
-    if getattr(bm, "is_chaos", False):
-        call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_order
-        $ renpy.random.shuffle(bm.player_skills)
 
     if bm.player_hp <= 0:
         window hide
