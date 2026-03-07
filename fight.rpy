@@ -205,10 +205,12 @@ init python:
                 return skill.damage + bm.get_total_buff_value("damage", target="player")
             return skill.damage
         if skill.type == "attack":
-            if skill.name == "interitus": return renpy.random.randint(1, 20)
-            if skill.name == "Cataclysm": return renpy.random.randint(1, 30)
-            if skill.name == "??????": return renpy.random.randint(1, 60)
-            return renpy.random.randint(1, 20)
+            base = 0
+            if skill.name == "interitus": base = renpy.random.randint(1, 20)
+            elif skill.name == "Cataclysm": base = renpy.random.randint(1, 30)
+            elif skill.name == "??????": base = renpy.random.randint(1, 60)
+            else: base = renpy.random.randint(1, 20)
+            return base + bm.get_total_buff_value("damage", target="player")
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
         if skill.type == "energy":
@@ -742,15 +744,15 @@ label chaos_card_shuffle_anim(bm):
     return
 
 label chaos_number_anim(final_value, label_text=""):
-    $ display_len = max(2, len(str(final_value)))
-    $ store.chaos_anim_val = "?" * display_len
+    $ store.chaos_anim_len = max(2, len(str(final_value)))
+    $ store.chaos_anim_val = "?" * store.chaos_anim_len
     show screen chaos_number_indicator(label_text)
     python:
         for i in range(25):
             if i < 22:
-                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(display_len)])
+                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(store.chaos_anim_len)])
             else:
-                store.chaos_anim_val = str(final_value).zfill(display_len)
+                store.chaos_anim_val = str(final_value).zfill(store.chaos_anim_len)
             renpy.restart_interaction()
             renpy.pause(0.04, hard=True)
     $ renpy.pause(0.4, hard=True)
@@ -764,7 +766,7 @@ screen battle_screen(bm):
 
     # Settings button
     textbutton "Settings":
-        xalign 0.5 yalign 2
+        xalign 0.98 yalign 0.02
         action ShowMenu("preferences")
         text_size 24
         text_color "#555"
@@ -2801,6 +2803,10 @@ label order_battle_resolution_core:
             else:
                 $ actual_buff = get_chaos_random_value(bm, skill)
             $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
+            if getattr(bm, "is_chaos", False):
+                "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
+            else:
+                "[skill.name] activated! Damage increased by [skill.damage] for [skill.buff_duration] turns."
         elif skill.type == "energy":
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
