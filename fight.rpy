@@ -291,13 +291,8 @@ init python:
         def intents(self):
             # Returns only the currently unlocked intents
             pool = self.full_intent_pool[:self.unlocked_intents_count]
-            # Special filtering for Ava's STILL STANDING
-            if any(i.type == "still_standing" for i in pool):
-                if self.hp == 1 and not self.still_standing_triggered:
-                    # If at 1 HP and not triggered, MUST use STILL STANDING
-                    pool = [i for i in pool if i.type == "still_standing"]
-                else:
-                    pool = [i for i in pool if i.type != "still_standing"]
+            # Ava's STILL STANDING is handled as a passive triggered by environmental drain
+            pool = [i for i in pool if i.type != "still_standing"]
             return pool
 
     class BattleManager:
@@ -504,17 +499,22 @@ init python:
 
                     # Unique intents, respect cooldowns
                     available_intents = [i for i in enemy.intents if i.current_cooldown <= 0]
-                    # Special filtering for RECIDIVISM
-                    if any(i.type == "recidivism" for i in available_intents):
-                        if not self.rolled_one_last_turn:
-                            available_intents = [i for i in available_intents if i.type != "recidivism"]
-                    renpy.random.shuffle(available_intents)
 
-                    for _ in range(num_enemy_slots):
-                        if not available_intents:
-                            break
+                    # Special filtering for RECIDIVISM
+                    recidivism_intent = next((i for i in available_intents if i.type == "recidivism"), None)
+                    if recidivism_intent and self.rolled_one_last_turn:
+                        # Skip normal intents and ONLY use RECIDIVISM once
                         idx = available_indices.pop()
-                        enemy.slots[idx] = available_intents.pop()
+                        enemy.slots[idx] = recidivism_intent
+                    else:
+                        # Standard random intent selection
+                        available_intents = [i for i in available_intents if i.type != "recidivism"]
+                        renpy.random.shuffle(available_intents)
+                        for _ in range(num_enemy_slots):
+                            if not available_intents:
+                                break
+                            idx = available_indices.pop()
+                            enemy.slots[idx] = available_intents.pop()
 
         def take_damage(self, amount, target="player", enemy_idx=0):
             if target == "player":
@@ -665,12 +665,17 @@ init python:
             ]
         elif name.lower() == "law":
             return [
-                EnemyIntent("PRECEDENT", damage=3, desc="if Chaos used the same skill type as last turn, deals 8 damage. If she didn't, deals 3.", animation="serious_butter_normal_anim", type="precedent"),
+                EnemyIntent("VERDICT", damage=6, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
+                EnemyIntent("PRECEDENT", damage=3, desc="if Chaos used a barrier or buff last turn, deals 8 damage. If she didn't, deals 3.", animation="serious_butter_normal_anim", type="precedent"),
+                EnemyIntent("ABSOLUTE RULE", damage=5, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("SENTENCE PASSED", damage=10, desc="deals 10 damage, and Chaos cannot gain barrier for the next 2 turns.", animation="serious_butter_block_anim", type="sentence_passed", cooldown=3),
+                EnemyIntent("ENFORCEMENT", damage=10, buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("THE BILL", damage=0, desc="deals damage equal to the number of skills Chaos has used this battle x 2.", animation="serious_butter_energy_anim", type="the_bill", cooldown=2),
+                EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("RECIDIVISM", damage=0, desc="if Chaos rolled a 1 last turn, deals 15 flat damage. resets after firing.", animation="serious_butter_hard_anim", type="recidivism"),
                 EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("ACCUMULATED WEIGHT", damage=0, desc="deals damage equal to the total number of turns that have passed x 3.", animation="serious_butter_ultimate_anim", type="accumulated_weight", cooldown=5)
+                EnemyIntent("ACCUMULATED WEIGHT", damage=0, desc="deals damage equal to the total number of turns that have passed x 3.", animation="serious_butter_ultimate_anim", type="accumulated_weight", cooldown=5),
+                EnemyIntent("SENTENCE", damage=25, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
             ]
         elif name.lower() == "lumpi":
             return [
@@ -1468,14 +1473,13 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_precedent
-                $ same_type = False
+                $ triggered = False
                 python:
-                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
-                    for t in current_turn_types:
-                        if t in bm.skills_used_last_turn_types:
-                            same_type = True
+                    for t in bm.skills_used_last_turn_types:
+                        if t in ["barrier", "buff"]:
+                            triggered = True
                             break
-                $ damage = 8 if same_type else 3
+                $ damage = 8 if triggered else 3
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with PRECEDENT!"
@@ -2297,6 +2301,7 @@ label newenemy_battle(skill_overrides=None):
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
+    $ butter.unlocked_intents_count = 11
     $ skill_overrides = skill_overrides or {
         "slap":             {"damage": 4, "cost": 1},
         "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
@@ -2337,6 +2342,7 @@ label butter_ava_battle(skill_overrides=None):
     scene bg_boss1 at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
+    $ butter.unlocked_intents_count = 11
     $ ava_intents = get_enemy_intents("ava")
     $ ava = Enemy('Ava', 999999, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
@@ -2628,14 +2634,13 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_precedent
-                $ same_type = False
+                $ triggered = False
                 python:
-                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
-                    for t in current_turn_types:
-                        if t in bm.skills_used_last_turn_types:
-                            same_type = True
+                    for t in bm.skills_used_last_turn_types:
+                        if t in ["barrier", "buff"]:
+                            triggered = True
                             break
-                $ damage = 8 if same_type else 3
+                $ damage = 8 if triggered else 3
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with PRECEDENT!"
@@ -2748,7 +2753,7 @@ label butter_ava_battle2(skill_overrides=None):
     scene bg_boss2 at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
-    $ butter.unlocked_intents_count = 6
+    $ butter.unlocked_intents_count = 11
     $ ava_intents = get_enemy_intents("ava2")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
     $ ava.unlocked_intents_count = 7
@@ -3040,14 +3045,13 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_precedent
-                $ same_type = False
+                $ triggered = False
                 python:
-                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
-                    for t in current_turn_types:
-                        if t in bm.skills_used_last_turn_types:
-                            same_type = True
+                    for t in bm.skills_used_last_turn_types:
+                        if t in ["barrier", "buff"]:
+                            triggered = True
                             break
-                $ damage = 8 if same_type else 3
+                $ damage = 8 if triggered else 3
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with PRECEDENT!"
@@ -3102,9 +3106,11 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_boss2_remember
-                $ heal = bm.last_drain_amount // 100
+                $ heal = bm.last_drain_amount
+                $ old_hp = enemy.hp
                 $ enemy.hp = min(enemy.max_hp, enemy.hp + heal)
-                "[enemy.name] heals for [heal] with WE REMEMBER!"
+                $ actual_healed = enemy.hp - old_hp
+                "[enemy.name] heals for [actual_healed] with WE REMEMBER!"
             elif intent.type == "last_record":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -3119,18 +3125,19 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2_foundation
+                $ stripped_value = 0
                 $ count = 0
                 python:
                     new_buffs = []
                     for b in enemy.buffs:
                         if b[0] == "corrosion" or b[1] < 0:
                             count += 1
+                            stripped_value += abs(b[1])
                         else:
                             new_buffs.append(b)
                     enemy.buffs = new_buffs
-                $ barrier = count * 8
-                $ bm.add_barrier(barrier, target="enemy", enemy_idx=e_idx)
-                "[enemy.name] stripped [count] debuffs and gained [barrier] Defense with FOUNDATION!"
+                $ bm.add_barrier(stripped_value, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] stripped [count] debuffs and gained [stripped_value] Defense with FOUNDATION!"
             elif intent.type == "thousand_years":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -3197,12 +3204,18 @@ label butter_ava_battle2(skill_overrides=None):
         if not bm.enemies[1].is_dead:
             python:
                 store.drain_amount = 33333
-                if bm.enemies[1].hp - drain_amount < 1:
-                    store.drain_amount = bm.enemies[1].hp - 1
+                # STILL STANDING Trigger logic
+                if bm.enemies[1].hp <= store.drain_amount and not bm.enemies[1].still_standing_triggered:
+                    bm.enemies[1].hp = 1
+                    bm.enemies[1].still_standing_triggered = True
+                    bm.enemies[1].barrier += 15
+                    renpy.say(None, "Ava is STILL STANDING! She survived the collapse with 1 HP and gained 15 Defense!")
+                else:
+                    bm.take_damage(store.drain_amount, target="enemy", enemy_idx=1)
+
                 bm.last_drain_amount = store.drain_amount
-                if getattr(renpy.store, "drain_amount", 0) > 0:
-                    bm.take_damage(drain_amount, target="enemy", enemy_idx=1)
-            if getattr(renpy.store, "drain_amount", 0) > 0:
+
+            if getattr(renpy.store, "drain_amount", 0) > 0 and not bm.enemies[1].still_standing_triggered:
                 "the city crumbles... Ava takes [store.drain_amount] damage from destruction"
                 if bm.enemies[1].is_dead:
                     show ava_hit as enemy_1
@@ -3593,14 +3606,13 @@ label order_battle_resolution_core:
         elif intent.type == "precedent":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_precedent
-            $ same_type = False
+            $ triggered = False
             python:
-                current_turn_types = [s.type for s in bm.used_skills_this_turn]
-                for t in current_turn_types:
-                    if t in bm.skills_used_last_turn_types:
-                        same_type = True
+                for t in bm.skills_used_last_turn_types:
+                    if t in ["barrier", "buff"]:
+                        triggered = True
                         break
-            $ damage = 8 if same_type else 3
+            $ damage = 8 if triggered else 3
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
             "[enemy.name] deals [damage] damage with PRECEDENT!"
