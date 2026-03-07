@@ -284,11 +284,20 @@ init python:
             self.dodge_expires_at_slot = -1
             self.is_dead = False
             self.collapsed = False
+            self.still_standing_triggered = False
 
         @property
         def intents(self):
             # Returns only the currently unlocked intents
-            return self.full_intent_pool[:self.unlocked_intents_count]
+            pool = self.full_intent_pool[:self.unlocked_intents_count]
+            # Special filtering for Ava's STILL STANDING
+            if any(i.type == "still_standing" for i in pool):
+                if self.hp == 1 and not self.still_standing_triggered:
+                    # If at 1 HP and not triggered, MUST use STILL STANDING
+                    pool = [i for i in pool if i.type == "still_standing"]
+                else:
+                    pool = [i for i in pool if i.type != "still_standing"]
+            return pool
 
     class BattleManager:
         tutorial = False
@@ -334,6 +343,16 @@ init python:
             self.hovered_skill = None
             self.show_energy_warning = False
             self.is_dodged = False
+
+            # New metrics for specific skills
+            self.total_skills_used_this_battle = 0
+            self.skills_used_this_turn_types = []
+            self.skills_used_last_turn_types = []
+            self.rolled_one_last_turn = False
+            self.player_barrier_blocked_turns = 0
+            self.last_drain_amount = 0
+            self.skills_unlocked_this_battle = 0
+            self.rolled_one_this_turn = False
 
         def initialize_skills(self, is_chaos):
             char_name = "chaos" if is_chaos else "kare"
@@ -435,6 +454,13 @@ init python:
 
         def prepare_turn(self):
             self.turn_count += 1
+            self.skills_used_last_turn_types = list(self.skills_used_this_turn_types)
+            self.skills_used_this_turn_types = []
+            self.rolled_one_last_turn = self.rolled_one_this_turn
+            self.rolled_one_this_turn = False
+            if self.player_barrier_blocked_turns > 0:
+                self.player_barrier_blocked_turns -= 1
+
             self.is_dodged = False
             # Growth: starts at 2, +1 every 2 turns, max 6.
             self.current_max_slots = min(6, 2 + (self.turn_count - 1) // 4)
@@ -465,6 +491,10 @@ init python:
 
                     # Unique intents, respect cooldowns
                     available_intents = [i for i in enemy.intents if i.current_cooldown <= 0]
+                    # Special filtering for RECIDIVISM
+                    if any(i.type == "recidivism" for i in available_intents):
+                        if not self.rolled_one_last_turn:
+                            available_intents = [i for i in available_intents if i.type != "recidivism"]
                     renpy.random.shuffle(available_intents)
 
                     for _ in range(num_enemy_slots):
@@ -495,6 +525,8 @@ init python:
 
         def add_barrier(self, amount, target="player", enemy_idx=0):
             if target == "player":
+                if self.player_barrier_blocked_turns > 0:
+                    return
                 self.player_barrier += amount
             else:
                 self.enemies[enemy_idx].barrier += amount
@@ -551,6 +583,7 @@ init python:
                         self.skill_exp -= self.skill_exp_max
                         new_skill = self.full_skill_pool[len(self.player_skills)]
                         self.player_skills.append(new_skill)
+                        self.skills_unlocked_this_battle += 1
                     else:
                         self.skill_exp = min(self.skill_exp, self.skill_exp_max)
                         break
@@ -619,12 +652,12 @@ init python:
             ]
         elif name.lower() == "law":
             return [
-                EnemyIntent("VERDICT", damage=6, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
-                EnemyIntent("ABSOLUTE RULE", damage=5, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("ENFORCEMENT", damage=4, buff_type="every law has consequences", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
+                EnemyIntent("PRECEDENT", damage=3, desc="if Chaos used the same skill type as last turn, deals 8 damage. If she didn't, deals 3.", animation="serious_butter_normal_anim", type="precedent"),
+                EnemyIntent("SENTENCE PASSED", damage=10, desc="deals 10 damage, and Chaos cannot gain barrier for the next 2 turns.", animation="serious_butter_block_anim", type="sentence_passed", cooldown=3),
+                EnemyIntent("THE BILL", damage=0, desc="deals damage equal to the number of skills Chaos has used this battle x 2.", animation="serious_butter_energy_anim", type="the_bill", cooldown=2),
+                EnemyIntent("RECIDIVISM", damage=0, desc="if Chaos rolled a 1 last turn, deals 15 flat damage. resets after firing.", animation="serious_butter_hard_anim", type="recidivism"),
                 EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
-                EnemyIntent("SENTENCE", damage=25, desc="the verdict has been decided. there is no appeal. there is no negotiation.", animation="serious_butter_ultimate_anim", type="attack", cooldown=6)
+                EnemyIntent("ACCUMULATED WEIGHT", damage=0, desc="deals damage equal to the total number of turns that have passed x 3.", animation="serious_butter_ultimate_anim", type="accumulated_weight", cooldown=5)
             ]
         elif name.lower() == "lumpi":
             return [
@@ -661,6 +694,16 @@ init python:
                 EnemyIntent("CULTURAL IMPACT", damage=15, desc="a strike so significant it will be remembered for generations. probably.", animation="ava_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("WRITTEN IN HISTORY", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("END OF AN ERA", damage=60, desc="every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now", animation="ava_ultimate_anim", type="attack", cooldown=6)
+            ]
+        elif name.lower() == "ava2":
+            return [
+                EnemyIntent("THE ONES WHO BUILT IT", damage=10, desc="if Ava has no barrier, deals 20 damage. If she does have barrier, deals 10 instead.", animation="ava_normal_anim", type="ones_who_built_it"),
+                EnemyIntent("MONUMENT", damage=0, desc="gains barrier equal to the number of turns that have passed.", animation="ava_block_anim", type="monument", cooldown=2),
+                EnemyIntent("WE REMEMBER", damage=0, desc="heals Ava for damage equal to whatever the drain took from her last turn / 100.", animation="ava_energy_anim", type="we_remember", cooldown=3),
+                EnemyIntent("LAST RECORD", damage=15, desc="if Ava's HP is below 50%, this deals double damage.", animation="ava_hard_anim", type="last_record"),
+                EnemyIntent("FOUNDATION", damage=0, desc="strips all of Chaos's debuffs on Ava and gains 8 barrier per debuff.", animation="ava_buff_anim", type="foundation", cooldown=4),
+                EnemyIntent("THOUSAND YEARS", damage=0, desc="deals 5 damage multiplied by the number of skills Chaos has unlocked this battle.", animation="ava_ultimate_anim", type="thousand_years", cooldown=5),
+                EnemyIntent("STILL STANDING", damage=0, desc="if Ava is at 1 HP, survive and gain 15 barrier. Once per battle.", animation="ava_block_anim", type="still_standing", cooldown=0)
             ]
         return []
 
@@ -805,6 +848,7 @@ screen battle_screen(bm):
         xalign 0.05 yalign 0.05
         spacing 5
         xmaximum 400
+        text "Turn: [bm.turn_count]" size 18 color "#747474"
         if getattr(bm, "is_chaos", False):
             text "[p_name]: [scramble_hp(bm.player_hp)]/[scramble_hp(bm.player_max_hp)]" size 24 color "#747474"
         else:
@@ -1143,6 +1187,8 @@ label battle_engine(bm):
             jump .engine_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
+            $ bm.total_skills_used_this_battle += 1
+            $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
             if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
@@ -1184,6 +1230,13 @@ label battle_engine(bm):
                     call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_eng
 
             if skill.type == "attack":
+                if getattr(bm, "is_chaos", False):
+                    $ actual_damage = skill_value
+                else:
+                    $ actual_damage = get_chaos_random_value(bm, skill)
+                if actual_damage == 1:
+                    $ bm.rolled_one_this_turn = True
+
                 if enemy.dodge_active:
                     $ bm.is_dodged = True
                     if skill.animation:
@@ -1196,10 +1249,6 @@ label battle_engine(bm):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_generic
-                    if getattr(bm, "is_chaos", False):
-                        $ actual_damage = skill_value
-                    else:
-                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]"
@@ -1214,6 +1263,8 @@ label battle_engine(bm):
                     $ actual_barrier = skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
+                if actual_barrier == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense"
@@ -1231,6 +1282,8 @@ label battle_engine(bm):
                     $ actual_buff = skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
+                if actual_buff == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -1241,6 +1294,8 @@ label battle_engine(bm):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_generic
                 if getattr(bm, "is_chaos", False):
+                    if skill_value == 1:
+                        $ bm.rolled_one_this_turn = True
                     $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
                     "You gained [skill_value] Energy"
                 else:
@@ -1363,6 +1418,54 @@ label battle_engine(bm):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_generic
                 "[enemy.name] is recovering."
+            elif intent.type == "precedent":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_precedent
+                $ same_type = False
+                python:
+                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
+                    for t in current_turn_types:
+                        if t in bm.skills_used_last_turn_types:
+                            same_type = True
+                            break
+                $ damage = 8 if same_type else 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with PRECEDENT!"
+            elif intent.type == "sentence_passed":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_sentence
+                $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.player_barrier_blocked_turns = 2
+                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+            elif intent.type == "the_bill":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_bill
+                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with THE BILL!"
+            elif intent.type == "recidivism":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_recidivism
+                $ damage = 15
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.rolled_one_last_turn = False
+                "[enemy.name] deals [damage] flat damage with RECIDIVISM!"
+            elif intent.type == "accumulated_weight":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_accumulated
+                $ damage = bm.turn_count * 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .engine_victory
@@ -2241,6 +2344,8 @@ label butter_ava_battle(skill_overrides=None):
             jump .boss1_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
+            $ bm.total_skills_used_this_battle += 1
+            $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
             if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
@@ -2282,6 +2387,13 @@ label butter_ava_battle(skill_overrides=None):
                     call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss1
 
             if skill.type == "attack":
+                if getattr(bm, "is_chaos", False):
+                    $ actual_damage = skill_value
+                else:
+                    $ actual_damage = get_chaos_random_value(bm, skill)
+                if actual_damage == 1:
+                    $ bm.rolled_one_this_turn = True
+
                 if enemy.dodge_active:
                     $ bm.is_dodged = True
                     if skill.animation:
@@ -2295,10 +2407,6 @@ label butter_ava_battle(skill_overrides=None):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss1
-                    if getattr(bm, "is_chaos", False):
-                        $ actual_damage = skill_value
-                    else:
-                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2313,6 +2421,8 @@ label butter_ava_battle(skill_overrides=None):
                     $ actual_barrier = skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
+                if actual_barrier == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense!"
@@ -2330,6 +2440,8 @@ label butter_ava_battle(skill_overrides=None):
                     $ actual_buff = skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
+                if actual_buff == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -2340,6 +2452,8 @@ label butter_ava_battle(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss1
                 if getattr(bm, "is_chaos", False):
+                    if skill_value == 1:
+                        $ bm.rolled_one_this_turn = True
                     $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
                     "You gained [skill_value] Energy!"
                 else:
@@ -2462,6 +2576,54 @@ label butter_ava_battle(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_boss1
                 "[enemy.name] is recovering."
+            elif intent.type == "precedent":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_precedent
+                $ same_type = False
+                python:
+                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
+                    for t in current_turn_types:
+                        if t in bm.skills_used_last_turn_types:
+                            same_type = True
+                            break
+                $ damage = 8 if same_type else 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with PRECEDENT!"
+            elif intent.type == "sentence_passed":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_sentence
+                $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.player_barrier_blocked_turns = 2
+                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+            elif intent.type == "the_bill":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_bill
+                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with THE BILL!"
+            elif intent.type == "recidivism":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_recidivism
+                $ damage = 15
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.rolled_one_last_turn = False
+                "[enemy.name] deals [damage] flat damage with RECIDIVISM!"
+            elif intent.type == "accumulated_weight":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_accumulated
+                $ damage = bm.turn_count * 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
         if bm.enemies[0].is_dead:
             window hide
             jump .boss1_victory
@@ -2538,8 +2700,10 @@ label butter_ava_battle2(skill_overrides=None):
     scene bg_boss2 at truecenter
     $ player_sprites = {'idle': 'chaos_idle', 'attack': 'chaos_attack', 'hit': 'chaos_hit'}
     $ butter = get_serious_butter()
-    $ ava_intents = get_enemy_intents("ava")
+    $ butter.unlocked_intents_count = 6
+    $ ava_intents = get_enemy_intents("ava2")
     $ ava = Enemy('Ava', 300, {'idle': 'ava_idle', 'attack': 'ava_attack', 'hit': 'ava_hit'}, ava_intents)
+    $ ava.unlocked_intents_count = 7
     $ bm = BattleManager(500, [butter, ava], starting_slots=2, player_sprites=player_sprites, starting_energy=50, max_energy=50, is_chaos=True, skill_overrides=skill_overrides)
     $ bm.initialize_skills(getattr(bm, "is_chaos", False))
 
@@ -2590,6 +2754,8 @@ label butter_ava_battle2(skill_overrides=None):
             jump .boss2_resolution_core
         elif isinstance(action, Skill):
             $ skill = action
+            $ bm.total_skills_used_this_battle += 1
+            $ bm.skills_used_this_turn_types.append(skill.type)
             $ skill.current_cooldown = skill.cooldown
             if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
@@ -2631,6 +2797,13 @@ label butter_ava_battle2(skill_overrides=None):
                     call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_boss2
 
             if skill.type == "attack":
+                if getattr(bm, "is_chaos", False):
+                    $ actual_damage = skill_value
+                else:
+                    $ actual_damage = get_chaos_random_value(bm, skill)
+                if actual_damage == 1:
+                    $ bm.rolled_one_this_turn = True
+
                 if enemy.dodge_active:
                     $ bm.is_dodged = True
                     if skill.animation:
@@ -2644,10 +2817,6 @@ label butter_ava_battle2(skill_overrides=None):
                     $ bm.is_dodged = False
                     if skill.animation:
                         call expression skill.animation pass (bm) from _call_skill_anim_generic_boss2
-                    if getattr(bm, "is_chaos", False):
-                        $ actual_damage = skill_value
-                    else:
-                        $ actual_damage = get_chaos_random_value(bm, skill)
                     $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                     $ bm.gain_exp(actual_damage * 5, character_type="player")
                     "[skill.name] deals [actual_damage] damage to [enemy.name]!"
@@ -2662,6 +2831,8 @@ label butter_ava_battle2(skill_overrides=None):
                     $ actual_barrier = skill_value
                 else:
                     $ actual_barrier = get_chaos_random_value(bm, skill)
+                if actual_barrier == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_barrier(actual_barrier)
                 if getattr(bm, "is_chaos", False):
                     "You gain [actual_barrier] Defense!"
@@ -2679,6 +2850,8 @@ label butter_ava_battle2(skill_overrides=None):
                     $ actual_buff = skill_value
                 else:
                     $ actual_buff = get_chaos_random_value(bm, skill)
+                if actual_buff == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
                 if getattr(bm, "is_chaos", False):
                     "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -2689,6 +2862,8 @@ label butter_ava_battle2(skill_overrides=None):
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_anim_energy_boss2
                 if getattr(bm, "is_chaos", False):
+                    if skill_value == 1:
+                        $ bm.rolled_one_this_turn = True
                     $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
                     "You gained [skill_value] Energy!"
                 else:
@@ -2811,6 +2986,116 @@ label butter_ava_battle2(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_energy_boss2
                 "[enemy.name] is recovering."
+            elif intent.type == "precedent":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_precedent
+                $ same_type = False
+                python:
+                    current_turn_types = [s.type for s in bm.used_skills_this_turn]
+                    for t in current_turn_types:
+                        if t in bm.skills_used_last_turn_types:
+                            same_type = True
+                            break
+                $ damage = 8 if same_type else 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with PRECEDENT!"
+            elif intent.type == "sentence_passed":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_sentence
+                $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.player_barrier_blocked_turns = 2
+                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+            elif intent.type == "the_bill":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_bill
+                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with THE BILL!"
+            elif intent.type == "recidivism":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_recidivism
+                $ damage = 15
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                $ bm.rolled_one_last_turn = False
+                "[enemy.name] deals [damage] flat damage with RECIDIVISM!"
+            elif intent.type == "accumulated_weight":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_accumulated
+                $ damage = bm.turn_count * 3
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
+            elif intent.type == "ones_who_built_it":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_onesbuilt
+                $ damage = 20 if enemy.barrier == 0 else 10
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with THE ONES WHO BUILT IT!"
+            elif intent.type == "monument":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_barrier_boss2_monument
+                $ bm.add_barrier(bm.turn_count, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] gains [bm.turn_count] Defense with MONUMENT!"
+            elif intent.type == "we_remember":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_energy_boss2_remember
+                $ heal = bm.last_drain_amount // 100
+                $ enemy.hp = min(enemy.max_hp, enemy.hp + heal)
+                "[enemy.name] heals for [heal] with WE REMEMBER!"
+            elif intent.type == "last_record":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_lastrecord
+                $ damage = intent.damage
+                if enemy.hp < (enemy.max_hp / 2):
+                    $ damage *= 2
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with LAST RECORD!"
+            elif intent.type == "foundation":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2_foundation
+                $ count = 0
+                python:
+                    new_buffs = []
+                    for b in enemy.buffs:
+                        if b[0] == "corrosion" or b[1] < 0:
+                            count += 1
+                        else:
+                            new_buffs.append(b)
+                    enemy.buffs = new_buffs
+                $ barrier = count * 8
+                $ bm.add_barrier(barrier, target="enemy", enemy_idx=e_idx)
+                "[enemy.name] stripped [count] debuffs and gained [barrier] Defense with FOUNDATION!"
+            elif intent.type == "thousand_years":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_thousand
+                $ damage = bm.skills_unlocked_this_battle * 5
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ bm.take_damage(damage, target="player")
+                "[enemy.name] deals [damage] damage with THOUSAND YEARS!"
+            elif intent.type == "still_standing":
+                $ bm.is_dodged = False
+                if intent.animation:
+                    call expression intent.animation pass (bm) from _call_intent_anim_barrier_boss2_still
+                $ bm.add_barrier(15, target="enemy", enemy_idx=e_idx)
+                $ enemy.still_standing_triggered = True
+                "[enemy.name] is STILL STANDING! They gained 15 Defense!"
         if all(e.is_dead for e in bm.enemies):
             window hide
             jump .boss2_victory
@@ -2864,6 +3149,7 @@ label butter_ava_battle2(skill_overrides=None):
                 store.drain_amount = 33333
                 if bm.enemies[1].hp - drain_amount < 1:
                     store.drain_amount = bm.enemies[1].hp - 1
+                bm.last_drain_amount = store.drain_amount
                 if getattr(renpy.store, "drain_amount", 0) > 0:
                     bm.take_damage(drain_amount, target="enemy", enemy_idx=1)
             if getattr(renpy.store, "drain_amount", 0) > 0:
@@ -2979,6 +3265,8 @@ label order_battle_resolution_core:
         jump order_battle_resolution_core
     elif isinstance(action, Skill):
         $ skill = action
+        $ bm.total_skills_used_this_battle += 1
+        $ bm.skills_used_this_turn_types.append(skill.type)
         $ skill.current_cooldown = skill.cooldown
         if not getattr(bm, "is_chaos", False) or skill.type not in ["energy", "unravel", "fracture", "corrode", "inversion", "collapse", "leech", "overload"]:
             $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill.energy_regen)
@@ -3020,6 +3308,13 @@ label order_battle_resolution_core:
                 call chaos_number_anim(skill_value, "OVERLOAD") from _call_chaos_slot_overload_order
 
         if skill.type == "attack":
+            if getattr(bm, "is_chaos", False):
+                $ actual_damage = skill_value
+            else:
+                $ actual_damage = get_chaos_random_value(bm, skill)
+            if actual_damage == 1:
+                $ bm.rolled_one_this_turn = True
+
             if enemy.dodge_active:
                 $ bm.is_dodged = True
                 if skill.animation:
@@ -3032,10 +3327,6 @@ label order_battle_resolution_core:
                 $ bm.is_dodged = False
                 if skill.animation:
                     call expression skill.animation pass (bm) from _call_skill_order_attack
-                if getattr(bm, "is_chaos", False):
-                    $ actual_damage = skill_value
-                else:
-                    $ actual_damage = get_chaos_random_value(bm, skill)
                 $ bm.take_damage(actual_damage, target="enemy", enemy_idx=e_idx)
                 $ bm.gain_exp(actual_damage * 5, character_type="player")
                 "[skill.name] deals [actual_damage] damage to Order!"
@@ -3110,6 +3401,8 @@ label order_battle_resolution_core:
                 $ actual_barrier = skill_value
             else:
                 $ actual_barrier = get_chaos_random_value(bm, skill)
+            if actual_barrier == 1:
+                $ bm.rolled_one_this_turn = True
             $ bm.add_barrier(actual_barrier)
             if getattr(bm, "is_chaos", False):
                 "You gain [actual_barrier] Defense"
@@ -3125,6 +3418,8 @@ label order_battle_resolution_core:
                 $ actual_buff = skill_value
             else:
                 $ actual_buff = get_chaos_random_value(bm, skill)
+            if actual_buff == 1:
+                $ bm.rolled_one_this_turn = True
             $ bm.add_buff(skill.buff_type, actual_buff, skill.buff_duration, target="player")
             if getattr(bm, "is_chaos", False):
                 "[skill.name] activated! Damage increased by [actual_buff] for [skill.buff_duration] turns."
@@ -3134,6 +3429,8 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_skill_order_energy
             if getattr(bm, "is_chaos", False):
+                if skill_value == 1:
+                    $ bm.rolled_one_this_turn = True
                 $ bm.player_energy = min(bm.player_max_energy, bm.player_energy + skill_value)
                 "You gained [skill_value] Energy"
             else:
@@ -3241,6 +3538,49 @@ label order_battle_resolution_core:
         elif intent.type == "energy":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_energyanim
+        elif intent.type == "precedent":
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_order_default_precedent
+            $ same_type = False
+            python:
+                current_turn_types = [s.type for s in bm.used_skills_this_turn]
+                for t in current_turn_types:
+                    if t in bm.skills_used_last_turn_types:
+                        same_type = True
+                        break
+            $ damage = 8 if same_type else 3
+            $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+            $ bm.take_damage(damage, target="player")
+            "[enemy.name] deals [damage] damage with PRECEDENT!"
+        elif intent.type == "sentence_passed":
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_order_default_sentence
+            $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+            $ bm.take_damage(damage, target="player")
+            $ bm.player_barrier_blocked_turns = 2
+            "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+        elif intent.type == "the_bill":
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_order_default_bill
+            $ damage = bm.total_skills_used_this_battle * 2
+            $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+            $ bm.take_damage(damage, target="player")
+            "[enemy.name] deals [damage] damage with THE BILL!"
+        elif intent.type == "recidivism":
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_order_default_recidivism
+            $ damage = 15
+            $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+            $ bm.take_damage(damage, target="player")
+            $ bm.rolled_one_last_turn = False
+            "[enemy.name] deals [damage] flat damage with RECIDIVISM!"
+        elif intent.type == "accumulated_weight":
+            if intent.animation:
+                call expression intent.animation pass (bm) from _call_intent_order_default_accumulated
+            $ damage = bm.turn_count * 3
+            $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+            $ bm.take_damage(damage, target="player")
+            "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
 
     if bm.enemies[0].is_dead:
         window hide
