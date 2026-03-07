@@ -215,7 +215,7 @@ init python:
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
         if skill.type == "energy":
-            return renpy.random.randint(1, 20)
+            return renpy.random.randint(1, 50)
         if skill.type == "fracture":
             return renpy.random.randint(1, 10)
         if skill.type == "corrode":
@@ -226,7 +226,7 @@ init python:
     def get_serious_butter():
         intents = get_enemy_intents("law")
         sprites = {'idle': 'seriousbutter_idle', 'attack': 'seriousbutter_attack', 'hit': 'seriousbutter_hit'}
-        return Enemy('Butter', 300, sprites, intents)
+        return Enemy('Butter', 500, sprites, intents)
 
     def get_butter():
         intents = get_enemy_intents("butter")
@@ -634,20 +634,20 @@ init python:
         elif name.lower() == "chaos":
             return [
                 Skill("interitus", cost=3, damage=0, energy_regen=2, desc="1-20 damage... probably", animation="chaos_normal_anim", card_image="card_chaos_normal", is_chaos_skill=True),
-                Skill("Embrace", cost=5, damage=0, type="barrier", desc="1-50 Defense. who knows", cooldown=0, animation="chaos_block_anim", card_image="card_chaos_block", is_chaos_skill=True),
-                Skill("Entropy", cost=0, energy_regen=12, type="energy", desc="everything falls apart eventually. might as well use it", animation="chaos_energy_anim", card_image="card_chaos_energy", is_chaos_skill=True),
-                Skill("Cataclysm", cost=7, damage=0, cooldown=0, desc="1-30 damage... maybe", animation="chaos_hard_anim", card_image="card_chaos_hard", is_chaos_skill=True),
-                Skill("dissolutum", cost=6, type="dodge", desc="Shift out of reality.", cooldown=0, animation="chaos_dodge_anim", card_image="card_chaos_dodge", is_chaos_skill=True),
-                Skill("playing rough", cost=6, damage=0, type="buff", buff_type="damage", buff_duration=3, desc="1-50 Damage Buff. or 1. who knows.", animation="chaos_buff_anim", is_chaos_skill=True),
-                Skill("??????", cost=25, damage=0, cooldown=0, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate", is_chaos_skill=True),
+                Skill("Embrace", cost=5, damage=0, type="barrier", desc="1-50 Defense. who knows", cooldown=2, animation="chaos_block_anim", card_image="card_chaos_block", is_chaos_skill=True),
+                Skill("Entropy", cost=0, energy_regen=12, type="energy",cooldown=3, desc="everything falls apart eventually. might as well use it", animation="chaos_energy_anim", card_image="card_chaos_energy", is_chaos_skill=True),
+                Skill("Cataclysm", cost=7, damage=0,cooldown=3, desc="1-30 damage... maybe", animation="chaos_hard_anim", card_image="card_chaos_hard", is_chaos_skill=True),
+                Skill("dissolutum", cost=6, type="dodge",cooldown=2, desc="Shift out of reality.", animation="chaos_dodge_anim", card_image="card_chaos_dodge", is_chaos_skill=True),
+                Skill("playing rough", cost=6, damage=0,cooldown=3, type="buff", buff_type="damage", buff_duration=3, desc="1-50 Damage Buff. or 1. who knows.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("??????", cost=25, damage=0,cooldown=4, desc="1-60 damage... ??? ?????", animation="chaos_ultimate_anim", card_image="card_chaos_ultimate", is_chaos_skill=True),
 
-                Skill("Unravel", cost=4, type="unravel", desc="Strips all buffs currently on the enemy.", animation="chaos_buff_anim", is_chaos_skill=True),
-                Skill("Fracture", cost=5, type="fracture", desc="Destroys enemy barrier completely, or deals 1-10 damage.", animation="chaos_normal_anim", is_chaos_skill=True),
-                Skill("Corrode", cost=5, type="corrode", desc="Reduced damage for enemy's next 2-3 attacks.", animation="chaos_normal_anim", is_chaos_skill=True),
-                Skill("Inversion", cost=6, type="inversion", desc="Flips enemy damage buff to a penalty.", animation="chaos_buff_anim", is_chaos_skill=True),
-                Skill("Collapse", cost=8, type="collapse", desc="Nullifies enemy's very next action.", animation="chaos_block_anim", is_chaos_skill=True),
-                Skill("Leech", cost=6, type="leech", desc="Steals a buff from the enemy and applies it to yourself.", animation="chaos_buff_anim", is_chaos_skill=True),
-                Skill("Overload", cost=7, type="overload", desc="Enemy takes damage equal to their current barrier, then removes it.", animation="chaos_hard_anim", is_chaos_skill=True)
+                Skill("Unravel", cost=4, type="unravel",cooldown=3, desc="Strips all buffs currently on the enemy.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Fracture", cost=5, type="fracture",cooldown=3, desc="Destroys enemy barrier completely, or deals 1-10 damage.", animation="chaos_normal_anim", is_chaos_skill=True),
+                Skill("Corrode", cost=5, type="corrode",cooldown=2, desc="Reduced damage for enemy's next 2-3 attacks.", animation="chaos_normal_anim", is_chaos_skill=True),
+                Skill("Inversion", cost=6, type="inversion",cooldown=3, desc="Flips enemy damage buff to a penalty.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Collapse", cost=8, type="collapse",cooldown=3, desc="Nullifies enemy's very next action.", animation="chaos_block_anim", is_chaos_skill=True),
+                Skill("Leech", cost=6, type="leech",cooldown=3, desc="Steals a buff from the enemy and applies it to yourself.", animation="chaos_buff_anim", is_chaos_skill=True),
+                Skill("Overload", cost=7, type="overload",cooldown=3, desc="Enemy takes damage equal to their current barrier, then removes it.", animation="chaos_hard_anim", is_chaos_skill=True)
             ]
         return []
 
