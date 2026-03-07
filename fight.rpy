@@ -648,11 +648,10 @@ screen slot_machine(reel_items, label_text="", duration=2.0):
             xalign 0.5
             yalign 0.5
             text "[label_text]" size 16 color "#aaa" xalign 0.5
-            frame:
+            fixed:
                 xsize 140
                 ysize 60
-                background None
-                clip_content True
+                clip True
                 xalign 0.5
                 vbox:
                     xalign 0.5
@@ -683,13 +682,16 @@ screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
         xalign 0.5 ypos 0.98 yanchor 1.0
         spacing 15
         for i, card_list in enumerate(reel_card_lists):
-            frame:
-                background Solid("#000000cc")
-                foreground "sketchy_bar_outline"
-                padding (0, 0)
+            fixed:
                 xsize 140
                 ysize 180
-                clip_content True
+                clip True
+                frame:
+                    background Solid("#000000cc")
+                    foreground "sketchy_bar_outline"
+                    padding (0, 0)
+                    xsize 140
+                    ysize 180
                 vbox:
                     spacing 0
                     at reel_scroll_transform(duration, len(card_list), 180)
