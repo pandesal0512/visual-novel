@@ -673,7 +673,7 @@ init python:
                 EnemyIntent("ABSOLUTE RULE", damage=5, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("SENTENCE PASSED", damage=10, desc="deals 10 damage, and Chaos cannot gain barrier for the next 2 turns.", animation="serious_butter_block_anim", type="sentence_passed", cooldown=3),
                 EnemyIntent("ENFORCEMENT", damage=10, buff_type="damage", buff_duration=3, desc="Increases damage by 10 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
-                EnemyIntent("THE BILL", damage=0, desc="deals damage equal to the number of skills Chaos has used this battle x 2.", animation="serious_butter_energy_anim", type="the_bill", cooldown=2),
+                EnemyIntent("THE BILL", damage=0, desc="deals damage equal to the number of skills Chaos has used this battle.", animation="serious_butter_energy_anim", type="the_bill", cooldown=2),
                 EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("RECIDIVISM", damage=0, desc="if Chaos rolled a 1 last turn, deals 15 flat damage. resets after firing.", animation="serious_butter_hard_anim", type="recidivism"),
                 EnemyIntent("DUE PROCESS", desc="proper procedure must be followed. that attack was not it.", animation="serious_butter_dodge_anim", type="dodge", cooldown=3),
@@ -1498,7 +1498,7 @@ label battle_engine(bm):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_bill
-                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = bm.total_skills_used_this_battle
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with THE BILL!"
@@ -2659,7 +2659,7 @@ label butter_ava_battle(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_bill
-                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = bm.total_skills_used_this_battle
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with THE BILL!"
@@ -3070,7 +3070,7 @@ label butter_ava_battle2(skill_overrides=None):
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_bill
-                $ damage = bm.total_skills_used_this_battle * 2
+                $ damage = bm.total_skills_used_this_battle
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "[enemy.name] deals [damage] damage with THE BILL!"
@@ -3628,7 +3628,7 @@ label order_battle_resolution_core:
         elif intent.type == "the_bill":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_bill
-            $ damage = bm.total_skills_used_this_battle * 2
+            $ damage = bm.total_skills_used_this_battle
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
             "[enemy.name] deals [damage] damage with THE BILL!"
