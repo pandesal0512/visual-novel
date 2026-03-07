@@ -181,6 +181,10 @@ transform card_selected_zoom:
 transform card_idle_zoom:
     ease 0.1 zoom 1.0
 
+transform reel_scroll_transform(duration, num_items, item_height):
+    ypos -((num_items - 1) * item_height)
+    easeout duration ypos 0
+
 init python:
     import random
 
@@ -207,6 +211,8 @@ init python:
             return renpy.random.randint(1, 20)
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
+        if skill.type == "energy":
+            return renpy.random.randint(1, 20)
         return skill.damage
 
 
@@ -280,6 +286,7 @@ init python:
         tutorial = False
         dobe_helps = False
         is_chaos = False
+        is_shuffling = False
         def __init__(self, player_max_hp, enemies=None, starting_slots=2, player_sprites=None, starting_energy=10, max_energy=10, tutorial=False, dobe_helps=False, is_chaos=False, skill_overrides=None):
             self.player_hp = player_max_hp
             self.player_max_hp = player_max_hp
@@ -629,38 +636,47 @@ init python:
             ]
         return []
 
-screen slot_machine(slot_display, label_text=""):
+screen slot_machine(reel_items, label_text="", duration=2.0):
     frame:
         background Solid("#000000cc")
         xalign 0.5 yalign 0.3
         padding (40, 30)
-        xsize 140
-        ysize 180
+        xsize 180
+        ysize 140
         foreground "sketchy_bar_outline"
         vbox:
-            spacing 10
+            spacing 6
             xalign 0.5
             yalign 0.5
             text "[label_text]" size 16 color "#aaa" xalign 0.5
-            text "[slot_display]" size 40 color "#ffffff" bold True xalign 0.5
+            viewport:
+                xsize 140
+                ysize 60
+                xalign 0.5
+                vbox:
+                    xalign 0.5
+                    spacing 0
+                    at reel_scroll_transform(duration, len(reel_items), 60)
+                    for item in reel_items:
+                        fixed:
+                            xsize 140 ysize 60
+                            text "[item]" size 40 color "#ffffff" bold True xalign 0.5 yalign 0.5
 
 label chaos_slot_anim(final_value, label_text=""):
-    $ slot_machine_display = "???"
-    show screen slot_machine(slot_machine_display, label_text)
     python:
         symbols = "$#%^&*@!?~<>"
-        for i in range(15):
-            if i < 10:
-                slot_machine_display = "".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))])
-            else:
-                slot_machine_display = str(final_value)
-            renpy.restart_interaction()
-            renpy.pause(0.05 + (i * 0.02), hard=True)
+        reel_items = [str(final_value)]
+        num_spins = 12
+        for _ in range(num_spins):
+            reel_items.append("".join([renpy.random.choice(symbols + "0123456789") for _ in range(len(str(final_value)))]))
+
+    show screen slot_machine(reel_items, label_text, duration=1.5)
+    $ renpy.pause(1.5, hard=True)
     $ renpy.pause(0.5, hard=True)
     hide screen slot_machine
     return
 
-screen chaos_number_indicator(display_val, label_text=""):
+screen chaos_number_indicator(label_text=""):
     frame:
         background Solid("#000000cc")
         xpos 0.35 xanchor 0.5 ypos 0.15 yanchor 0.5
@@ -671,17 +687,69 @@ screen chaos_number_indicator(display_val, label_text=""):
             xalign 0.5
             yalign 0.5
             text "[label_text]" size 14 color "#aaa" xalign 0.5
-            text "[display_val]" size 36 color "#ffffff" bold True xalign 0.5
+            text "[store.chaos_anim_val]" size 36 color "#ffffff" bold True xalign 0.5
+
+screen chaos_card_reel_screen(reel_card_lists, duration=2.0):
+    hbox:
+        xalign 0.5 ypos 0.98 yanchor 1.0
+        spacing 15
+        for i, card_list in enumerate(reel_card_lists):
+            viewport:
+                xsize 140
+                ysize 180
+                frame:
+                    background Solid("#000000cc")
+                    foreground "sketchy_bar_outline"
+                    padding (0, 0)
+                    xsize 140
+                    ysize 180
+                vbox:
+                    spacing 0
+                    at reel_scroll_transform(duration, len(card_list), 180)
+                    for card in card_list:
+                        fixed:
+                            xsize 140 ysize 180
+                            if card and card.card_image:
+                                add card.card_image
+                            else:
+                                text "???" size 40 color "#fff" xalign 0.5 yalign 0.5
+
+label chaos_card_shuffle_anim(bm):
+    python:
+        bm.is_shuffling = True
+        # Prepare 6 lists of cards for the reels
+        # Actual shuffle happens later so we need a preview of what it WILL be
+        _future_skills = list(bm.player_skills)
+        renpy.random.shuffle(_future_skills)
+
+        reel_card_lists = []
+        num_spins = 10
+        for i in range(len(bm.player_skills)):
+            card_reel = [_future_skills[i]]
+            for _ in range(num_spins):
+                card_reel.append(renpy.random.choice(bm.full_skill_pool))
+            reel_card_lists.append(card_reel)
+
+    show screen chaos_card_reel_screen(reel_card_lists, duration=1.5)
+    # Placeholder for sound effects
+    # play sound "audio/reel_spin.mp3"
+    $ renpy.pause(1.5, hard=True)
+    # play sound "audio/reel_ding.mp3"
+    $ renpy.pause(0.8, hard=True)
+    $ bm.player_skills = _future_skills
+    $ bm.is_shuffling = False
+    hide screen chaos_card_reel_screen
+    return
 
 label chaos_number_anim(final_value, label_text=""):
-    $ number_display = "?" * len(str(final_value))
-    show screen chaos_number_indicator(number_display, label_text)
+    $ store.chaos_anim_val = "?" * len(str(final_value))
+    show screen chaos_number_indicator(label_text)
     python:
         for i in range(25):
             if i < 22:
-                number_display = "".join([str(renpy.random.randint(0, 9)) for _ in range(len(str(final_value)))])
+                store.chaos_anim_val = "".join([str(renpy.random.randint(0, 9)) for _ in range(len(str(final_value)))])
             else:
-                number_display = str(final_value)
+                store.chaos_anim_val = str(final_value)
             renpy.restart_interaction()
             renpy.pause(0.04, hard=True)
     $ renpy.pause(0.4, hard=True)
@@ -865,28 +933,29 @@ screen battle_screen(bm):
         hbox:
             xalign 0.5
             spacing 15
-            for skill in bm.player_skills:
-                $ is_selected = bm.selected_skill == skill
-                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                button:
-                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
-                    hovered SetField(bm, "hovered_skill", skill)
-                    unhovered SetField(bm, "hovered_skill", None)
-                    at (card_selected_zoom if is_selected else card_idle_zoom)
-                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                    background (Solid("#0002") if is_selected else None)
-                    foreground "sketchy_bar_outline"
-                    padding (0, 0)
-                    xsize 140
-                    ysize 180
-                    if skill.card_image:
-                        add skill.card_image
-                    if skill.current_cooldown > 0:
-                        add Solid("#00000088")
-                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-                    elif skill in bm.used_skills_this_turn:
-                        add Solid("#00000055")
-                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+            if not getattr(bm, "is_shuffling", False):
+                for skill in bm.player_skills:
+                    $ is_selected = bm.selected_skill == skill
+                    $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
+                    button:
+                        action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
+                        hovered SetField(bm, "hovered_skill", skill)
+                        unhovered SetField(bm, "hovered_skill", None)
+                        at (card_selected_zoom if is_selected else card_idle_zoom)
+                        sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
+                        background (Solid("#0002") if is_selected else None)
+                        foreground "sketchy_bar_outline"
+                        padding (0, 0)
+                        xsize 140
+                        ysize 180
+                        if skill.card_image:
+                            add skill.card_image
+                        if skill.current_cooldown > 0:
+                            add Solid("#00000088")
+                            text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
+                        elif skill in bm.used_skills_this_turn:
+                            add Solid("#00000055")
+                            text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
 
     # ── Skill popup (left side, unchanged) ──
     $ display_skill = None
@@ -1001,6 +1070,8 @@ label battle_engine(bm):
                     renpy.hide("enemy_" + str(i))
 
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_eng
 
     label .engine_selection_phase:
         $ result = ui.interact()
@@ -1188,9 +1259,6 @@ label battle_engine(bm):
     label .engine_turn_end:
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_eng
-            $ renpy.random.shuffle(bm.player_skills)
 
         if all(e.is_dead for e in bm.enemies):
             window hide
@@ -2011,6 +2079,8 @@ label butter_ava_battle(skill_overrides=None):
                     pos = Position(xalign=0.6 + (i * 0.15), ypos=0.8, yanchor=1.0)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss1
     label .boss1_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2221,9 +2291,6 @@ label butter_ava_battle(skill_overrides=None):
             jump .boss1_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_boss1
-            $ renpy.random.shuffle(bm.player_skills)
 
         window hide
         jump .boss1_start_logic
@@ -2266,6 +2333,8 @@ label butter_ava_battle2(skill_overrides=None):
                     pos = Position(xalign=0.6 + (i * 0.15), ypos=0.8, yanchor=1.0)
                     renpy.show(enemy.sprites["idle"], at_list=[pos], tag=tag)
         show screen battle_screen(bm)
+        if getattr(bm, "is_chaos", False):
+            call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_boss2
     label .boss2_selection_phase:
         $ result = ui.interact()
         if result == 'execute':
@@ -2473,9 +2542,6 @@ label butter_ava_battle2(skill_overrides=None):
             jump .boss2_defeat
         $ bm.reduce_cooldowns()
         $ bm.update_buffs()
-        if getattr(bm, "is_chaos", False):
-            call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_boss2
-            $ renpy.random.shuffle(bm.player_skills)
 
         # buildings collapsing drains Ava every turn
         if not bm.enemies[1].is_dead:
@@ -2558,6 +2624,8 @@ label order_battle:
 label order_battle_turn_start:
     $ bm.prepare_turn()
     show screen battle_screen(bm)
+    if getattr(bm, "is_chaos", False):
+        call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_order
 
 label order_battle_selection_phase:
     $ result = ui.interact()
@@ -2786,9 +2854,6 @@ label order_battle_resolution_core:
 label order_battle_extra_turn:
     $ bm.reduce_cooldowns()
     $ bm.update_buffs()
-    if getattr(bm, "is_chaos", False):
-        call chaos_slot_anim("SHUFFLE", "CARDS") from _call_chaos_shuffle_order
-        $ renpy.random.shuffle(bm.player_skills)
 
     if bm.player_hp <= 0:
         window hide
