@@ -350,7 +350,6 @@ init python:
             self.skills_used_this_turn_types = []
             self.skills_used_last_turn_types = []
             self.rolled_one_last_turn = False
-            self.player_barrier_blocked_turns = 0
             self.last_drain_amount = 0
             self.skills_unlocked_this_battle = 0
             self.rolled_one_this_turn = False
@@ -461,8 +460,6 @@ init python:
             self.skills_used_this_turn_types = []
             self.rolled_one_last_turn = self.rolled_one_this_turn
             self.rolled_one_this_turn = False
-            if self.player_barrier_blocked_turns > 0:
-                self.player_barrier_blocked_turns -= 1
 
             # Kare Shuffle Logic: Revert last turn's shuffle
             if self.kare_shuffle_mode and self.shuffled_slot_idx != -1:
@@ -541,8 +538,6 @@ init python:
 
         def add_barrier(self, amount, target="player", enemy_idx=0):
             if target == "player":
-                if self.player_barrier_blocked_turns > 0:
-                    return
                 self.player_barrier += amount
             else:
                 self.enemies[enemy_idx].barrier += amount
@@ -671,7 +666,7 @@ init python:
                 EnemyIntent("VERDICT", damage=6, desc="already judged you guilty", animation="serious_butter_normal_anim", type="attack"),
                 EnemyIntent("ABSOLUTE RULE", damage=5, desc="law does not bend. neither does I", animation="serious_butter_block_anim", type="barrier", cooldown=3),
                 EnemyIntent("PRECEDENT", damage=3, desc="if enemy used a barrier or buff last turn, deals 8 damage. If she didn't, deals 3.", animation="serious_butter_normal_anim", type="precedent"),
-                EnemyIntent("SENTENCE PASSED", damage=10, desc="deals 10 damage, and Chaos cannot gain barrier for the next 2 turns.", animation="serious_butter_block_anim", type="sentence_passed", cooldown=3),
+                EnemyIntent("SENTENCE PASSED", damage=10, desc="deals 10 damage, and all of Chaos's barrier skills are forced on cooldown for 2 turns.", animation="serious_butter_block_anim", type="sentence_passed", cooldown=3),
                 EnemyIntent("ENFORCEMENT", damage=4, buff_type="damage", buff_duration=3, desc="Increases damage by 4 for 3 turns.", animation="serious_butter_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("THE BILL", damage=0, desc="deals damage equal to the number of skills Chaos has used this battle.", animation="serious_butter_energy_anim", type="the_bill", cooldown=2),
                 EnemyIntent("BINDING JUDGMENT", damage=10, desc="a strike that carries the full weight of every law ever written. it shows.", animation="serious_butter_hard_anim", type="attack", cooldown=0),
@@ -1492,8 +1487,11 @@ label battle_engine(bm):
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_sentence
                 $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
-                $ bm.player_barrier_blocked_turns = 2
-                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+                python:
+                    for s in bm.player_skills:
+                        if s.type == "barrier":
+                            s.current_cooldown = max(s.current_cooldown, 2)
+                "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
             elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -2653,8 +2651,11 @@ label butter_ava_battle(skill_overrides=None):
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_sentence
                 $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
-                $ bm.player_barrier_blocked_turns = 2
-                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+                python:
+                    for s in bm.player_skills:
+                        if s.type == "barrier":
+                            s.current_cooldown = max(s.current_cooldown, 2)
+                "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
             elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -3064,8 +3065,11 @@ label butter_ava_battle2(skill_overrides=None):
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_sentence
                 $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
-                $ bm.player_barrier_blocked_turns = 2
-                "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns"
+                python:
+                    for s in bm.player_skills:
+                        if s.type == "barrier":
+                            s.current_cooldown = max(s.current_cooldown, 2)
+                "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
             elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
@@ -3622,8 +3626,11 @@ label order_battle_resolution_core:
                 call expression intent.animation pass (bm) from _call_intent_order_default_sentence
             $ damage = max(0, intent.damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
-            $ bm.player_barrier_blocked_turns = 2
-            "[enemy.name] deals [damage] damage and blocks your barrier gain for 2 turns!"
+            python:
+                for s in bm.player_skills:
+                    if s.type == "barrier":
+                        s.current_cooldown = max(s.current_cooldown, 2)
+            "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
         elif intent.type == "the_bill":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_bill
