@@ -992,18 +992,18 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                         frame:
                                             xfill True ysize 90 background _paper
                                             text (skill.icon if skill.icon else "?"):
-                                                xalign 0.5 yalign 0.5 text_size 48 color (_ink + "44")
+                                                xalign 0.5 yalign 0.5 size 48 color (_ink + "44")
 
                                         frame:
                                             xfill True ysize 90 background (_paper + "ee")
                                             text ("?"):
-                                                xalign 0.5 yalign 0.5 font "CaveatBrush-Regular.ttf" text_size 60 color _ink
+                                                xalign 0.5 yalign 0.5 font "CaveatBrush-Regular.ttf" size 60 color _ink
 
                                         frame:
                                             xfill True ysize 90 background _paper
                                             $ new_skill = new_skills[shuffling_indices.index(idx)]
                                             text (new_skill.icon if new_skill.icon else "?"):
-                                                xalign 0.5 yalign 0.5 text_size 48 color (_ink + "44")
+                                                xalign 0.5 yalign 0.5 size 48 color (_ink + "44")
 
                                 frame:
                                     at card_land_flash(is_chaos)
@@ -1017,7 +1017,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                 frame:
                                     xfill True ysize 70 background _paper
                                     text (skill.icon if skill.icon else "?"):
-                                        xalign 0.5 yalign 0.5 text_size 36 color _ink
+                                        xalign 0.5 yalign 0.5 size 36 color _ink
                                 frame:
                                     xfill True ysize 1 background _ink_faint
                                 frame:
@@ -1042,7 +1042,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                 xsize 32 ysize 32
                                 background _ink
                                 text (str(skill.cost)):
-                                    text_size 19 color _paper xalign 0.5 yalign 0.5
+                                    size 19 color _paper xalign 0.5 yalign 0.5
 
 label kare_card_shuffle_anim(bm):
     # One card gets replaced with a random Chaos skill
@@ -1169,7 +1169,8 @@ screen battle_screen(bm):
                 text (bm.player_name):
                     style "battle_charname"
                     color _ink
-                    at (chaos_name_glitch if is_chaos else [])
+                    if is_chaos:
+                        at chaos_name_glitch
 
                 hbox:
                     spacing 16 yalign 0.5
@@ -1180,7 +1181,7 @@ screen battle_screen(bm):
                     if is_chaos:
                         text (scramble_hp(bm.player_hp) + " / " + scramble_hp(bm.player_max_hp)):
                             font "CaveatBrush-Regular.ttf"
-                            text_size 45
+                            size 45
                             color _ink
                             at chaos_hp_glitch
                     else:
@@ -1242,7 +1243,7 @@ screen battle_screen(bm):
                             style "battle_turn_badge"
                             color _ink_light
                     text ("team fight"):
-                        style "battle_faint" text_size 18 xalign 0.5 color _ink_faint
+                        style "battle_faint" size 18 xalign 0.5 color _ink_faint
             else:
                 null width 100
 
@@ -1255,7 +1256,7 @@ screen battle_screen(bm):
                         spacing 6
                         text (enemy.name):
                             style "battle_charname"
-                            text_size (38 if is_multi else 45)
+                            size (38 if is_multi else 45)
                             color _ink
                             xalign 1.0
 
@@ -1283,17 +1284,17 @@ screen battle_screen(bm):
                                 frame:
                                     background _paper_mid padding (7, 2)
                                     text ("STILL STANDING"):
-                                        style "battle_chip_text" text_size 16 italic True
+                                        style "battle_chip_text" size 16 italic True
                             if enemy.barrier > 0:
                                 frame:
                                     background _paper_mid padding (7, 2)
                                     text ("DEF " + str(enemy.barrier)):
-                                        style "battle_chip_text" text_size 16
+                                        style "battle_chip_text" size 16
                             for buff in enemy.buffs:
                                 frame:
                                     background _paper_mid padding (7, 2)
                                     text (str(buff[0]) + " +" + str(buff[1])):
-                                        style "battle_chip_text" text_size 16
+                                        style "battle_chip_text" size 16
 
                         if not is_multi:
                             hbox:
@@ -1379,7 +1380,7 @@ screen battle_screen(bm):
                             spacing 22 xfill True ysize 110
                             text (enemy.name.split()[0] + "'s\nrow"):
                                 style "battle_faint"
-                                min_width 160 yalign 0.5 text_size 19
+                                min_width 160 yalign 0.5 size 19
 
                             hbox:
                                 spacing 12 yalign 0.5
@@ -1399,7 +1400,7 @@ screen battle_screen(bm):
                                                     action Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx)
                                             text (chr(8212) + " open " + chr(8212)):
                                                 style "battle_faint"
-                                                text_size 18 xalign 0.5 yalign 0.5
+                                                size 18 xalign 0.5 yalign 0.5
                                         elif isinstance(action, EnemyIntent):
                                             background ("slot_enemy_hatch_chaos" if is_chaos else "slot_enemy_hatch")
                                             xfill True yfill True
@@ -1409,15 +1410,15 @@ screen battle_screen(bm):
                                                 text ("ENEMY"):
                                                     style "battle_slottag"
                                                     color _ink_light
-                                                    xalign 0.5 text_size 14
+                                                    xalign 0.5 size 14
                                                 text (action.name):
                                                     style "battle_slotname"
                                                     color _ink
-                                                    xalign 0.5 text_size 20
+                                                    xalign 0.5 size 20
                                             if action.damage > 0:
                                                 text (str(action.damage)):
                                                     style "battle_slotval"
-                                                    xalign 0.95 yalign 0.95 text_size 16
+                                                    xalign 0.95 yalign 0.95 size 16
                                         elif isinstance(action, Skill):
                                             background _paper_dark
                                             foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
@@ -1426,15 +1427,15 @@ screen battle_screen(bm):
                                                 text ("YOU"):
                                                     style "battle_slottag"
                                                     color _ink
-                                                    xalign 0.5 text_size 14
+                                                    xalign 0.5 size 14
                                                 text (action.name):
                                                     style "battle_slotname"
                                                     color _ink
-                                                    xalign 0.5 text_size 20
+                                                    xalign 0.5 size 20
                                             if action.damage > 0:
                                                 text (str(action.damage)):
                                                     style "battle_slotval"
-                                                    xalign 0.95 yalign 0.95 text_size 16
+                                                    xalign 0.95 yalign 0.95 size 16
                                             imagebutton:
                                                 idle Solid("#00000000")
                                                 action Function(bm.select_skill, action)
@@ -1492,7 +1493,7 @@ screen battle_screen(bm):
                                     xfill True ysize 70
                                     background _paper
                                     text (skill.icon if skill.icon else "?"):
-                                        text_text_size 36 color _ink xalign 0.5 yalign 0.5
+                                        size 36 color _ink xalign 0.5 yalign 0.5
 
                                 frame:
                                     xfill True ysize 1 background _ink_faint
@@ -1521,7 +1522,7 @@ screen battle_screen(bm):
                                 xsize 32 ysize 32
                                 background _ink
                                 text (str(skill.cost)):
-                                    text_size 19 color _paper xalign 0.5 yalign 0.5
+                                    size 19 color _paper xalign 0.5 yalign 0.5
 
                             if _sel:
                                 add Solid(_ink + "22")
@@ -1559,19 +1560,19 @@ screen battle_screen(bm):
             vbox:
                 spacing 8
                 text (s.name):
-                    style "battle_intent_title" text_size 30 color _ink
+                    style "battle_intent_title" size 30 color _ink
                 text ("Cost: " + str(s.cost) + " Energy"):
-                    style "battle_label" text_size 22
+                    style "battle_label" size 22
                 if s.damage > 0:
                     text ("Damage: " + str(s.damage)):
-                        style "battle_label" text_size 22
+                        style "battle_label" size 22
                 if s.cooldown > 0:
                     text ("Cooldown: " + str(s.cooldown) + " turns"):
-                        style "battle_label" text_size 22
+                        style "battle_label" size 22
                 frame:
                     xfill True ysize 1 background _ink_faint
                 text (s.desc):
-                    style "battle_intent_desc" text_size 19
+                    style "battle_intent_desc" size 19
 
                 if s in bm.used_skills_this_turn:
                     $ _ei, _si = bm.get_skill_slot_info(s)
@@ -1593,9 +1594,9 @@ screen battle_screen(bm):
             vbox:
                 spacing 5
                 text (getattr(store, "chaos_anim_label", "DAMAGE")):
-                    style "battle_faint" text_size 21 color C_CHAOS_INK_LIGHT xalign 0.5
+                    style "battle_faint" size 21 color C_CHAOS_INK_LIGHT xalign 0.5
                 text (str(store.chaos_anim_val)):
-                    font "CaveatBrush-Regular.ttf" text_size 80 color C_CHAOS_INK xalign 0.5
+                    font "CaveatBrush-Regular.ttf" size 80 color C_CHAOS_INK xalign 0.5
 
     # 8. ENERGY WARNING
     if bm.show_energy_warning:
@@ -1605,7 +1606,7 @@ screen battle_screen(bm):
             padding (40, 20)
             xalign 0.5 yalign 0.4
             text ("NOT ENOUGH ENERGY"):
-                color "#ffffff" text_size 58 bold True
+                color "#ffffff" size 58 bold True
 
     # Settings button
     textbutton "Settings":
@@ -4147,11 +4148,11 @@ screen scrolling_credits:
         xalign 0.5
         spacing 40
         at credits_scroll
-        text "Thank you for playing!" text_size 40 xalign 0.5
+        text "Thank you for playing!" size 40 xalign 0.5
         null height 200
-        text "THE END" text_size 60 xalign 0.5 bold True
+        text "THE END" size 60 xalign 0.5 bold True
         null height 700
-        text "this game probably wasted an hour of your life" text_size 40 xalign 0.5
+        text "this game probably wasted an hour of your life" size 40 xalign 0.5
         null height 200
 
 transform credits_scroll:
@@ -4265,7 +4266,7 @@ style battle_exp_label:
 
 style battle_confirm_text:
     font "CaveatBrush-Regular.ttf"
-    text_size 32
+    size 32
     kerning 2
 
 # Wobbly procedural frames
