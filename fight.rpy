@@ -1,9 +1,5 @@
 
 
-
-
-
-
 image kare_idle = "kare_idle.png"
 image kare_hit = "kare_hit.png"
 
@@ -245,7 +241,6 @@ transform chaos_projectile_fly_3:
     linear 0.2 xpos 0.75
     linear 0.05 alpha 0.0
 
-
 transform enemy_charge_right:
     ease 0.2 xpos 0.5
     ease 0.2 xpos 0.65
@@ -306,11 +301,6 @@ transform card_land_flash(is_chaos=False):
     linear 0.05 alpha (0.7 if is_chaos else 0.5)
     linear 0.2  alpha 0.0
 
-
-
-
-
-
 init python:
     import random
 
@@ -331,19 +321,6 @@ init python:
     C_CHAOS_INK_MID    = "#cccccc"
     C_CHAOS_INK_LIGHT  = "#888888"
     C_CHAOS_INK_FAINT  = "#333333"
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def get_chaos_random_value(bm, skill):
         # If it's not Chaos mode and not a Chaos skill, return standard damage
@@ -392,7 +369,6 @@ init python:
         enemy_sprites = {"idle": "seriousbutter_idle", "attack": "serious_butter_normal_sprite", "hit": "serious_butter_hit"}
         intents = get_enemy_intents("law")
         return Enemy("Butter (Law)", 100, enemy_sprites, intents)
-
 
     class Skill:
         def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None, is_chaos_skill=False, icon=""):
@@ -891,8 +867,6 @@ init python:
             ]
         return []
 
-
-
 label chaos_slot_anim(final_value, label_text=""):
     python:
         symbols = "$#%^&*@!?~<>"
@@ -906,8 +880,6 @@ label chaos_slot_anim(final_value, label_text=""):
     $ renpy.pause(0.5, hard=True)
     hide screen slot_machine
     return
-
-
 
 # ── The shuffle screen
 screen card_shuffle_screen(bm, shuffling_indices, new_skills):
@@ -1065,12 +1037,9 @@ label chaos_number_anim(final_value, label_text=""):
     # hide screen chaos_number_indicator
     return
 
-
 # ── CHAOS HP glitch └ apply to HP text in chaos mode
 
-
 # ── CHAOS slot strip shake └ apply to the slot strip frame in chaos mode
-
 
 # ── CHAOS general glitch └ apply to character name text in chaos mode
 
@@ -1097,19 +1066,16 @@ screen battle_screen(bm):
     if _ch:
         timer 0.05 repeat True action NullAction()
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 1. TOP BAR
-    ##    zorder 5  →  always above scene sprites (zorder ~0)
+    ##  →  always above scene sprites (zorder ~0)
     ## ══════════════════════════════════════════════════════════════════════════
     frame:
         xfill True
         ypos 0
         ysize (310 if _multi else 195)
         background (_p + "ff")
-        xpadding 24
-        top_padding 14 bottom_padding 12
-        zorder 5
+        padding (24, 14, 24, 12)
 
         hbox:
             xfill True yalign 0.0
@@ -1256,7 +1222,6 @@ screen battle_screen(bm):
                                 xalign 1.0 xsize 360 ysize 1
                                 background _kf yoffset 4
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 2. SLOT STRIP
     ##    Anchored yalign 1.0 so it floats just above the cards section.
@@ -1269,7 +1234,6 @@ screen battle_screen(bm):
         xfill True ysize _strip_h
         background (_p + "f0")
         xpadding 0 ypadding 0
-        zorder 5
         if _ch:
             at chaos_slots_shake
 
@@ -1387,7 +1351,6 @@ screen battle_screen(bm):
                     xalign 0.5 yalign 0.5
                     xsize 118
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 3. INTENT BAR
     ##    Only visible when bm.selected_intent is not None.
@@ -1409,7 +1372,6 @@ screen battle_screen(bm):
             left_padding 18 right_padding 18
             top_padding 8 bottom_padding 8
             foreground ("intent_accent_chaos" if _ch else "intent_accent")
-            zorder 4
 
             hbox:
                 spacing 14 yalign 0.5
@@ -1418,7 +1380,6 @@ screen battle_screen(bm):
                 text _si_obj.desc:
                     style "battle_intent_desc"
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 4. CARDS SECTION  (bottom 150 px)
     ## ══════════════════════════════════════════════════════════════════════════
@@ -1426,7 +1387,6 @@ screen battle_screen(bm):
         yalign 1.0 xfill True ysize _cards_h
         background (_p + "f7")
         xpadding 24 ypadding 10
-        zorder 5
 
         vbox:
             spacing 8
@@ -1543,7 +1503,6 @@ screen battle_screen(bm):
                                 action      Function(bm.select_skill, _skill)
                                 insensitive Solid("#00000000")
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 5. SKILL POPUP
     ##    Shown only while a card is hovered.
@@ -1559,7 +1518,6 @@ screen battle_screen(bm):
             background _pd
             padding (16, 14)
             foreground ("card_popup_chaos" if _ch else "card_popup")
-            zorder 8
 
             vbox:
                 spacing 5
@@ -1579,7 +1537,6 @@ screen battle_screen(bm):
                 text _hs.desc:
                     style "battle_intent_desc" size 15
 
-
     ## ══════════════════════════════════════════════════════════════════════════
     ## 6. CHAOS NUMBER BOX
     ##    Only during execution phase (store.chaos_anim_val is set by
@@ -1593,7 +1550,6 @@ screen battle_screen(bm):
             padding (28, 12)
             foreground "chaos_box_border"
             at chaos_glitch
-            zorder 10
 
             vbox:
                 spacing 4
@@ -1602,7 +1558,6 @@ screen battle_screen(bm):
                 text str(store.chaos_anim_val):
                     font "CaveatBrush-Regular.ttf"
                     size 68 color "#ffffff" xalign 0.5
-
 
     ## ══════════════════════════════════════════════════════════════════════════
     ## 7. ENERGY WARNING
@@ -1613,7 +1568,6 @@ screen battle_screen(bm):
             background Solid("#cc0000ee")
             padding (36, 14)
             xalign 0.5 yalign 0.36
-            zorder 10
             text "NOT ENOUGH ENERGY":
                 color "#ffffff" size 48 bold True
 
@@ -1622,14 +1576,7 @@ screen battle_screen(bm):
         xpos 12 ypos 12
         action ShowMenu("preferences")
         style "battle_settings_btn"
-        zorder 5
 
-
-################################################################################
-##  STYLES
-##  All prefixed b_  to avoid collisions with your existing styles.
-##  Change font paths to match your project layout.
-################################################################################
 
 define FONT_BRUSH  = "CaveatBrush-Regular.ttf"
 define FONT_CAVEAT = "Caveat-Regular.ttf"
@@ -1738,7 +1685,6 @@ style battle_settings_btn is default:
     size  15
     color "#aaaaaa"
 
-
 ################################################################################
 ##  TRANSFORMS
 ##  Only new ones added here.  Keep all your existing transforms.
@@ -1794,18 +1740,17 @@ transform chaos_glitch:
         xoffset  0
         repeat
 
-
 ################################################################################
 ##  COLOUR HELPERS
 ##  Un-comment ONLY if you don't already have your own versions.
 ################################################################################
 
-define ink        = lambda c: "#ffffff" if c else "#000000"
-define paper      = lambda c: "#000000" if c else "#ffffff"
-define ink_light  = lambda c: "#888888" if c else "#666666"
-define ink_faint  = lambda c: "#333333" if c else "#aaaaaa"
-define paper_dark = lambda c: "#111111" if c else "#f0f0f0"
-define paper_mid  = lambda c: "#1a1a1a" if c else "#e0e0e0"
+
+
+
+
+
+
 
 ## scramble_hp — un-comment if you don't already have one
 init python:
@@ -1814,20 +1759,6 @@ init python:
     def scramble_hp(val):
         return "".join(_rng.choice(_SC) if _rng.random() < 0.35 else ch for ch in str(val))
 
-
-################################################################################
-##  DISPLAYABLE HELPERS
-##
-##  Each image is a simple Solid/Frame fallback so the screen works
-##  immediately without any image assets.  Replace each one with your
-##  own image file once you've made the artwork.
-##
-##  For the border/dashed effects you probably want:
-##    slot_dashed   → a Frame() with a dashed CSS-like border image
-##    slot_hatch    → a diagonal hatch pattern image
-##    intent_accent → a Frame() with a thick left border only
-##    card_popup    → a Frame() with a 2-px solid border
-################################################################################
 
 image slot_dashed        = Frame(Solid("#aaaaaa"), 1, 1)
 image slot_dashed_chaos  = Frame(Solid("#333333"), 1, 1)
@@ -1847,13 +1778,6 @@ image chaos_box_border   = Frame(Solid("#ffffff"), 2, 2)
 image hp_low_hatch       = Solid("#000000")
 image hp_low_hatch_chaos = Solid("#ffffff")
 
-
-################################################################################
-##  get_typebar  helper
-##
-##  Returns the coloured stripe displayed at the top of each card.
-##  Replace Solid() calls with your actual stripe image assets.
-################################################################################
 
 init python:
     def get_typebar(skill_type, is_chaos):
@@ -1948,7 +1872,6 @@ label battle_engine(bm):
         hide screen battle_screen
         $ current_slot_idx = 0
         $ bm.dodge_active = False
-
 
     label .engine_main_loop:
         if bm.dodge_active and current_slot_idx > bm.dodge_expires_at_slot:
@@ -2880,7 +2803,6 @@ label order_energy_anim(bm):
     if not bm.enemies[e_idx].is_dead:
         $ renpy.show(bm.enemies[e_idx].sprites["idle"], tag=current_enemy_tag)
     return
-
 
 # --- FALLBACKS ---
 label enemy_attack_anim(bm):
@@ -4389,7 +4311,6 @@ label order_battle_defeat:
         "Retry Battle":
             jump order_battle
 
-
 label battle_credits:
     scene black
     with fade
@@ -4448,8 +4369,6 @@ label battle_boss_ava_butter_phase2(skill_overrides=None):
     call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_2
     return
 
-
-
 # Wobbly procedural frames (Refined for Sketchy look)
 image frame_wobbly = Frame(
     Composite(
@@ -4500,3 +4419,17 @@ image frame_wobbly_faint_chaos = Frame(
     ),
     10, 10, 10, 10
 )
+
+init python:
+    def ink(c):
+        return "#ffffff" if c else "#000000"
+    def paper(c):
+        return "#000000" if c else "#ffffff"
+    def ink_light(c):
+        return "#888888" if c else "#666666"
+    def ink_faint(c):
+        return "#333333" if c else "#aaaaaa"
+    def paper_dark(c):
+        return "#111111" if c else "#f0f0f0"
+    def paper_mid(c):
+        return "#1a1a1a" if c else "#e0e0e0"
