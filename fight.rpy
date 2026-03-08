@@ -894,9 +894,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
         xfill True
         ysize 240
         background (_paper + "f7")
-        padding (38, 0)
-        top_padding 16
-        bottom_padding 16
+        padding (38, 16, 38, 16)
 
         vbox:
             spacing 11
@@ -1448,8 +1446,7 @@ screen battle_screen(bm):
                             ## Name + stats
                             frame:
                                 xfill True background _p
-                                left_padding 6 right_padding 6
-                                top_padding 4 bottom_padding 4
+                                padding (6, 4, 6, 4)
                                 vbox:
                                     spacing 1
                                     text _skill.name:
@@ -1557,7 +1554,7 @@ screen battle_screen(bm):
                 text getattr(store, "chaos_anim_label", "DAMAGE"):
                     style "battle_faint" size 18 color "#888888" xalign 0.5
                 text str(store.chaos_anim_val):
-                    font "CaveatBrush-Regular.ttf" color "#ffffff"
+                    font "CaveatBrush-Regular.ttf"
                     size 68 color "#ffffff" xalign 0.5
 
     ## ══════════════════════════════════════════════════════════════════════════
