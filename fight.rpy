@@ -240,7 +240,8 @@ init python:
         return name + "_dodge_anim"
 
     class Skill:
-        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None, is_chaos_skill=False):
+        def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None, is_chaos_skill=False, icon=""):
+            self.icon = icon
             self.name = name
             self.cost = cost
             self.damage = damage
@@ -315,6 +316,7 @@ init python:
             self.dobe_helps = dobe_helps
             self.is_chaos = is_chaos
             self.kare_shuffle_mode = kare_shuffle_mode
+            self.player_name = "Chaos" if is_chaos else "Kare"
             self.skill_overrides = skill_overrides or {}
 
             if isinstance(enemies, list):
@@ -357,8 +359,17 @@ init python:
         def initialize_skills(self, is_chaos):
             char_name = "chaos" if is_chaos else "kare"
             self.full_skill_pool = get_character_skills(char_name)
+            icons = {
+                "slap": "W", "Defense": "⛊", "Focus": "F", "punch": "P", "yummers": "Y", "evade": "E", "super cool kick": "K",
+                "interitus": "~~", "Embrace": "◎", "Entropy": "3", "Cataclysm": "⚡", "dissolutum": "⊘", "playing rough": "R", "??????": "||||",
+                "Unravel": "U", "Fracture": "X", "Corrode": "C", "Inversion": "I", "Collapse": "L", "Leech": "H", "Overload": "O"
+            }
+            for s in self.full_skill_pool:
+                s.icon = icons.get(s.name, "S")
             if self.kare_shuffle_mode:
                 self.chaos_pool = get_character_skills("chaos")
+                for s in self.chaos_pool:
+                    s.icon = icons.get(s.name, "S")
             for skill in self.full_skill_pool:
                 if skill.name in self.skill_overrides:
                     for attr, value in self.skill_overrides[skill.name].items():
@@ -873,263 +884,320 @@ label chaos_number_anim(final_value, label_text=""):
     hide screen chaos_number_indicator
     return
 
+
+transform chaos_hp_glitch:
+    pause 4.5
+    linear 0.04 xoffset -4 alpha 0.6
+    linear 0.04 xoffset  3 alpha 1.0
+    linear 0.03 xoffset -1
+    linear 0.03 xoffset  0
+    pause 0.1
+    linear 0.02 xoffset -6 yoffset -1 alpha 0.4
+    linear 0.02 xoffset  0 yoffset  0 alpha 1.0
+    repeat
+
+transform chaos_glitch:
+    linear 0.05 xoffset -3
+    linear 0.05 xoffset 3
+    linear 0.05 xoffset -1
+    linear 0.05 xoffset 0
+    pause 8.0
+    repeat
+
 screen battle_screen(bm):
-    if getattr(bm, "is_chaos", False):
+    $ is_chaos = getattr(bm, "is_chaos", False)
+    if is_chaos:
         timer 0.05 repeat True action [renpy.restart_interaction]
-    $ p_name = "Chaos" if "chaos" in bm.player_sprites["idle"] else "Kare"
+        add "#000000"
+    else:
+        add "#ffffff"
 
-    # Settings button
-    textbutton "Settings":
-        xalign 0.5 yalign 2
-        action ShowMenu("preferences")
-        text_size 24
-        text_color "#555"
-        background Solid("#fff0")
-        hover_background Solid("#eee")
-        padding (10, 5)
+    # ── TOP BAR
+    frame:
+        xfill True
+        ysize 150
+        background ("#000000ee" if is_chaos else "#ffffffee")
+        xpadding 40
+        ypadding 12
 
-    # ── Player stats: top left ──
-    vbox:
-        xalign 0.05 yalign 0.05
-        spacing 5
-        xmaximum 400
-        text "Turn: [bm.turn_count]" size 18 color "#747474"
-        if getattr(bm, "is_chaos", False):
-            text "[p_name]: [scramble_hp(bm.player_hp)]/[scramble_hp(bm.player_max_hp)]" size 24 color "#747474"
-        else:
-            text "[p_name]: [bm.player_hp]/[bm.player_max_hp]" size 24 color "#747474"
-        bar value bm.player_hp range bm.player_max_hp xmaximum 300
         hbox:
-            spacing 20
+            xfill True
+
+            # Player side
             vbox:
-                text "Energy: [bm.player_energy]/[bm.player_max_energy]" size 20 color "#666666"
-            if bm.player_barrier > 0:
-                vbox:
-                    text "Defense: [bm.player_barrier]" size 20 color "#797979"
-        hbox:
-            spacing 5
-            for buff in bm.player_buffs:
+                spacing 4
+                text bm.player_name style "battle_charname" color ("#ffffff" if is_chaos else "#000000")
+                hbox:
+                    spacing 8
+                    text "HP" style "battle_label" color ("#aaaaaa" if is_chaos else "#666666")
+                    if is_chaos:
+                        text scramble_hp(bm.player_hp) + " / " + scramble_hp(bm.player_max_hp) style "battle_label" size 18 color "#ffffff" at chaos_hp_glitch
+                    else:
+                        bar value bm.player_hp range bm.player_max_hp:
+                            xsize 250 ysize 18
+                            left_bar ("#ffffff" if is_chaos else "#000000")
+                            right_bar ("#333" if is_chaos else "#e0e0e0")
+                        text str(bm.player_hp) + " / " + str(bm.player_max_hp) style "battle_label" size 16 yalign 0.5
+                hbox:
+                    spacing 8
+                    text "Energy" style "battle_label" color ("#aaaaaa" if is_chaos else "#666666")
+                    bar value bm.player_energy range bm.player_max_energy:
+                        xsize 250 ysize 18
+                        left_bar ("#ffffff" if is_chaos else "#000000")
+                        right_bar ("#333" if is_chaos else "#e0e0e0")
+                    text str(bm.player_energy) + " / " + str(bm.player_max_energy) style "battle_label" size 16 yalign 0.5
+
+                hbox:
+                    spacing 10
+                    if bm.player_barrier > 0:
+                        frame:
+                            background ("#444" if is_chaos else "#eee")
+                            padding (6, 3)
+                            foreground "battle_slot_frame"
+                            text "DEF " + str(bm.player_barrier) style "battle_label" size 14 color ("#fff" if is_chaos else "#000")
+                    for buff in bm.player_buffs:
+                        frame:
+                            background ("#333" if is_chaos else "#f0f0f0")
+                            padding (6, 3)
+                            text str(buff[0]) + " +" + str(buff[1]) style "battle_label" size 12 color ("#fff" if is_chaos else "#666")
+
+            # Center info
+            vbox:
+                xalign 0.5 yalign 0.3
+                spacing 4
                 frame:
-                    background Solid("#5e5e5e")
-                    padding (5, 2)
-                    text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 12 color "#fff"
+                    background ("#222" if is_chaos else "#f8f8f8")
+                    padding (16, 8)
+                    foreground "battle_slot_frame"
+                    text "Turn " + str(bm.turn_count) + " • " + str(bm.current_max_slots) + " slots" style "battle_faint" size 16 color ("#fff" if is_chaos else "#000")
+                if len([e for e in bm.enemies if not e.is_dead]) > 1:
+                    text "team fight" style "battle_faint" size 12 xalign 0.5
 
-    # ── Enemy stats: top right ──
-    vbox:
-        xanchor 1.0 xpos 0.98
-        yalign 0.05
-        spacing 10
-        for e_idx, enemy in enumerate(bm.enemies):
-            if not enemy.is_dead:
-                vbox:
-                    spacing 2
-                    text "[enemy.name]: [enemy.hp]/[enemy.max_hp]" size 20 color "#747474" xalign 1.0
-                    bar value enemy.hp range enemy.max_hp xmaximum 250 xalign 1.0
-                    if enemy.barrier > 0:
-                        text "Defense: [enemy.barrier]" size 14 color "#6d6d6d" xalign 1.0
-                    hbox:
-                        xalign 1.0
-                        spacing 4
-                        text "Skill Unlock: " size 12 color "#707070"
-                        bar value enemy.skill_exp range enemy.skill_exp_max xmaximum 150 ysize 6 yalign 0.5
-                    hbox:
-                        xalign 1.0
-                        spacing 5
-                        for buff in enemy.buffs:
-                            frame:
-                                background Solid("#4b4b4b")
-                                padding (3, 1)
-                                text "[buff[0]]: [buff[1]] ([buff[2]]t)" size 10 color "#fff"
-
-    # ── Battle slots: centered ──
-    # ── Battle slots + CONFIRM in hbox so button tracks slot width ──
-    hbox:
-        xalign 0.5 yalign 0.05
-        spacing 10
-
-        null width 120
-
-        vbox:
-            spacing 10
-            text "Select a card below, then click an empty slot here:" size 16 color "#aaa" xalign 0.5
-            for e_idx, enemy in enumerate(bm.enemies):
-                if not enemy.is_dead:
-                    frame:
-                        background Solid("#8888887f")
-                        foreground "sketchy_bar_outline"
-                        padding (10, 10)
-                        xalign 0.5
+            # Enemy side (right-aligned)
+            hbox:
+                xalign 1.0
+                spacing 40
+                for enemy in bm.enemies:
+                    if not enemy.is_dead:
                         vbox:
-                            spacing 5
-                            text "[enemy.name]'s Row" size 14 color "#333" xalign 0.0
+                            spacing 4
+                            text enemy.name style "battle_charname" xalign 1.0 color ("#ffffff" if is_chaos else "#000000")
                             hbox:
+                                xalign 1.0
+                                spacing 8
+                                text str(enemy.hp) + " / " + str(enemy.max_hp) style "battle_label" size 16 yalign 0.5
+                                bar value enemy.hp range enemy.max_hp:
+                                    xsize 250 ysize 18
+                                    left_bar ("#ffffff" if is_chaos else "#000000")
+                                    right_bar ("#333" if is_chaos else "#e0e0e0")
+                                text "HP" style "battle_label" color ("#aaaaaa" if is_chaos else "#666666")
+
+                            hbox:
+                                xalign 1.0
+                                spacing 8
+                                text "skill unlock" style "battle_faint" size 12 yalign 0.5
+                                bar value enemy.skill_exp range enemy.skill_exp_max:
+                                    xsize 180 ysize 10
+                                    left_bar ("#ffffff" if is_chaos else "#000000")
+                                    right_bar ("#333" if is_chaos else "#e0e0e0")
+
+                            hbox:
+                                xalign 1.0
                                 spacing 10
-                                for s_idx in range(bm.current_max_slots):
-                                    $ action = enemy.slots[s_idx]
+                                for buff in enemy.buffs:
+                                    frame:
+                                        background ("#333" if is_chaos else "#f0f0f0")
+                                        padding (4, 2)
+                                        text str(buff[0]) + " +" + str(buff[1]) style "battle_label" size 10 color ("#fff" if is_chaos else "#666")
+                                if enemy.barrier > 0:
+                                    frame:
+                                        background ("#444" if is_chaos else "#eee")
+                                        padding (6, 3)
+                                        foreground "battle_slot_frame"
+                                        text "DEF " + str(enemy.barrier) style "battle_label" size 14 color ("#fff" if is_chaos else "#000")
+
+    # ── SLOT STRIP (middle-bottom, above cards)
+    frame:
+        yalign 0.72
+        xfill True
+        ysize 250
+        background ("#00000000")
+        xpadding 80
+        if is_chaos:
+            at chaos_glitch
+
+        hbox:
+            spacing 30
+            xfill True
+            vbox:
+                spacing 20
+                xfill True
+                for e_idx, enemy in enumerate(bm.enemies):
+                    if not enemy.is_dead:
+                        hbox:
+                            spacing 15
+                            xfill True
+                            yalign 0.5
+                            text enemy.name.split()[0] + "'s row" style "battle_faint" size 14 yalign 0.5 xsize 120
+
+                            for s_idx in range(bm.current_max_slots):
+                                $ action = enemy.slots[s_idx]
+                                frame:
+                                    xsize 180
+                                    ysize 70
+                                    background ("#222" if is_chaos else "#fff")
+                                    foreground "battle_slot_frame"
                                     if action is None:
                                         $ can_click_slot = bm.selected_skill is not None
-                                        button:
+                                        imagebutton:
+                                            idle Solid("#00000000")
                                             action If(can_click_slot, Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx))
-                                            background Solid("#eee")
-                                            foreground "sketchy_bar_outline"
-                                            padding (10, 5)
-                                            xminimum 100
-                                            yminimum 60
-                                            text "EMPTY" size 16 color "#747474" xalign 0.5 yalign 0.5
+                                        text "- open -" style "battle_slottag" xalign 0.5 yalign 0.5 color ("#555" if is_chaos else "#bbb")
                                     elif isinstance(action, EnemyIntent):
-                                        button:
-                                            action [Function(bm.select_intent, action, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                                            background Solid("#ccc")
-                                            foreground "sketchy_bar_outline"
-                                            padding (10, 5)
-                                            xminimum 100
-                                            yminimum 60
-                                            vbox:
-                                                yalign 0.5
-                                                text "ENEMY" size 12 color "#616161" xalign 0.5
-                                                text "[action.name]" size 16 color "#747474" xalign 0.5
+                                        background ("#331111" if is_chaos else "#fff5f5")
+                                        vbox:
+                                            xalign 0.5 yalign 0.5
+                                            text "ENEMY" style "battle_slottag" xalign 0.5 color ("#ff8888" if is_chaos else "#aa6666")
+                                            text action.name style "battle_slotname" xalign 0.5 size 16 color ("#fff" if is_chaos else "#000")
+                                        if action.damage > 0:
+                                            text str(action.damage) style "battle_cardstat" xalign 0.95 yalign 0.9 size 12
+                                        elif action.type == "dodge":
+                                            text "dodge" style "battle_cardstat" xalign 0.95 yalign 0.9 size 10
+                                        elif action.type == "barrier":
+                                            text "+def" style "battle_cardstat" xalign 0.95 yalign 0.9 size 10
                                     elif isinstance(action, Skill):
+                                        background ("#113311" if is_chaos else "#f5fff5")
                                         $ can_replace = bm.selected_skill is not None and bm.selected_skill != action
-                                        button:
+                                        imagebutton:
+                                            idle Solid("#00000000")
                                             action If(can_replace,
                                                     Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx),
                                                     Function(bm.select_skill, action))
-                                            background Solid("#ddd")
-                                            foreground "sketchy_bar_outline"
-                                            padding (10, 5)
-                                            xminimum 100
-                                            yminimum 60
-                                            vbox:
-                                                yalign 0.5
-                                                text "YOU" size 12 color "#3d3d3d" xalign 0.5
-                                                text "[action.name]" size 16 color "#747474" xalign 0.5
+                                        vbox:
+                                            xalign 0.5 yalign 0.5
+                                            text "YOU" style "battle_slottag" xalign 0.5 color ("#88ff88" if is_chaos else "#66aa66")
+                                            text action.name style "battle_slotname" xalign 0.5 size 16 color ("#fff" if is_chaos else "#000")
+                                        if action.damage > 0:
+                                            text str(action.damage) style "battle_cardstat" xalign 0.95 yalign 0.9 size 12
+                                        elif action.type == "dodge":
+                                            text "dodge" style "battle_cardstat" xalign 0.95 yalign 0.9 size 10
+                                        elif action.type == "barrier":
+                                            text "def" style "battle_cardstat" xalign 0.95 yalign 0.9 size 10
+
+            vbox:
+                yalign 0.5
+                imagebutton:
+                    idle Text("CONFIRM", style="battle_confirm_btn")
+                    hover_foreground Solid("#ffffff22")
+                    action Return("execute")
+
+    # ── CARDS (bottom strip)
+    frame:
+        yalign 1.0
+        xfill True
+        ysize 240
+        background ("#000000ee" if is_chaos else "#ffffffee")
+        xpadding 60
+        ypadding 20
 
         vbox:
-            yalign 0.0
-            null height 30
-            textbutton "CONFIRM":
-                background Solid("#7e7e7e")
-                hover_background Solid("#555")
-                padding (20, 14)
-                text_size 24
-                text_color "#fff"
-                text_bold True
-                text_outlines []
-                action [Return("execute"), Play("sound", "audio/stu9-chime-2-356833.mp3", relative_volume=1.5)]
+            spacing 12
+            hbox:
+                xfill True
+                text "your cards" style "battle_faint" size 16
+                hbox:
+                    xalign 1.0
+                    spacing 12
+                    text "next skill" style "battle_faint" size 14 yalign 0.5
+                    bar value bm.skill_exp range bm.skill_exp_max:
+                        xsize 400 ysize 12 yalign 0.5
+                        left_bar ("#ffffff" if is_chaos else "#000000")
+                        right_bar ("#333" if is_chaos else "#e0e0e0")
 
-    # ── Intent description: completely separate, never affects hbox ──
-    if bm.selected_intent:
+            hbox:
+                spacing 20
+                if not getattr(bm, "is_shuffling", False):
+                    for skill in bm.player_skills:
+                        $ is_on_cd = skill.current_cooldown > 0 or skill in bm.used_skills_this_turn
+                        $ is_selected = bm.selected_skill == skill
+                        frame:
+                            xsize 150 ysize 170
+                            background ("#222" if is_chaos else "#fff")
+                            foreground ("frame_plain" if not is_selected else None)
+                            if is_selected:
+                                foreground "battle_slot_frame"
+
+                            if is_on_cd:
+                                background ("#111" if is_chaos else "#fcfcfc")
+                                if skill.current_cooldown > 0:
+                                    text str(skill.current_cooldown):
+                                        xalign 0.5 yalign 0.5
+                                        style "battle_cooldown_num" color ("#555" if is_chaos else "#ddd")
+                                else:
+                                    text "USED" size 18 xalign 0.5 yalign 0.5 color ("#444" if is_chaos else "#eee")
+                            else:
+                                imagebutton:
+                                    idle Solid("#00000000")
+                                    action Function(bm.select_skill, skill)
+                            vbox:
+                                xfill True
+                                frame:
+                                    xfill True ysize 8
+                                    background ("#ff4444" if skill.type == "attack" else "#44ff44" if skill.type == "barrier" else "#4444ff" if skill.type == "buff" else "#ffff44" if skill.type == "energy" else "#aaaaaa")
+
+                                null height 8
+                                text skill.icon xalign 0.5 size 42 color ("#fff" if is_chaos else "#000")
+                                null height 8
+                                text skill.name style "battle_cardname" xalign 0.5 color ("#fff" if is_chaos else "#000") size 18
+                                null height 15
+                                hbox:
+                                    xfill True
+                                    xpadding 8
+                                    text (str(skill.damage) + " dmg" if skill.damage > 0 else skill.type) style "battle_cardstat" color ("#888" if is_chaos else "#666") size 12
+                                    text "cd:" + str(skill.cooldown) style "battle_cardstat" xalign 1.0 color ("#888" if is_chaos else "#666") size 12
+
+    # ── SKILL INFO POPUP (Overlay)
+    if bm.selected_skill:
+        $ s = bm.selected_skill
         frame:
-            background Solid("#8888887f")
-            foreground "sketchy_bar_outline"
-            xalign 0.5 ypos 0.28
-            padding (20, 15)
-            xmaximum 700
+            xpos 40 ypos 170
+            xsize 400
+            background ("#000c" if is_chaos else "#fffd")
+            foreground "battle_slot_frame"
+            padding (20, 20)
             vbox:
-                spacing 6
-                text "[bm.enemies[bm.selected_enemy_index].name]: [bm.selected_intent.name]" size 20 color "#333" xalign 0.5 bold True
-                if bm.selected_intent.damage > 0:
-                    if bm.selected_intent.type == "attack":
-                        text "Projected Damage: [bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
-                    elif bm.selected_intent.type == "barrier":
-                        text "Projected Defense: [bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
-                    elif bm.selected_intent.type == "buff":
-                        text "Damage Buff: +[bm.selected_intent.damage]" size 16 color "#444" xalign 0.5
-                text "[bm.selected_intent.desc]" size 14 color "#555" xalign 0.5 text_align 0.5
-
-
-
-    # ── Skill cards: bottom ──
-    vbox:
-        xalign 0.5 ypos 0.80 yanchor 1.0
-        spacing 5
-        hbox:
-            xalign 0.5
-            spacing 4
-            text "Next skill: " size 13 color "#777777"
-            bar value bm.skill_exp range bm.skill_exp_max xmaximum 600 ysize 8 yalign 0.5
-
-    hbox:
-        xalign 0.5 ypos 0.98 yanchor 1.0
-        spacing 15
-        if not getattr(bm, "is_shuffling", False):
-            for skill in bm.player_skills:
-                $ is_selected = bm.selected_skill == skill
-                $ can_use = skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn
-                button:
-                    action [Function(bm.select_skill, skill), Play("sound", "audio/freesound_community-page-flip-47177.mp3", relative_volume=1.0)]
-                    hovered SetField(bm, "hovered_skill", skill)
-                    unhovered SetField(bm, "hovered_skill", None)
-                    at (card_selected_zoom if is_selected else card_idle_zoom)
-                    sensitive (skill.current_cooldown == 0 and skill not in bm.used_skills_this_turn)
-                    background (Solid("#0002") if is_selected else None)
-                    foreground "sketchy_bar_outline"
-                    padding (0, 0)
-                    xsize 140
-                    ysize 180
-                    if skill.card_image:
-                        add skill.card_image
-                    if skill.current_cooldown > 0:
-                        add Solid("#00000088")
-                        text "[skill.current_cooldown]" size 40 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-                    elif skill in bm.used_skills_this_turn:
-                        add Solid("#00000055")
-                        text "USED" size 20 color "#ffffff" xalign 0.5 yalign 0.5 bold True
-
-    # ── Skill popup (left side, unchanged) ──
-    $ display_skill = None
-    if bm.hovered_skill and bm.hovered_skill == bm.selected_skill:
-        $ display_skill = bm.hovered_skill
-    elif bm.selected_skill and bm.selected_skill in bm.used_skills_this_turn:
-        $ display_skill = bm.selected_skill
-
-    if display_skill:
-        frame:
-            background Solid("#8888887f")
-            foreground "sketchy_bar_outline"
-            xpos 0.15 yalign 0.5
-            xanchor 0.5
-            padding (30, 30)
-            xminimum 400
-            vbox:
-                spacing 15
-                if display_skill.card_image:
-                    add display_skill.card_image xalign 0.5
-                text "[display_skill.name]" size 30 color "#333" xalign 0.5 bold True
-                text "Cost: [display_skill.cost] Energy" size 20 color "#444" xalign 0.5
-                if display_skill.damage > 0:
-                    if display_skill.type == "barrier":
-                        text "Defense: [display_skill.damage]" size 20 color "#444" xalign 0.5
-                    elif display_skill.type == "buff":
-                        text "Damage Buff: +[display_skill.damage]" size 20 color "#444" xalign 0.5
-                    else:
-                        text "Damage: [display_skill.damage]" size 20 color "#444" xalign 0.5
-                text "[display_skill.desc]" size 18 color "#444" xalign 0.5 text_align 0.5
-                if display_skill.cooldown > 0:
-                    text "Cooldown: [display_skill.cooldown] turns" size 18 color "#444" xalign 0.5
-                if display_skill in bm.used_skills_this_turn:
-                    $ e_idx, s_idx = bm.get_skill_slot_info(display_skill)
+                spacing 10
+                text s.name style "battle_charname" size 26 color ("#fff" if is_chaos else "#000")
+                text "Cost: " + str(s.cost) + " Energy" style "battle_label" size 16
+                text s.desc style "battle_label" size 16 italic True color ("#ccc" if is_chaos else "#444")
+                if s in bm.used_skills_this_turn:
+                    $ e_idx, s_idx = bm.get_skill_slot_info(s)
                     if e_idx != -1:
-                        null height 20
+                        null height 10
                         textbutton "REMOVE FROM SLOT":
-                            action [Function(bm.remove_from_slot, e_idx, s_idx), SetField(bm, "selected_skill", None)]
-                            xalign 0.5
-                            background Solid("#eee")
-                            foreground "sketchy_bar_outline"
-                            padding (15, 10)
-                            text_size 24
-                            text_color "#333"
-                            text_bold True
+                            action Function(bm.remove_from_slot, e_idx, s_idx)
+                            text_size 16
+                            text_font "fonts/CaveatBrush-Regular.ttf"
+                            background ("#522" if is_chaos else "#fee")
+                            hover_background ("#733" if is_chaos else "#fdd")
+                            padding (10, 5)
 
     # ── ENERGY WARNING ──
     if bm.show_energy_warning:
         timer 2.0 action SetField(bm, "show_energy_warning", False)
         frame:
-            at energy_warning_fade
-            background Solid("#979797cc")
-            padding (20, 10)
+            background Solid("#ff0000cc")
+            padding (25, 12)
             xalign 0.5 yalign 0.4
-            text "NOT ENOUGH ENERGY" color "#fff" size 30 bold True
+            text "NOT ENOUGH ENERGY" color "#fff" size 36 bold True
+
+    # Settings button (top left, subtle) - moved to end to be on top
+    textbutton "Settings":
+        xpos 10 ypos 10
+        action ShowMenu("preferences")
+        text_size 12
+        text_font "fonts/Caveat-Regular.ttf"
+        text_color ("#888" if is_chaos else "#aaa")
 
 label battle_reset_camera:
     camera:
@@ -3657,3 +3725,74 @@ label battle_boss_ava_butter(skill_overrides=None):
 label battle_boss_ava_butter_phase2(skill_overrides=None):
     call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_2
     return
+style battle_charname:
+    font "fonts/CaveatBrush-Regular.ttf"
+    size 28
+    color "#000000"
+
+style battle_label:
+    font "fonts/Caveat-Regular.ttf"
+    size 15
+    color "#666666"
+    min_width 52
+
+style battle_cardname:
+    font "fonts/CaveatBrush-Regular.ttf"
+    size 14
+    color "#000000"
+
+style battle_cardstat:
+    font "fonts/Caveat-Regular.ttf"
+    size 11
+    color "#666666"
+
+style battle_faint:
+    font "fonts/Caveat-Regular.ttf"
+    size 13
+    color "#aaaaaa"
+
+style battle_slottag:
+    font "fonts/Caveat-Regular.ttf"
+    size 10
+    color "#000000"
+
+style battle_slotname:
+    font "fonts/CaveatBrush-Regular.ttf"
+    size 15
+    color "#000000"
+
+style battle_cooldown_num:
+    font "fonts/CaveatBrush-Regular.ttf"
+    size 30
+    color "#000000"
+
+style battle_confirm_btn:
+    font "fonts/CaveatBrush-Regular.ttf"
+    size 20
+    color "#ffffff"
+    background "#000000"
+    padding (18, 10)
+
+image frame_plain = Frame(
+    Composite(
+        (12, 12),
+        (0,   0),  Solid("#000000"),
+        (11,  0),  Solid("#000000"),
+        (0,  11),  Solid("#000000"),
+        (11, 11),  Solid("#000000"),
+        (1,   0),  Solid("#000000", xsize=10, ysize=1),
+        (0,   1),  Solid("#000000", xsize=1, ysize=10),
+        (11,  1),  Solid("#000000", xsize=1, ysize=10),
+        (1,  11),  Solid("#000000", xsize=10, ysize=1),
+    ),
+    3, 3, 3, 3
+)
+
+image slot_border_composite = Composite(
+    (100, 100),
+    (0, 0), Solid("#000000", xsize=100, ysize=2),
+    (0, 98), Solid("#000000", xsize=100, ysize=2),
+    (0, 2), Solid("#000000", xsize=2, ysize=96),
+    (98, 2), Solid("#000000", xsize=2, ysize=96),
+)
+image battle_slot_frame = Frame("slot_border_composite", 4, 4, 4, 4)
