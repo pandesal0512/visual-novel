@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle UI — Multi Enemy</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Caveat+Brush&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --paper-dark: #f0f0f0;
+    --paper-mid: #e0e0e0;
+    --ink: #000000;
+    --ink-mid: #333333;
+    --ink-light: #666666;
+    --ink-faint: #aaaaaa;
+
+    --chaos-paper: #000000;
+    --chaos-paper-dark: #111111;
+    --chaos-paper-mid: #1a1a1a;
+    --chaos-ink: #ffffff;
+    --chaos-ink-mid: #cccccc;
+    --chaos-ink-light: #888888;
+    --chaos-ink-faint: #333333;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #3a3a3a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Patrick Hand', cursive;
+    padding: 20px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── MODE TOGGLE ── */
+  .toggle-bar { display: flex; gap: 10px; }
+  .toggle-btn {
+    padding: 7px 20px;
+    font-family: 'Caveat Brush', cursive; font-size: 18px;
+    border: 2px solid #fff; cursor: pointer;
+    clip-path: polygon(1% 0%, 100% 2%, 99% 100%, 0% 98%);
+    transition: all 0.15s;
+  }
+  .toggle-btn.kare { background: #fff; color: #000; }
+  .toggle-btn.chaos-btn { background: #000; color: #fff; }
+  .toggle-btn:not(.active) { opacity: 0.4; }
+  .toggle-btn.active { transform: scale(1.04); }
+
+  /* ── BATTLE SCREEN ── */
+  .battle-screen {
+    width: 1200px;
+    height: 680px;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0% 0.2%, 100% 0%, 99.8% 100%, 0.1% 99.8%);
+  }
+
+  .kare-wrap .battle-screen { background: var(--paper); box-shadow: 5px 5px 0 #111, 10px 10px 0 #000; }
+  .chaos-mode .battle-screen { background: var(--chaos-paper); box-shadow: 5px 5px 0 #888, 10px 10px 0 #bbb; }
+
+  /* ── SCENE LAYER ── */
+  .scene-layer {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  }
+
+  /* character silhouettes */
+  .char-sil {
+    position: absolute;
+    bottom: 218px; /* above the two-row slot strip */
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+
+  .char-sil .body {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive; font-size: 12px;
+    text-align: center; line-height: 1.4;
+  }
+
+  .char-sil .lbl {
+    font-family: 'Caveat', cursive; font-size: 11px;
+    padding: 1px 6px;
+  }
+
+  .kare-wrap .char-sil .body { width:130px; height:230px; background:rgba(0,0,0,0.07); border:2px dashed rgba(0,0,0,0.18); color:rgba(0,0,0,0.28); }
+  .kare-wrap .char-sil .lbl  { color:rgba(0,0,0,0.35); background:rgba(255,255,255,0.75); border:1px dashed rgba(0,0,0,0.18); }
+
+  .chaos-mode .char-sil .body { width:130px; height:230px; background:rgba(255,255,255,0.06); border:2px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.22); }
+  .chaos-mode .char-sil .lbl  { color:rgba(255,255,255,0.28); background:rgba(0,0,0,0.6); border:1px dashed rgba(255,255,255,0.15); }
+
+  /* ── TOP BAR — 3 columns ── */
+  .top-bar {
+    position: relative; z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    padding: 12px 20px 10px;
+    align-items: start;
+  }
+
+  .kare-wrap .top-bar { background: rgba(255,255,255,0.95); border-bottom: 2px solid var(--ink-faint); }
+  .chaos-mode .top-bar { background: rgba(0,0,0,0.95); border-bottom: 2px solid var(--chaos-ink-faint); }
+
+  /* turn badge centred in middle column */
+  .turn-badge {
+    font-family: 'Caveat', cursive; font-size: 13px;
+    padding: 2px 14px; white-space: nowrap;
+    align-self: center;
+    margin: 0 12px;
+  }
+
+  .kare-wrap .turn-badge { color:var(--ink-light); background:var(--paper-dark); border:1.5px solid var(--ink-faint); }
+  .chaos-mode .turn-badge { color:var(--chaos-ink-light); background:var(--chaos-paper-dark); border:1.5px solid var(--chaos-ink-faint); }
+
+  .stat-block { display:flex; flex-direction:column; gap:5px; }
+  .stat-block.right { align-items: flex-end; }
+
+  .char-name { font-family:'Caveat Brush',cursive; font-size:24px; }
+  .kare-wrap .char-name { color:var(--ink); }
+  .chaos-mode .char-name { color:var(--chaos-ink); }
+
+  /* divider between enemies */
+  .enemy-divider {
+    width: 100%; height: 1px; margin: 6px 0;
+  }
+  .kare-wrap .enemy-divider { background: var(--ink-faint); }
+  .chaos-mode .enemy-divider { background: var(--chaos-ink-faint); }
+
+  .bar-row { display:flex; align-items:center; gap:8px; }
+  .bar-row.flip { flex-direction:row-reverse; }
+
+  .bar-label { font-family:'Caveat',cursive; font-size:14px; min-width:48px; }
+  .kare-wrap .bar-label { color:var(--ink-light); }
+  .chaos-mode .bar-label { color:var(--chaos-ink-light); }
+  .bar-label.r { text-align:right; }
+
+  .bar-track {
+    height:12px;
+    clip-path: polygon(0.5% 15%, 99.5% 0%, 99.5% 85%, 0.5% 100%);
+  }
+
+  /* player bar wider, enemy bars narrower (less info needed) */
+  .bar-track.player { width:190px; }
+  .bar-track.enemy  { width:140px; }
+
+  .kare-wrap .bar-track { background:var(--paper-mid); border:2px solid var(--ink); }
+  .chaos-mode .bar-track { background:var(--chaos-paper-mid); border:2px solid var(--chaos-ink); }
+  .bar-track.flip { transform:scaleX(-1); }
+
+  .bar-fill { height:100%; }
+  .kare-wrap .bar-fill { background:var(--ink); }
+  .chaos-mode .bar-fill { background:var(--chaos-ink); }
+  .bar-fill.lo { background:repeating-linear-gradient(45deg,#000 0,#000 3px,#fff 3px,#fff 6px); }
+  .chaos-mode .bar-fill.lo { background:repeating-linear-gradient(45deg,#fff 0,#fff 3px,#000 3px,#000 6px); }
+
+  /* Ava rebuilding bar — grows back with a striped leading edge */
+  .bar-fill.rebuilding {
+    background: repeating-linear-gradient(
+      90deg,
+      #000 0px, #000 8px,
+      #fff 8px, #fff 10px
+    );
+    animation: rebuild 1.5s linear infinite;
+  }
+  .chaos-mode .bar-fill.rebuilding {
+    background: repeating-linear-gradient(
+      90deg,
+      #fff 0px, #fff 8px,
+      #000 8px, #000 10px
+    );
+    animation: rebuild 1.5s linear infinite;
+  }
+
+  @keyframes rebuild {
+    from { background-position: 0 0; }
+    to   { background-position: 10px 0; }
+  }
+
+  .bar-nums { font-family:'Caveat',cursive; font-size:13px; white-space:nowrap; }
+  .kare-wrap .bar-nums { color:var(--ink-light); }
+  .chaos-mode .bar-nums { color:var(--chaos-ink-light); }
+
+  .chip-row { display:flex; gap:5px; flex-wrap:wrap; }
+  .chip {
+    display:inline-flex; align-items:center;
+    padding:1px 7px;
+    font-family:'Caveat',cursive; font-size:12px;
+  }
+  .kare-wrap .chip { background:var(--paper-mid); border:1.5px solid var(--ink-faint); color:var(--ink-mid); }
+  .chaos-mode .chip { background:var(--chaos-paper-mid); border:1.5px solid var(--chaos-ink-faint); color:var(--chaos-ink-mid); }
+
+  /* special ava passive chips */
+  .chip.passive {
+    font-style: italic;
+  }
+  .kare-wrap .chip.passive { border-style:dashed; }
+  .chaos-mode .chip.passive { border-style:dashed; }
+
+  /* exp row */
+  .exp-row { display:flex; align-items:center; gap:6px; }
+  .exp-label { font-family:'Caveat',cursive; font-size:12px; }
+  .kare-wrap .exp-label { color:var(--ink-faint); }
+  .chaos-mode .exp-label { color:var(--chaos-ink-faint); }
+
+  .exp-track { height:6px; clip-path:polygon(0% 10%, 100% 0%, 100% 90%, 0% 100%); }
+  .exp-track.sm { width:100px; }
+  .kare-wrap .exp-track { background:var(--paper-mid); border:1.5px solid var(--ink-faint); }
+  .chaos-mode .exp-track { background:var(--chaos-paper-mid); border:1.5px solid var(--chaos-ink-faint); }
+
+  .exp-fill { height:100%; }
+  .kare-wrap .exp-fill { background:var(--ink); }
+  .chaos-mode .exp-fill { background:var(--chaos-ink); }
+
+  /* ── SLOT ROWS ── */
+  .slots-area {
+    position:absolute;
+    bottom:148px; left:0; right:0;
+    z-index:3;
+    display:flex; flex-direction:column;
+  }
+
+  .slot-row {
+    display:flex; align-items:center;
+    gap:12px; padding:8px 20px;
+  }
+
+  .kare-wrap .slot-row { background:rgba(255,255,255,0.92); }
+  .chaos-mode .slot-row { background:rgba(0,0,0,0.92); }
+
+  /* top row gets a top border, bottom row gets top+bottom */
+  .slot-row:first-child {
+    border-top: 2px solid;
+    border-bottom: 1px solid;
+  }
+  .slot-row:last-child {
+    border-bottom: 2px solid;
+  }
+  .kare-wrap .slot-row { border-color: var(--ink-faint); }
+  .chaos-mode .slot-row { border-color: var(--chaos-ink-faint); }
+
+  .slot-row-label {
+    font-family:'Caveat',cursive; font-size:12px;
+    min-width:62px; white-space:nowrap;
+    line-height:1.2;
+  }
+  .kare-wrap .slot-row-label { color:var(--ink-faint); }
+  .chaos-mode .slot-row-label { color:var(--chaos-ink-faint); }
+
+  .slot-hbox { display:flex; gap:7px; flex:1; }
+
+  .slot {
+    flex:1; height:54px;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    position:relative; cursor:pointer;
+    transition:transform 0.1s;
+    clip-path:polygon(1% 2%, 99% 0%, 100% 97%, 0% 100%);
+  }
+  .slot:hover { transform:translateY(-2px); }
+
+  .kare-wrap .slot.empty { border:2px dashed var(--ink-faint); background:var(--paper); }
+  .kare-wrap .slot.player-slot { border:2.5px solid var(--ink); background:var(--paper-dark); }
+  .kare-wrap .slot.enemy-slot {
+    border:2.5px solid var(--ink);
+    background:repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(0,0,0,0.07) 4px, rgba(0,0,0,0.07) 5px);
+  }
+
+  .chaos-mode .slot.empty { border:2px dashed var(--chaos-ink-faint); background:var(--chaos-paper); }
+  .chaos-mode .slot.player-slot { border:2.5px solid var(--chaos-ink); background:var(--chaos-paper-dark); }
+  .chaos-mode .slot.enemy-slot {
+    border:2.5px solid var(--chaos-ink);
+    background:repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(255,255,255,0.07) 4px, rgba(255,255,255,0.07) 5px);
+  }
+
+  .slot-inner { font-family:'Caveat',cursive; font-size:11px; }
+  .kare-wrap .slot-inner { color:var(--ink-faint); }
+  .chaos-mode .slot-inner { color:var(--chaos-ink-faint); }
+
+  .slot-tag {
+    font-family:'Caveat',cursive; font-size:9px;
+    font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    position:absolute; top:3px; left:4px;
+  }
+  .kare-wrap .slot-tag { color:var(--ink-faint); }
+  .kare-wrap .slot.player-slot .slot-tag { color:var(--ink); }
+  .chaos-mode .slot-tag { color:var(--chaos-ink-faint); }
+  .chaos-mode .slot.player-slot .slot-tag { color:var(--chaos-ink); }
+
+  .slot-name {
+    font-family:'Caveat Brush',cursive; font-size:13px;
+    text-align:center; padding:0 3px; line-height:1.1;
+  }
+  .kare-wrap .slot-name { color:var(--ink); }
+  .chaos-mode .slot-name { color:var(--chaos-ink); }
+
+  .slot-val {
+    font-family:'Caveat',cursive; font-size:10px;
+    position:absolute; bottom:3px; right:4px;
+  }
+  .kare-wrap .slot-val { color:var(--ink-light); }
+  .chaos-mode .slot-val { color:var(--chaos-ink-light); }
+
+  /* confirm sits to the right, spans both rows */
+  .confirm-col {
+    display:flex; align-items:center; justify-content:center;
+    padding: 0 4px;
+  }
+
+  .confirm-btn {
+    padding:10px 18px;
+    font-family:'Caveat Brush',cursive; font-size:18px;
+    border:none; cursor:pointer; white-space:nowrap;
+    clip-path:polygon(2% 0%, 100% 1%, 98% 100%, 0% 99%);
+    transition:opacity 0.15s, transform 0.1s;
+    letter-spacing:1px;
+  }
+  .kare-wrap .confirm-btn { background:var(--ink); color:var(--paper); }
+  .chaos-mode .confirm-btn { background:var(--chaos-ink); color:var(--chaos-paper); }
+  .confirm-btn:hover { opacity:0.72; transform:rotate(-0.5deg) scale(1.04); }
+
+  /* ── CARDS ── */
+  .cards-section {
+    position:absolute; bottom:0; left:0; right:0; height:148px;
+    padding:8px 20px 10px; z-index:3;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .kare-wrap .cards-section { background:rgba(255,255,255,0.97); border-top:2px solid var(--ink-faint); }
+  .chaos-mode .cards-section { background:rgba(0,0,0,0.97); border-top:2px solid var(--chaos-ink-faint); }
+
+  .cards-top-row { display:flex; align-items:center; justify-content:space-between; }
+
+  .cards-label { font-family:'Caveat',cursive; font-size:12px; }
+  .kare-wrap .cards-label { color:var(--ink-faint); }
+  .chaos-mode .cards-label { color:var(--chaos-ink-faint); }
+
+  .cards-row { display:flex; gap:9px; }
+
+  .card {
+    width:104px; height:98px;
+    position:relative; display:flex; flex-direction:column;
+    overflow:hidden; cursor:pointer; flex-shrink:0;
+    transition:transform 0.15s, box-shadow 0.15s;
+    clip-path:polygon(0% 1%, 99% 0%, 100% 99%, 1% 100%);
+  }
+  .kare-wrap .card { background:var(--paper); border:2px solid var(--ink); }
+  .chaos-mode .card { background:var(--chaos-paper); border:2px solid var(--chaos-ink); }
+
+  .kare-wrap .card:hover { transform:translateY(-8px) rotate(-1deg); box-shadow:3px 4px 0 var(--ink); }
+  .chaos-mode .card:hover { transform:translateY(-8px) rotate(-1deg); box-shadow:3px 4px 0 var(--chaos-ink); }
+
+  .card.on-cooldown { opacity:0.38; cursor:not-allowed; }
+  .card.on-cooldown:hover { transform:none; box-shadow:none; }
+
+  .card-type-bar { height:5px; }
+  .kare-wrap .card-type-bar.attack  { background:var(--ink); }
+  .kare-wrap .card-type-bar.barrier { background:repeating-linear-gradient(90deg,#000 0,#000 4px,#fff 4px,#fff 8px); }
+  .kare-wrap .card-type-bar.energy  { background:repeating-linear-gradient(90deg,#000 0,#000 2px,#fff 2px,#fff 4px); }
+  .kare-wrap .card-type-bar.dodge   { background:repeating-linear-gradient(45deg,#000 0,#000 3px,#fff 3px,#fff 6px); }
+  .kare-wrap .card-type-bar.ultimate { height:8px; background:var(--ink); }
+
+  .chaos-mode .card-type-bar.attack  { background:var(--chaos-ink); }
+  .chaos-mode .card-type-bar.barrier { background:repeating-linear-gradient(90deg,#fff 0,#fff 4px,#000 4px,#000 8px); }
+  .chaos-mode .card-type-bar.energy  { background:repeating-linear-gradient(90deg,#fff 0,#fff 2px,#000 2px,#000 4px); }
+  .chaos-mode .card-type-bar.dodge   { background:repeating-linear-gradient(45deg,#fff 0,#fff 3px,#000 3px,#000 6px); }
+  .chaos-mode .card-type-bar.ultimate { height:8px; background:var(--chaos-ink); }
+
+  .card-icon-area { flex:1; display:flex; align-items:center; justify-content:center; font-size:20px; filter:grayscale(100%); }
+  .chaos-mode .card-icon-area { filter:grayscale(100%) invert(1); }
+
+  .card-body { padding:3px 6px 4px; }
+  .kare-wrap .card-body { border-top:1px solid var(--ink-faint); }
+  .chaos-mode .card-body { border-top:1px solid var(--chaos-ink-faint); }
+
+  .card-name { font-family:'Caveat Brush',cursive; font-size:13px; display:block; line-height:1.1; }
+  .kare-wrap .card-name { color:var(--ink); }
+  .chaos-mode .card-name { color:var(--chaos-ink); }
+
+  .card-stats { font-family:'Caveat',cursive; font-size:11px; display:flex; justify-content:space-between; margin-top:1px; }
+  .kare-wrap .card-stats { color:var(--ink-light); }
+  .chaos-mode .card-stats { color:var(--chaos-ink-light); }
+
+  .card-cost {
+    font-family:'Caveat',cursive; font-size:11px;
+    position:absolute; top:8px; right:5px;
+    width:18px; height:18px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%;
+  }
+  .kare-wrap .card-cost { background:var(--ink); color:var(--paper); }
+  .chaos-mode .card-cost { background:var(--chaos-ink); color:var(--chaos-paper); }
+
+  .cooldown-overlay {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Caveat Brush',cursive; font-size:28px;
+  }
+  .kare-wrap .cooldown-overlay { background:rgba(255,255,255,0.75); color:var(--ink); }
+  .chaos-mode .cooldown-overlay { background:rgba(0,0,0,0.78); color:var(--chaos-ink); }
+
+  /* ── CONFIRM WRAPPER spans both rows ── */
+  /* The slots-area uses a wrapper div with relative positioning
+     and the confirm button is absolutely placed to span both rows */
+  .slots-wrapper {
+    position:absolute;
+    bottom:148px; left:0; right:0;
+    z-index:3;
+  }
+
+  .slots-inner {
+    display:flex; align-items:stretch;
+  }
+
+  .slot-rows-col { flex:1; display:flex; flex-direction:column; }
+
+  .confirm-col {
+    display:flex; align-items:center;
+    padding:0 16px 0 10px;
+  }
+
+  .kare-wrap .slots-inner { background:rgba(255,255,255,0.92); border-top:2px solid var(--ink-faint); border-bottom:2px solid var(--ink-faint); }
+  .chaos-mode .slots-inner { background:rgba(0,0,0,0.92); border-top:2px solid var(--chaos-ink-faint); border-bottom:2px solid var(--chaos-ink-faint); }
+
+  /* chaos glitch */
+  @keyframes glitch {
+    0%,92%,100%{transform:none}
+    93%{transform:translateX(-3px) skewX(-2deg)}
+    95%{transform:translateX(3px)}
+    97%{transform:translateX(-1px)}
+  }
+  @keyframes glitch-text {
+    0%,87%,100%{opacity:1;letter-spacing:normal}
+    88%{opacity:0.4;letter-spacing:3px}
+    89%{opacity:1}
+    91%{opacity:0.7}
+  }
+  @keyframes slots-shake {
+    0%,91%,100%{transform:none}
+    92%{transform:translate(1px,-1px) rotate(0.2deg)}
+    93%{transform:translate(-1px,1px) rotate(-0.2deg)}
+    94%{transform:none}
+  }
+  .chaos-glitch-text { animation:glitch-text 5s infinite; display:inline-block; }
+  .chaos-shake { animation:slots-shake 8s infinite; }
+  .chaos-char-glitch { animation:glitch 7s infinite; display:inline-block; }
+
+  /* chaos number box */
+  .chaos-number-box {
+    position:absolute; top:33%; left:36%;
+    padding:10px 22px; z-index:15; text-align:center;
+  }
+  .chaos-mode .chaos-number-box {
+    background:var(--chaos-paper); border:2px solid var(--chaos-ink);
+    animation:glitch 0.5s infinite;
+  }
+  .chaos-number-label { font-family:'Caveat',cursive; font-size:13px; color:var(--chaos-ink-light); margin-bottom:3px; }
+  .chaos-number-val { font-family:'Caveat Brush',cursive; font-size:48px; color:var(--chaos-ink); display:block; line-height:1; }
+
+  /* annotation callouts */
+  .callout {
+    position:absolute; z-index:20;
+    font-family:'Caveat',cursive; font-size:12px;
+    color:#fff; background:rgba(0,0,0,0.7);
+    padding:3px 8px;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  .callout::before {
+    content:'→ ';
+  }
+</style>
+</head>
+<body>
+
+<div class="toggle-bar">
+  <button class="toggle-btn kare active" onclick="switchMode('kare')">Kare Mode</button>
+  <button class="toggle-btn chaos-btn" onclick="switchMode('chaos')">Chaos Mode</button>
+</div>
+
+<!-- ══════════ KARE ══════════ -->
+<div id="kare-screen" class="kare-wrap">
+<div class="battle-screen">
+
+  <!-- scene -->
+  <div class="scene-layer">
+    <div class="char-sil" style="left:240px;transform:translateX(-50%);">
+      <div class="body">kare_idle.png</div>
+      <div class="lbl">player · xpos 0.28</div>
+    </div>
+    <div class="char-sil" style="right:310px;transform:translateX(50%);">
+      <div class="body">butter_idle.png</div>
+      <div class="lbl">butter · xpos 0.62</div>
+    </div>
+    <div class="char-sil" style="right:130px;transform:translateX(50%);">
+      <div class="body">ava_idle.png</div>
+      <div class="lbl">ava · xpos 0.80</div>
+    </div>
+  </div>
+
+  <!-- TOP BAR — 3 columns -->
+  <div class="top-bar">
+
+    <!-- PLAYER -->
+    <div class="stat-block">
+      <span class="char-name">Kare</span>
+      <div class="bar-row">
+        <span class="bar-label">HP</span>
+        <div class="bar-track player"><div class="bar-fill" style="width:72%;"></div></div>
+        <span class="bar-nums">144 / 200</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Energy</span>
+        <div class="bar-track player"><div class="bar-fill" style="width:60%;"></div></div>
+        <span class="bar-nums">12 / 20</span>
+      </div>
+      <div class="chip-row">
+        <div class="chip">DEF 8</div>
+        <div class="chip">DMG +5 (2t)</div>
+      </div>
+    </div>
+
+    <!-- CENTRE: turn badge -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:4px;">
+      <div class="turn-badge">Turn 4 · 6 slots</div>
+      <div style="font-family:'Caveat',cursive;font-size:11px;color:#aaa;text-align:center;">
+        Butter + Ava<br>team fight
+      </div>
+    </div>
+
+    <!-- ENEMIES — right column, stacked -->
+    <div class="stat-block right">
+
+      <!-- BUTTER -->
+      <span class="char-name">Butter</span>
+      <div class="bar-row flip">
+        <span class="bar-label r">HP</span>
+        <div class="bar-track enemy flip"><div class="bar-fill lo" style="width:45%;"></div></div>
+        <span class="bar-nums">90 / 200</span>
+      </div>
+      <div class="chip-row" style="justify-content:flex-end;">
+        <div class="chip passive">RECKONING</div>
+      </div>
+
+      <div class="enemy-divider"></div>
+
+      <!-- AVA -->
+      <span class="char-name">Ava</span>
+      <div class="bar-row flip">
+        <span class="bar-label r">HP</span>
+        <div class="bar-track enemy flip"><div class="bar-fill rebuilding" style="width:60%;"></div></div>
+        <span class="bar-nums">240 / 400</span>
+      </div>
+      <div class="chip-row" style="justify-content:flex-end;">
+        <div class="chip passive">STILL STANDING</div>
+        <div class="chip passive">MONUMENT (4)</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SLOTS — two rows, shared confirm -->
+  <div class="slots-wrapper">
+    <div class="slots-inner">
+      <div class="slot-rows-col">
+
+        <!-- ROW 1: Butter -->
+        <div class="slot-row" style="border-bottom:1px solid #ccc;">
+          <span class="slot-row-label">Butter's<br>row</span>
+          <div class="slot-hbox">
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">punch</span><span class="slot-val">13</span></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">SENTENCE</span><span class="slot-val">25</span></div>
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">evade</span><span class="slot-val">—</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">VERDICT</span><span class="slot-val">+def</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+          </div>
+        </div>
+
+        <!-- ROW 2: Ava -->
+        <div class="slot-row">
+          <span class="slot-row-label">Ava's<br>row</span>
+          <div class="slot-hbox">
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">DRAIN</span><span class="slot-val">33k</span></div>
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">Defense</span><span class="slot-val">+8</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">WE REMEMBER</span><span class="slot-val">heal</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+          </div>
+        </div>
+
+      </div>
+      <!-- confirm spans both rows -->
+      <div class="confirm-col">
+        <button class="confirm-btn">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-section">
+    <div class="cards-top-row">
+      <span class="cards-label">your cards</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="cards-label">next skill:</span>
+        <div class="exp-track sm"><div class="exp-fill" style="width:45%;"></div></div>
+      </div>
+    </div>
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-type-bar attack"></div>
+        <div class="card-cost">4</div>
+        <div class="card-icon-area">👊</div>
+        <div class="card-body"><span class="card-name">punch</span><div class="card-stats"><span>13 dmg</span><span>cd:2</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar attack"></div>
+        <div class="card-cost">2</div>
+        <div class="card-icon-area">🖐</div>
+        <div class="card-body"><span class="card-name">slap</span><div class="card-stats"><span>6 dmg</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar dodge"></div>
+        <div class="card-cost">4</div>
+        <div class="card-icon-area">💨</div>
+        <div class="card-body"><span class="card-name">evade</span><div class="card-stats"><span>dodge</span><span>cd:4</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar barrier"></div>
+        <div class="card-cost">3</div>
+        <div class="card-icon-area">🛡</div>
+        <div class="card-body"><span class="card-name">Defense</span><div class="card-stats"><span>+8 def</span><span>cd:2</span></div></div>
+      </div>
+      <div class="card on-cooldown">
+        <div class="card-type-bar energy"></div>
+        <div class="card-cost">0</div>
+        <div class="card-icon-area">🍔</div>
+        <div class="card-body"><span class="card-name">yummers</span><div class="card-stats"><span>+10 nrg</span></div></div>
+        <div class="cooldown-overlay">2</div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar ultimate"></div>
+        <div class="card-cost">6</div>
+        <div class="card-icon-area">💥</div>
+        <div class="card-body"><span class="card-name">super cool kick</span><div class="card-stats"><span>20 dmg</span><span>cd:6</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ CHAOS ══════════ -->
+<div id="chaos-screen" class="chaos-mode" style="display:none;">
+<div class="battle-screen">
+
+  <div class="scene-layer">
+    <div class="char-sil" style="left:240px;transform:translateX(-50%);">
+      <div class="body">chaos_idle.png</div>
+      <div class="lbl">player · xpos 0.28</div>
+    </div>
+    <div class="char-sil" style="right:310px;transform:translateX(50%);">
+      <div class="body">butter_serious.png</div>
+      <div class="lbl">butter · xpos 0.62</div>
+    </div>
+    <div class="char-sil" style="right:130px;transform:translateX(50%);">
+      <div class="body">ava_phase2.png</div>
+      <div class="lbl">ava · xpos 0.80</div>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="stat-block">
+      <span class="char-name chaos-char-glitch">Chaos</span>
+      <div class="bar-row">
+        <span class="bar-label">HP</span>
+        <div class="bar-track player"><div class="bar-fill" style="width:78%;"></div></div>
+        <span class="bar-nums"><span class="chaos-glitch-text">3#9</span> / 500</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Energy</span>
+        <div class="bar-track player"><div class="bar-fill" style="width:80%;"></div></div>
+        <span class="bar-nums">40 / 50</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:4px;">
+      <div class="turn-badge">Turn 4 · 6 slots</div>
+      <div style="font-family:'Caveat',cursive;font-size:11px;color:#444;text-align:center;">
+        Butter + Ava<br>team fight
+      </div>
+    </div>
+
+    <div class="stat-block right">
+      <span class="char-name">Butter</span>
+      <div class="bar-row flip">
+        <span class="bar-label r">HP</span>
+        <div class="bar-track enemy flip"><div class="bar-fill lo" style="width:35%;background:repeating-linear-gradient(45deg,#fff 0,#fff 3px,#000 3px,#000 6px);"></div></div>
+        <span class="bar-nums">175 / 500</span>
+      </div>
+      <div class="chip-row" style="justify-content:flex-end;">
+        <div class="chip passive">RECKONING</div>
+      </div>
+
+      <div class="enemy-divider"></div>
+
+      <span class="char-name">Ava</span>
+      <div class="bar-row flip">
+        <span class="bar-label r">HP</span>
+        <div class="bar-track enemy flip"><div class="bar-fill rebuilding" style="width:55%;"></div></div>
+        <span class="bar-nums">220 / 400</span>
+      </div>
+      <div class="chip-row" style="justify-content:flex-end;">
+        <div class="chip passive">STILL STANDING</div>
+        <div class="chip passive">MONUMENT (4)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- chaos number -->
+  <div class="chaos-number-box">
+    <div class="chaos-number-label">DAMAGE</div>
+    <span class="chaos-number-val">??</span>
+  </div>
+
+  <!-- SLOTS -->
+  <div class="slots-wrapper chaos-shake">
+    <div class="slots-inner">
+      <div class="slot-rows-col">
+
+        <div class="slot-row" style="border-bottom:1px solid #333;">
+          <span class="slot-row-label">Butter's<br>row</span>
+          <div class="slot-hbox">
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">interitus</span><span class="slot-val">???</span></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">SENTENCE</span><span class="slot-val">25</span></div>
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">dissolutum</span><span class="slot-val">—</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">VERDICT</span><span class="slot-val">+def</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+          </div>
+        </div>
+
+        <div class="slot-row">
+          <span class="slot-row-label">Ava's<br>row</span>
+          <div class="slot-hbox">
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">DRAIN</span><span class="slot-val">33k</span></div>
+            <div class="slot player-slot"><span class="slot-tag">YOU</span><span class="slot-name">Embrace</span><span class="slot-val">???</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+            <div class="slot enemy-slot"><span class="slot-tag">ENEMY</span><span class="slot-name">MONUMENT</span><span class="slot-val">barrier</span></div>
+            <div class="slot empty"><div class="slot-inner">— open —</div></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="confirm-col">
+        <button class="confirm-btn">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-section">
+    <div class="cards-top-row">
+      <span class="cards-label">your cards</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="cards-label">next skill:</span>
+        <div class="exp-track sm"><div class="exp-fill" style="width:60%;"></div></div>
+      </div>
+    </div>
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-type-bar attack"></div>
+        <div class="card-cost">3</div>
+        <div class="card-icon-area" style="font-size:18px;letter-spacing:-1px;">〜〜</div>
+        <div class="card-body"><span class="card-name">interitus</span><div class="card-stats"><span>1-20???</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar barrier"></div>
+        <div class="card-cost">5</div>
+        <div class="card-icon-area" style="font-size:18px;">◎</div>
+        <div class="card-body"><span class="card-name">Embrace</span><div class="card-stats"><span>1-50???</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar dodge"></div>
+        <div class="card-cost">6</div>
+        <div class="card-icon-area" style="font-size:18px;">⊘</div>
+        <div class="card-body"><span class="card-name">dissolutum</span><div class="card-stats"><span>shift</span><span>cd:2</span></div></div>
+      </div>
+      <div class="card on-cooldown">
+        <div class="card-type-bar energy"></div>
+        <div class="card-cost">0</div>
+        <div class="card-icon-area" style="font-size:18px;">∿</div>
+        <div class="card-body"><span class="card-name">Entropy</span><div class="card-stats"><span>1-50 nrg</span></div></div>
+        <div class="cooldown-overlay">3</div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar attack"></div>
+        <div class="card-cost">7</div>
+        <div class="card-icon-area" style="font-size:18px;">⚡</div>
+        <div class="card-body"><span class="card-name">Cataclysm</span><div class="card-stats"><span>1-30???</span><span>cd:3</span></div></div>
+      </div>
+      <div class="card" style="animation:glitch 3s infinite;">
+        <div class="card-type-bar ultimate" style="height:8px;background:repeating-linear-gradient(90deg,#fff 0,#fff 6px,#000 6px,#000 12px);"></div>
+        <div class="card-cost" style="font-size:9px;width:22px;border-radius:2px;">25</div>
+        <div class="card-icon-area" style="font-size:13px;animation:glitch 2s infinite;">?? ?? ??</div>
+        <div class="card-body">
+          <span class="card-name" style="animation:glitch 4s infinite;">??????</span>
+          <div class="card-stats"><span>1-60???</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function switchMode(m) {
+  document.getElementById('kare-screen').style.display = m==='kare' ? 'block' : 'none';
+  document.getElementById('chaos-screen').style.display = m==='chaos' ? 'block' : 'none';
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.toggle-btn.'+(m==='kare'?'kare':'chaos-btn')).classList.add('active');
+}
+</script>
+</body>
+</html>
