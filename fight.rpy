@@ -1064,10 +1064,10 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                             frame:
                                 at card_land_flash(is_chaos)
                                 xfill True yfill True
-                                background "#ffffff"
+                                background (_ink)
 
                         else:
-                            # Non-spinning cards ─ render normally
+                            # Non-spinning cards ─ full render matching battle_screen
                             $ _tb = get_typebar(skill.type, is_chaos)
                             vbox:
                                 xfill True
@@ -1077,8 +1077,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                     background _paper
                                     text skill.icon:
                                         xalign 0.5 yalign 0.5
-                                        size 36
-                                        color _ink
+                                        size 36 color _ink
                                 frame:
                                     xfill True ysize 1
                                     background _ink_faint
@@ -1090,10 +1089,27 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                         text skill.name:
                                             font "fonts/CaveatBrush-Regular.ttf"
                                             size 15 color _ink
-                                        $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
-                                        text _val:
-                                            font "fonts/Caveat-Regular.ttf"
-                                            size 11 color (_ink + "88")
+                                        hbox:
+                                            xfill True
+                                            $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
+                                            text _val:
+                                                font "fonts/Caveat-Regular.ttf"
+                                                size 11 color (_ink_light)
+                                            if skill.cooldown > 0:
+                                                text ("cd:" + str(skill.cooldown)):
+                                                    font "fonts/Caveat-Regular.ttf"
+                                                    size 11 color _ink_light
+                                                    xalign 1.0
+                            # Cost bubble
+                            frame:
+                                xalign 1.0 yalign 0.0
+                                xoffset -5 yoffset 9
+                                xsize 22 ysize 22
+                                background _ink
+                                text str(skill.cost):
+                                    xalign 0.5 yalign 0.5
+                                    font "fonts/Caveat-Regular.ttf"
+                                    size 12 color _paper
 
 label kare_card_shuffle_anim(bm):
     # One card gets replaced with a random Chaos skill
@@ -1123,7 +1139,7 @@ label kare_card_shuffle_anim(bm):
 label chaos_card_shuffle_anim(bm):
     # All cards spin ─ full Chaos mode activation
     $ bm.is_shuffling = True
-    $ new_skills = [renpy.random.choice(bm.full_skill_pool) for _i in bm.player_skills]
+    $ new_skills = [renpy.random.choice([s for s in bm.full_skill_pool if getattr(s, "is_chaos_skill", False)]) for _i in bm.player_skills]
     $ all_indices = list(range(len(bm.player_skills)))
 
     show screen card_shuffle_screen(bm, all_indices, new_skills)
@@ -1139,7 +1155,7 @@ label chaos_card_shuffle_anim(bm):
 label chaos_number_anim(final_value, label_text=""):
     $ store.chaos_anim_len = max(2, len(str(final_value)))
     $ store.chaos_anim_val = "?" * store.chaos_anim_len
-    show screen chaos_number_indicator(label_text)
+    # show screen chaos_number_indicator(label_text) # Integrated into battle_screen
     python:
         for i in range(25):
             if i < 22:
@@ -1149,7 +1165,7 @@ label chaos_number_anim(final_value, label_text=""):
             renpy.restart_interaction()
             renpy.pause(0.04, hard=True)
     $ renpy.pause(0.4, hard=True)
-    hide screen chaos_number_indicator
+    # hide screen chaos_number_indicator
     return
 
 
@@ -1462,6 +1478,11 @@ screen battle_screen(bm):
 
                 for e_idx, enemy in enumerate(bm.enemies):
                     if not enemy.is_dead:
+                        # Slot divider line between rows
+                        if e_idx > 0:
+                            frame:
+                                xfill True ysize 1
+                                background _ink_faint
 
                         hbox:
                             xfill True
@@ -1469,20 +1490,12 @@ screen battle_screen(bm):
                             spacing 10
 
                             # Row label
-                            text (enemy.name.split()[0] + "'s
-row"):
+                            text (enemy.name.split()[0] + "'s\nrow"):
                                 font "fonts/Caveat-Regular.ttf"
                                 size 12
                                 color _ink_faint
                                 xsize 68
                                 yalign 0.5
-
-                            # Slot divider line between rows
-                            if e_idx > 0:
-                                frame:
-                                    xfill True ysize 1
-                                    ypos 0
-                                    background _ink_faint
 
                             # Slots
                             for s_idx in range(bm.current_max_slots):
