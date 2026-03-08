@@ -25,6 +25,9 @@ define gui.show_name = False
 
 define config.version = "1.0"
 
+define config.screen_width = 1200
+define config.screen_height = 680
+
 
 
 ## Text that is placed on the game's about screen. Place the text between the
