@@ -1422,12 +1422,12 @@ screen battle_screen(bm):
     # SLOT STRIP  (sits above the card section)
     # Wrapped in a container so CONFIRM spans all enemy rows
     # ════════════════════
+    $ _num_alive = len([e for e in bm.enemies if not e.is_dead])
+    $ _slot_strip_h = _num_alive * 78 + 16
     frame:
         yalign 1.0
         yoffset -(220)          # 220 = height of cards section
         xfill True
-        $ _num_alive = len([e for e in bm.enemies if not e.is_dead])
-        $ _slot_strip_h = _num_alive * 78 + 16
         ysize _slot_strip_h
         background (_paper + "e8")
         top_padding 0
