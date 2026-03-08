@@ -949,7 +949,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
             text "your cards":
                 font "fonts/Caveat-Regular.ttf"
                 size 13
-                color _ink_faint
+                color (_ink_faint)
 
             hbox:
                 spacing 12
@@ -962,7 +962,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                         xsize 130
                         ysize 168
                         # Clip overflow so reel doesn't bleed outside card
-                        background _paper
+                        background (_paper)
                         foreground Frame(
                             Composite((4,4),
                                 (0,0), Solid(_ink, xsize=4, ysize=1),
@@ -983,7 +983,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                 # Ghost icons above (previous card icon)
                                 frame:
                                     xfill True ysize 56
-                                    background _paper
+                                    background (_paper)
                                     text skill.icon:
                                         xalign 0.5 yalign 0.5
                                         size 30
@@ -1004,12 +1004,12 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                         xalign 0.5 yalign 0.5
                                         font "fonts/CaveatBrush-Regular.ttf"
                                         size 38
-                                        color _ink
+                                        color (_ink)
 
                                 # Ghost icon below (new card peek)
                                 frame:
                                     xfill True ysize 56
-                                    background _paper
+                                    background (_paper)
                                     $ new_skill = new_skills[shuffling_indices.index(idx)]
                                     text new_skill.icon:
                                         xalign 0.5 yalign 0.5
@@ -1019,12 +1019,12 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                             # ??? text at bottom
                             frame:
                                 xfill True
-                                background _paper
+                                background (_paper)
                                 xpadding 6 ypadding 4
                                 text "???":
                                     font "fonts/CaveatBrush-Regular.ttf"
                                     size 15
-                                    color _ink_faint
+                                    color (_ink_faint)
 
                             # Landing flash
                             frame:
@@ -1040,21 +1040,21 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                 add _tb xsize 130
                                 frame:
                                     xfill True ysize 76
-                                    background _paper
+                                    background (_paper)
                                     text skill.icon:
                                         xalign 0.5 yalign 0.5
-                                        size 36 color _ink
+                                        size 36 color (_ink)
                                 frame:
                                     xfill True ysize 1
-                                    background _ink_faint
+                                    background (_ink_faint)
                                 frame:
-                                    xfill True background _paper
+                                    xfill True background (_paper)
                                     xpadding 6 top_padding 4 bottom_padding 5
                                     vbox:
                                         spacing 2
                                         text skill.name:
                                             font "fonts/CaveatBrush-Regular.ttf"
-                                            size 15 color _ink
+                                            size 15 color (_ink)
                                         hbox:
                                             xfill True
                                             $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
@@ -1064,18 +1064,18 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                             if skill.cooldown > 0:
                                                 text ("cd:" + str(skill.cooldown)):
                                                     font "fonts/Caveat-Regular.ttf"
-                                                    size 11 color _ink_light
+                                                    size 11 color (_ink_light)
                                                     xalign 1.0
                             # Cost bubble
                             frame:
                                 xalign 1.0 yalign 0.0
                                 xoffset -5 yoffset 9
                                 xsize 22 ysize 22
-                                background _ink
+                                background (_ink)
                                 text str(skill.cost):
                                     xalign 0.5 yalign 0.5
                                     font "fonts/Caveat-Regular.ttf"
-                                    size 12 color _paper
+                                    size 12 color (_paper)
 
 label kare_card_shuffle_anim(bm):
     # One card gets replaced with a random Chaos skill
@@ -1197,7 +1197,7 @@ screen battle_screen(bm):
         frame:
             xalign 0.5 yalign 0.0
             yoffset 14
-            background _paper_dark
+            background (_paper_dark)
             padding (14, 3)
             foreground Frame(
                 Composite((4,4),
@@ -1210,7 +1210,7 @@ screen battle_screen(bm):
             text ("Turn " + str(bm.turn_count) + " • " + str(bm.current_max_slots) + " slots"):
                 font "fonts/Caveat-Regular.ttf"
                 size 14
-                color _ink_light
+                color (_ink_light)
 
         hbox:
             xfill True
@@ -1225,13 +1225,13 @@ screen battle_screen(bm):
                     text bm.player_name:
                         font "fonts/CaveatBrush-Regular.ttf"
                         size 28
-                        color _ink
+                        color (_ink)
                         at chaos_name_glitch
                 else:
                     text bm.player_name:
                         font "fonts/CaveatBrush-Regular.ttf"
                         size 28
-                        color _ink
+                        color (_ink)
 
                 # HP row
                 hbox:
@@ -1240,24 +1240,24 @@ screen battle_screen(bm):
                     text "HP":
                         font "fonts/Caveat-Regular.ttf"
                         size 15
-                        color _ink_light
+                        color (_ink_light)
                         min_width 52
                         yalign 0.5
                     if is_chaos:
                         text (scramble_hp(bm.player_hp) + " / " + scramble_hp(bm.player_max_hp)):
                             font "fonts/Caveat-Regular.ttf"
                             size 18
-                            color _ink
+                            color (_ink)
                             at chaos_hp_glitch
                     else:
                         bar value bm.player_hp range bm.player_max_hp:
                             xsize 210 ysize 14 yalign 0.5
-                            left_bar  _ink
-                            right_bar _paper_mid
+                            left_bar  (_ink)
+                            right_bar (_paper_mid)
                         text (str(bm.player_hp) + " / " + str(bm.player_max_hp)):
                             font "fonts/Caveat-Regular.ttf"
                             size 14
-                            color _ink_light
+                            color (_ink_light)
                             yalign 0.5
 
                 # Energy row
@@ -1267,17 +1267,17 @@ screen battle_screen(bm):
                     text "Energy":
                         font "fonts/Caveat-Regular.ttf"
                         size 15
-                        color _ink_light
+                        color (_ink_light)
                         min_width 52
                         yalign 0.5
                     bar value bm.player_energy range bm.player_max_energy:
                         xsize 210 ysize 14 yalign 0.5
-                        left_bar  _ink
-                        right_bar _paper_mid
+                        left_bar  (_ink)
+                        right_bar (_paper_mid)
                     text (str(bm.player_energy) + " / " + str(bm.player_max_energy)):
                         font "fonts/Caveat-Regular.ttf"
                         size 14
-                        color _ink_light
+                        color (_ink_light)
                         yalign 0.5
 
                 # Status chips row
@@ -1286,7 +1286,7 @@ screen battle_screen(bm):
                     yoffset 2
                     if bm.player_barrier > 0:
                         frame:
-                            background _paper_mid
+                            background (_paper_mid)
                             padding (7, 2)
                             foreground Frame(
                                 Composite((4,4),
@@ -1299,15 +1299,15 @@ screen battle_screen(bm):
                             text ("DEF " + str(bm.player_barrier)):
                                 font "fonts/Caveat-Regular.ttf"
                                 size 13
-                                color _ink
+                                color (_ink)
                     for buff in bm.player_buffs:
                         frame:
-                            background _paper_mid
+                            background (_paper_mid)
                             padding (7, 2)
                             text (str(buff[0]) + " +" + str(buff[1]) + " (" + str(buff[2]) + "t)"):
                                 font "fonts/Caveat-Regular.ttf"
                                 size 12
-                                color _ink_light
+                                color (_ink_light)
 
             # ── CENTRE spacer
             null width 0
@@ -1327,7 +1327,7 @@ screen battle_screen(bm):
                             text enemy.name:
                                 font "fonts/CaveatBrush-Regular.ttf"
                                 size 24
-                                color _ink
+                                color (_ink)
                                 xalign 1.0
 
                             # HP row (right-aligned, bar flipped)
@@ -1338,13 +1338,13 @@ screen battle_screen(bm):
                                 text (str(enemy.hp) + " / " + str(enemy.max_hp)):
                                     font "fonts/Caveat-Regular.ttf"
                                     size 14
-                                    color _ink_light
+                                    color (_ink_light)
                                     yalign 0.5
                                 # Low HP shows hatch pattern instead of solid
                                 if enemy.hp < enemy.max_hp * 0.3:
                                     frame:
                                         xsize 150 ysize 14 yalign 0.5
-                                        background _paper_mid
+                                        background (_paper_mid)
                                         foreground Frame(
                                             Composite((4,4),
                                                 (0,0), Solid(_ink, xsize=4, ysize=1),
@@ -1367,12 +1367,12 @@ screen battle_screen(bm):
                                 else:
                                     bar value enemy.hp range enemy.max_hp:
                                         xsize 150 ysize 14 yalign 0.5
-                                        left_bar  _ink
-                                        right_bar _paper_mid
+                                        left_bar  (_ink)
+                                        right_bar (_paper_mid)
                                 text "HP":
                                     font "fonts/Caveat-Regular.ttf"
                                     size 15
-                                    color _ink_light
+                                    color (_ink_light)
                                     yalign 0.5
 
                             # Skill unlock exp bar
@@ -1382,12 +1382,12 @@ screen battle_screen(bm):
                                 text "skill unlock":
                                     font "fonts/Caveat-Regular.ttf"
                                     size 12
-                                    color _ink_faint
+                                    color (_ink_faint)
                                     yalign 0.5
                                 bar value enemy.skill_exp range enemy.skill_exp_max:
                                     xsize 120 ysize 7 yalign 0.5
-                                    left_bar  _ink
-                                    right_bar _paper_mid
+                                    left_bar  (_ink)
+                                    right_bar (_paper_mid)
 
                             # Enemy status chips
                             hbox:
@@ -1395,27 +1395,27 @@ screen battle_screen(bm):
                                 spacing 5
                                 for buff in enemy.buffs:
                                     frame:
-                                        background _paper_mid
+                                        background (_paper_mid)
                                         padding (5, 2)
                                         text (str(buff[0]) + " +" + str(buff[1])):
                                             font "fonts/Caveat-Regular.ttf"
                                             size 11
-                                            color _ink_light
+                                            color (_ink_light)
                                 if enemy.barrier > 0:
                                     frame:
-                                        background _paper_mid
+                                        background (_paper_mid)
                                         padding (7, 2)
                                         text ("DEF " + str(enemy.barrier)):
                                             font "fonts/Caveat-Regular.ttf"
                                             size 13
-                                            color _ink
+                                            color (_ink)
 
                             # Divider between multiple enemies
                             if len([e for e in bm.enemies if not e.is_dead]) > 1:
                                 frame:
                                     xsize 320 ysize 1
                                     xalign 1.0
-                                    background _ink_faint
+                                    background (_ink_faint)
 
 
     # ════════════════════
@@ -1426,9 +1426,9 @@ screen battle_screen(bm):
     $ _slot_strip_h = _num_alive * 78 + 16
     frame:
         yalign 1.0
-        yoffset -(220)          # 220 = height of cards section
+        yoffset (-(220))          # 220 = height of cards section
         xfill True
-        ysize _slot_strip_h
+        ysize (_slot_strip_h)
         background (_paper + "e8")
         top_padding 0
 
@@ -1450,7 +1450,7 @@ screen battle_screen(bm):
                         if e_idx > 0:
                             frame:
                                 xfill True ysize 1
-                                background _ink_faint
+                                background (_ink_faint)
 
                         hbox:
                             xfill True
@@ -1461,7 +1461,7 @@ screen battle_screen(bm):
                             text (enemy.name.split()[0] + "'s\nrow"):
                                 font "fonts/Caveat-Regular.ttf"
                                 size 12
-                                color _ink_faint
+                                color (_ink_faint)
                                 xsize 68
                                 yalign 0.5
 
@@ -1472,7 +1472,7 @@ screen battle_screen(bm):
                                 if action is None:
                                     frame:
                                         xsize 180 ysize 62 yalign 0.5
-                                        background _paper
+                                        background (_paper)
                                         foreground Frame(
                                             Composite((4,4),
                                                 (0,0), Solid(_ink_faint, xsize=4, ysize=1),
@@ -1490,7 +1490,7 @@ screen battle_screen(bm):
                                         text "— open —":
                                             font "fonts/Caveat-Regular.ttf"
                                             size 12
-                                            color _ink_faint
+                                            color (_ink_faint)
                                             xalign 0.5 yalign 0.5
 
                                 elif isinstance(action, EnemyIntent):
@@ -1511,24 +1511,24 @@ screen battle_screen(bm):
                                             text "ENEMY":
                                                 font "fonts/Caveat-Regular.ttf"
                                                 size 10
-                                                color _ink_light
+                                                color (_ink_light)
                                                 xalign 0.5
                                             text action.name:
                                                 font "fonts/CaveatBrush-Regular.ttf"
                                                 size 15
-                                                color _ink
+                                                color (_ink)
                                                 xalign 0.5
                                         if action.damage > 0:
                                             text str(action.damage):
                                                 font "fonts/Caveat-Regular.ttf"
                                                 size 11
-                                                color _ink_light
+                                                color (_ink_light)
                                                 xalign 0.98 yalign 0.92
 
                                 elif isinstance(action, Skill):
                                     frame:
                                         xsize 180 ysize 62 yalign 0.5
-                                        background _paper_dark
+                                        background (_paper_dark)
                                         foreground Frame(
                                             Composite((4,4),
                                                 (0,0), Solid(_ink, xsize=4, ysize=1),
@@ -1547,12 +1547,12 @@ screen battle_screen(bm):
                                             text "YOU":
                                                 font "fonts/Caveat-Regular.ttf"
                                                 size 10
-                                                color _ink
+                                                color (_ink)
                                                 xalign 0.5
                                             text action.name:
                                                 font "fonts/CaveatBrush-Regular.ttf"
                                                 size 15
-                                                color _ink
+                                                color (_ink)
                                                 xalign 0.5
 
             # CONFIRM button ─ right side, spans all rows
@@ -1563,12 +1563,12 @@ screen battle_screen(bm):
                     yalign 0.5
                     xsize 140
                     ysize 52
-                    background _ink
+                    background (_ink)
                     hover_background (_paper_mid if is_chaos else C_INK_MID)
                     action Return("execute")
                     text_font "fonts/CaveatBrush-Regular.ttf"
                     text_size 20
-                    text_color _paper
+                    text_color (_paper)
                     text_xalign 0.5
 
 
@@ -1594,7 +1594,7 @@ screen battle_screen(bm):
                 xpos 24
                 xsize 700
                 yalign 1.0
-                yoffset (-_intent_offset)
+                yoffset (-(_intent_offset))
                 background (_paper + "df")
                 left_padding 4
                 right_padding 12
@@ -1611,17 +1611,17 @@ screen battle_screen(bm):
                 frame:
                     xsize 4 yfill True
                     xpos 0
-                    background _ink
+                    background (_ink)
                 hbox:
                     spacing 10
                     # xpadding removed from hbox/vbox
                     text (_preview_enemy.name + ": " + _intent_preview.name):
                         style "battle_intent_title"
-                        color _ink
+                        color (_ink)
                         yalign 0.5
                     text _intent_preview.desc:
                         style "battle_intent_desc"
-                        color _ink_light
+                        color (_ink_light)
                         yalign 0.5
 
 
@@ -1646,19 +1646,19 @@ screen battle_screen(bm):
                 text "your cards":
                     font "fonts/Caveat-Regular.ttf"
                     size 13
-                    color _ink_faint
+                    color (_ink_faint)
                 hbox:
                     xalign 1.0
                     spacing 8
                     text "next skill:":
                         font "fonts/Caveat-Regular.ttf"
                         size 12
-                        color _ink_faint
+                        color (_ink_faint)
                         yalign 0.5
                     bar value bm.skill_exp range bm.skill_exp_max:
                         xsize 260 ysize 7 yalign 0.5
-                        left_bar  _ink
-                        right_bar _paper_mid
+                        left_bar  (_ink)
+                        right_bar (_paper_mid)
 
             # Card row
             hbox:
@@ -1674,7 +1674,7 @@ screen battle_screen(bm):
                             xsize 130
                             ysize 168
                             yoffset (-14 if _sel else 0)
-                            background _paper
+                            background (_paper)
 
                             # Card border
                             foreground Frame(
@@ -1696,21 +1696,21 @@ screen battle_screen(bm):
                                 frame:
                                     xfill True
                                     ysize 76
-                                    background _paper
+                                    background (_paper)
                                     text skill.icon:
                                         xalign 0.5 yalign 0.5
                                         size 36
-                                        color _ink
+                                        color (_ink)
 
                                 # Divider
                                 frame:
                                     xfill True ysize 1
-                                    background _ink_faint
+                                    background (_ink_faint)
 
                                 # Name + stats
                                 frame:
                                     xfill True
-                                    background _paper
+                                    background (_paper)
                                     xpadding 6
                                     top_padding 4
                                     bottom_padding 5
@@ -1719,19 +1719,19 @@ screen battle_screen(bm):
                                         text skill.name:
                                             font "fonts/CaveatBrush-Regular.ttf"
                                             size 15
-                                            color _ink
+                                            color (_ink)
                                         hbox:
                                             xfill True
                                             $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
                                             text _val:
                                                 font "fonts/Caveat-Regular.ttf"
                                                 size 11
-                                                color _ink_light
+                                                color (_ink_light)
                                             if skill.cooldown > 0:
                                                 text ("cd:" + str(skill.cooldown)):
                                                     font "fonts/Caveat-Regular.ttf"
                                                     size 11
-                                                    color _ink_light
+                                                    color (_ink_light)
                                                     xalign 1.0
 
                             # Cost bubble (top-right corner)
@@ -1739,12 +1739,12 @@ screen battle_screen(bm):
                                 xalign 1.0 yalign 0.0
                                 xoffset -5 yoffset 9
                                 xsize 22 ysize 22
-                                background _ink
+                                background (_ink)
                                 text str(skill.cost):
                                     xalign 0.5 yalign 0.5
                                     font "fonts/Caveat-Regular.ttf"
                                     size 12
-                                    color _paper
+                                    color (_paper)
 
                             # Selected highlight overlay
                             if _sel:
@@ -1762,13 +1762,13 @@ screen battle_screen(bm):
                                             xalign 0.5 yalign 0.5
                                             font "fonts/CaveatBrush-Regular.ttf"
                                             size 46
-                                            color _ink_faint
+                                            color (_ink_faint)
                                     else:
                                         text "USED":
                                             xalign 0.5 yalign 0.5
                                             font "fonts/CaveatBrush-Regular.ttf"
                                             size 24
-                                            color _ink_faint
+                                            color (_ink_faint)
 
                             # Click area (rendered last so it sits on top)
                             if not _on_cd:
@@ -1789,7 +1789,7 @@ screen battle_screen(bm):
             yalign 1.0
             yoffset -(220 + (_num_alive if hasattr(bm,'enemies') else 1) * 78 + 60)
             xsize 200
-            background _paper_dark
+            background (_paper_dark)
             padding (14, 14)
             foreground Frame(
                 Composite((4,4),
@@ -1804,45 +1804,45 @@ screen battle_screen(bm):
                 text s.name:
                     font "fonts/CaveatBrush-Regular.ttf"
                     size 19
-                    color _ink
+                    color (_ink)
                 text ("Cost: " + str(s.cost) + " Energy"):
                     font "fonts/Caveat-Regular.ttf"
                     size 14
-                    color _ink_light
+                    color (_ink_light)
                 if s.damage > 0:
                     text ("Damage: " + str(s.damage)):
                         font "fonts/Caveat-Regular.ttf"
                         size 14
-                        color _ink_light
+                        color (_ink_light)
                 if s.cooldown > 0:
                     text ("Cooldown: " + str(s.cooldown) + " turns"):
                         font "fonts/Caveat-Regular.ttf"
                         size 14
-                        color _ink_light
+                        color (_ink_light)
                 frame:
                     xfill True ysize 1
                     yoffset 4
-                    background _ink_faint
+                    background (_ink_faint)
+                null height 6
                 text s.desc:
                     font "fonts/PatrickHand-Regular.ttf"
                     size 12
-                    color _ink_light
+                    color (_ink_light)
                     italic True
-                    top_margin 6
 
                 # Remove from slot button
                 if s in bm.used_skills_this_turn:
                     $ _ei, _si = bm.get_skill_slot_info(s)
                     if _ei != -1:
+                        null height 8
                         textbutton "REMOVE FROM SLOT":
                             action Function(bm.remove_from_slot, _ei, _si)
                             xsize 172
-                            background _paper_mid
-                            hover_background _ink_faint
-                            top_margin 8
+                            background (_paper_mid)
+                            hover_background (_ink_faint)
                             text_font "fonts/CaveatBrush-Regular.ttf"
                             text_size 14
-                            text_color _ink
+                            text_color (_ink)
                             text_xalign 0.5
 
 
@@ -1853,7 +1853,7 @@ screen battle_screen(bm):
     if is_chaos and hasattr(store, "chaos_anim_val"):
         frame:
             xalign 0.35 yalign 0.35
-            background C_CHAOS_PAPER
+            background (C_CHAOS_PAPER)
             padding (22, 10)
             foreground Frame(
                 Composite((4,4),
@@ -1869,12 +1869,12 @@ screen battle_screen(bm):
                 text "DAMAGE":
                     font "fonts/Caveat-Regular.ttf"
                     size 13
-                    color C_CHAOS_INK_LIGHT
+                    color (C_CHAOS_INK_LIGHT)
                     xalign 0.5
                 text str(store.chaos_anim_val):
                     font "fonts/CaveatBrush-Regular.ttf"
                     size 50
-                    color C_CHAOS_INK
+                    color (C_CHAOS_INK)
                     xalign 0.5
 
 
@@ -1898,7 +1898,7 @@ screen battle_screen(bm):
         action ShowMenu("preferences")
         text_size 12
         text_font "fonts/Caveat-Regular.ttf"
-        text_color _ink_faint
+        text_color (_ink_faint)
 
 label battle_reset_camera:
     camera:
