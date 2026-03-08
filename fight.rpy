@@ -1022,7 +1022,7 @@ screen battle_screen(bm):
         xfill True
         ysize 250
         background ("#00000000")
-        spacing 80
+        xpadding 80
         if is_chaos:
             at chaos_glitch
 
@@ -1610,7 +1610,7 @@ label battle_engine(bm):
             $ renpy.pause(0.4, hard=True)
             $ renpy.show(bm.enemies[0].sprites["idle"], tag="enemy_0")
             $ bm.take_damage(5, target="enemy", enemy_idx=0)
-                "Dobe kicks the crippled lady for 5 damage"
+            "Dobe kicks the crippled lady for 5 damage"
             show dobe_attack:
                 xanchor 0.5 yanchor 1.0
                 xpos 0.75 ypos 0.8
@@ -3464,7 +3464,7 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_corrode_anim_order
             $ bm.add_buff("corrosion", 5, store.locked_skill_value, target="enemy", enemy_idx=e_idx)
-                "You applied corrosion to Order for [store.locked_skill_value] turns!"
+            "You applied corrosion to Order for [store.locked_skill_value] turns!"
         elif skill.type == "inversion":
             $ bm.is_dodged = False
             if skill.animation:
@@ -3482,7 +3482,7 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_collapse_anim_order
             $ enemy.collapsed = True
-                "You collapsed Order's reality! Their next action is nullified."
+            "You collapsed Order's reality! Their next action is nullified."
         elif skill.type == "leech":
             $ bm.is_dodged = False
             if skill.animation:
@@ -3510,7 +3510,7 @@ label order_battle_resolution_core:
 
         if enemy.collapsed:
             $ enemy.collapsed = False
-                "Order's action was nullified by Collapse!"
+            "Order's action was nullified by Collapse!"
             $ e_idx += 1
             jump order_battle_resolution_core
 
@@ -3593,7 +3593,7 @@ label order_battle_resolution_core:
             $ damage = bm.turn_count
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
-                "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
+            "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
 
     if bm.enemies[0].is_dead:
         window hide
