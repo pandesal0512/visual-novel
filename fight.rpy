@@ -1017,6 +1017,7 @@ label chaos_card_shuffle_anim(bm):
     return
 
 label chaos_number_anim(final_value, label_text=""):
+    $ store.chaos_anim_label = label_text
     $ store.chaos_anim_len = max(2, len(str(final_value)))
     $ store.chaos_anim_val = "?" * store.chaos_anim_len
     # show screen chaos_number_indicator(label_text) # Integrated into battle_screen
@@ -1554,7 +1555,7 @@ screen battle_screen(bm):
                 text getattr(store, "chaos_anim_label", "DAMAGE"):
                     style "battle_faint" size 18 color "#888888" xalign 0.5
                 text str(store.chaos_anim_val):
-                    font "CaveatBrush-Regular.ttf"
+                    font FONT_BRUSH
                     size 68 color "#ffffff" xalign 0.5
 
     ## ══════════════════════════════════════════════════════════════════════════
@@ -1750,43 +1751,11 @@ transform chaos_glitch:
 
 
 
-## scramble_hp — un-comment if you don't already have one
-init python:
-    import random as _rng
-    _SC = "0123456789#$@?!"
-    def scramble_hp(val):
-        return "".join(_rng.choice(_SC) if _rng.random() < 0.35 else ch for ch in str(val))
 
 
-image slot_dashed        = Frame(Solid("#aaaaaa"), 1, 1)
-image slot_dashed_chaos  = Frame(Solid("#333333"), 1, 1)
-image slot_hatch         = Solid("#00000008")
-image slot_hatch_chaos   = Solid("#ffffff08")
-image slot_border        = Frame(Solid("#000000"), 2, 2)
-image slot_border_chaos  = Frame(Solid("#ffffff"), 2, 2)
-image intent_accent      = Frame(Solid("#000000"), 4, 0, 0, 0)
-image intent_accent_chaos= Frame(Solid("#ffffff"), 4, 0, 0, 0)
-image card_popup         = Frame(Solid("#000000"), 2, 2)
-image card_popup_chaos   = Frame(Solid("#ffffff"), 2, 2)
-image card_selected      = Frame(Solid("#000000"), 2, 2)
-image card_selected_chaos= Frame(Solid("#ffffff"), 2, 2)
-image card_hover         = Frame(Solid("#00000033"), 2, 2)
-image card_hover_chaos   = Frame(Solid("#ffffff33"), 2, 2)
-image chaos_box_border   = Frame(Solid("#ffffff"), 2, 2)
-image hp_low_hatch       = Solid("#000000")
-image hp_low_hatch_chaos = Solid("#ffffff")
 
 
-init python:
-    def get_typebar(skill_type, is_chaos):
-        suffix = "_chaos" if is_chaos else ""
-        if skill_type == "attack": return "typebar_attack"
-        if skill_type == "ultimate": return "typebar_ultimate"
-        if skill_type == "barrier": return "typebar_barrier" + suffix
-        if skill_type == "energy": return "typebar_energy" + suffix
-        if skill_type == "dodge": return "typebar_dodge" + suffix
-        if skill_type == "buff": return "typebar_buff" + suffix
-        return "typebar_attack"
+
 
 label battle_reset_camera:
     camera:
@@ -4367,6 +4336,191 @@ label battle_boss_ava_butter_phase2(skill_overrides=None):
     call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_2
     return
 
+
+################################################################################
+##  STYLES
+################################################################################
+
+define FONT_BRUSH  = "CaveatBrush-Regular.ttf"
+define FONT_CAVEAT = "Caveat-Regular.ttf"
+define FONT_HAND   = "PatrickHand-Regular.ttf"
+
+style battle_charname:
+    font  FONT_BRUSH
+    size  34
+    color "#000000"
+
+style battle_label:
+    font  FONT_CAVEAT
+    size  15
+    color "#666666"
+
+style battle_stat_nums:
+    font  FONT_CAVEAT
+    size  14
+    color "#666666"
+
+style battle_big_stat:
+    font  FONT_BRUSH
+    size  38
+    color "#ffffff"
+
+style battle_turn_badge:
+    font  FONT_CAVEAT
+    size  14
+    color "#666666"
+
+style battle_faint:
+    font  FONT_CAVEAT
+    size  13
+    color "#aaaaaa"
+
+style battle_chip:
+    font  FONT_CAVEAT
+    size  13
+    color "#333333"
+
+style battle_exp_label:
+    font  FONT_CAVEAT
+    size  12
+    color "#aaaaaa"
+
+style battle_slot_tag:
+    font   FONT_CAVEAT
+    size   10
+    color  "#aaaaaa"
+    bold   True
+    kerning 1
+
+style battle_slot_name:
+    font  FONT_BRUSH
+    size  14
+    color "#000000"
+
+style battle_slot_val:
+    font  FONT_CAVEAT
+    size  11
+    color "#666666"
+
+style battle_intent_title:
+    font  FONT_BRUSH
+    size  17
+    color "#000000"
+
+style battle_intent_desc:
+    font   FONT_HAND
+    size   13
+    color  "#666666"
+    italic True
+
+style battle_card_name:
+    font  FONT_BRUSH
+    size  13
+    color "#000000"
+
+style battle_card_stat:
+    font  FONT_CAVEAT
+    size  11
+    color "#666666"
+
+style battle_cooldown_num:
+    font  FONT_BRUSH
+    size  30
+    color "#000000"
+
+style battle_popup_name:
+    font  FONT_BRUSH
+    size  20
+    color "#000000"
+
+style battle_popup_line:
+    font  FONT_CAVEAT
+    size  14
+    color "#333333"
+
+style battle_confirm_btn:
+    font  FONT_BRUSH
+    size  20
+    color "#ffffff"
+
+style battle_settings_btn is default:
+    font  FONT_CAVEAT
+    size  15
+    color "#aaaaaa"
+
+################################################################################
+##  TRANSFORMS
+################################################################################
+
+transform chaos_name_glitch:
+    ## Player name flickers in chaos mode
+    block:
+        alpha 1.0
+        pause 4.5
+        alpha 0.4
+        pause 0.08
+        alpha 1.0
+        pause 0.07
+        alpha 0.7
+        pause 0.05
+        alpha 1.0
+        repeat
+
+transform chaos_hp_glitch:
+    ## HP number briefly shifts sideways in chaos mode
+    block:
+        xoffset 0
+        pause 5.0
+        xoffset -3
+        pause 0.06
+        xoffset 2
+        pause 0.04
+        xoffset 0
+        repeat
+
+transform chaos_slots_shake:
+    ## Slot strip gentle wobble during chaos selection
+    block:
+        xoffset 0 yoffset 0
+        pause 7.0
+        xoffset  1  yoffset -1
+        pause 0.06
+        xoffset -1  yoffset  1
+        pause 0.05
+        xoffset  0  yoffset  0
+        repeat
+
+transform chaos_glitch:
+    ## Chaos number box glitch during execution phase
+    block:
+        xoffset 0
+        pause 0.4
+        xoffset -4
+        pause 0.06
+        xoffset  3
+        pause 0.04
+        xoffset  0
+        repeat
+
+init python:
+    import random as _rng
+    _SC = "0123456789#$@?!"
+    def scramble_hp(val):
+        return "".join(_rng.choice(_SC) if _rng.random() < 0.35 else ch for ch in str(val))
+
+    def get_typebar(skill_type, is_chaos):
+        suffix = "_chaos" if is_chaos else ""
+        if skill_type == "attack": return "typebar_attack"
+        if skill_type == "ultimate": return "typebar_ultimate"
+        if skill_type == "barrier": return "typebar_barrier" + suffix
+        if skill_type == "energy": return "typebar_energy" + suffix
+        if skill_type == "dodge": return "typebar_dodge" + suffix
+        if skill_type == "buff": return "typebar_buff" + suffix
+        return "typebar_attack"
+
+image slot_hatch = "slot_enemy_hatch"
+image slot_hatch_chaos = "slot_enemy_hatch_chaos"
+
 # Wobbly procedural frames (Refined for Sketchy look)
 image frame_wobbly = Frame(
     Composite(
@@ -4417,17 +4571,3 @@ image frame_wobbly_faint_chaos = Frame(
     ),
     10, 10, 10, 10
 )
-
-init python:
-    def ink(c):
-        return "#ffffff" if c else "#000000"
-    def paper(c):
-        return "#000000" if c else "#ffffff"
-    def ink_light(c):
-        return "#888888" if c else "#666666"
-    def ink_faint(c):
-        return "#333333" if c else "#aaaaaa"
-    def paper_dark(c):
-        return "#111111" if c else "#f0f0f0"
-    def paper_mid(c):
-        return "#1a1a1a" if c else "#e0e0e0"
