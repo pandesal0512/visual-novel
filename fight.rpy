@@ -203,7 +203,7 @@ init python:
     def get_chaos_random_value(bm, skill):
         if not getattr(skill, "is_chaos_skill", False):
             if skill.type == "attack":
-                return skill.damage + bm.get_total_buff_value("damage", target="player")
+                return max(0, skill.damage + bm.get_total_buff_value("damage", target="player") - bm.get_total_buff_value("corrosion", target="player"))
             return skill.damage
         if skill.type == "attack":
             base = 0
@@ -211,13 +211,13 @@ init python:
             elif skill.name == "Cataclysm": base = renpy.random.randint(1, 30)
             elif skill.name == "??????": base = renpy.random.randint(1, 60)
             else: base = renpy.random.randint(1, 20)
-            return base + bm.get_total_buff_value("damage", target="player")
+            return max(0, base + bm.get_total_buff_value("damage", target="player") - bm.get_total_buff_value("corrosion", target="player"))
         if skill.type in ["barrier", "buff"]:
             return renpy.random.randint(1, 50)
         if skill.type == "energy":
             return renpy.random.randint(1, 50)
         if skill.type == "fracture":
-            return renpy.random.randint(1, 10)
+            return renpy.random.randint(1, 10) + bm.get_total_buff_value("damage", target="player")
         if skill.type == "corrode":
             return renpy.random.randint(2, 3)
         return skill.damage
@@ -545,12 +545,10 @@ init python:
         def add_buff(self, type, value, duration, target="player", enemy_idx=0):
             if target == "player":
                 # Replace existing buff of the same type
-                self.player_buffs = [b for b in self.player_buffs if b[0] != type]
                 self.player_buffs.append([type, value, duration])
             else:
                 enemy = self.enemies[enemy_idx]
                 # Replace existing buff of the same type
-                enemy.buffs = [b for b in enemy.buffs if b[0] != type]
                 enemy.buffs.append([type, value, duration])
 
         def update_buffs(self):
@@ -688,7 +686,7 @@ init python:
             return [
                 EnemyIntent("Runover", damage=6, desc="Watch your toes.", animation="lumpi_wheelchair_normal_anim", type="attack"),
                 EnemyIntent("Reinforced Frame", damage=10, desc="Adds 10 Defense.", animation="lumpi_wheelchair_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("Overdrive", damage=4, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("Overdrive", damage=8, buff_type="damage", buff_duration=3, desc="Increases damage by 8 for 3 turns.", animation="lumpi_wheelchair_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("Turbo Charge", damage=10, desc="High speed impact.", animation="lumpi_wheelchair_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("Drift", desc="Will dodge the next attack.", animation="lumpi_wheelchair_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("crashout", damage=25, desc="thats it im beating the shit out of you", animation="lumpi_wheelchair_ultimate_anim", type="attack", cooldown=6)
@@ -706,7 +704,7 @@ init python:
             return [
                 EnemyIntent("poke", damage=6, desc="poke", animation="ava_normal_anim", type="attack"),
                 EnemyIntent("ETERNAL RECORD", damage=8, desc="as long as a single soul remembers civilization, I cannot fall. history does not die easily.", animation="ava_block_anim", type="barrier", cooldown=3),
-                EnemyIntent("RALLY", damage=15, buff_type="something something power of humanity.", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
+                EnemyIntent("RALLY", damage=15, buff_type="damage", buff_duration=3, desc="Increases damage by 15 for 3 turns.", animation="ava_energy_anim", type="buff", cooldown=4),
                 EnemyIntent("CULTURAL IMPACT", damage=15, desc="a strike so significant it will be remembered for generations. probably.", animation="ava_hard_anim", type="attack", cooldown=0),
                 EnemyIntent("WRITTEN IN HISTORY", desc="Will dodge the next attack.", animation="ava_dodge_anim", type="dodge", cooldown=3),
                 EnemyIntent("END OF AN ERA", damage=60, desc="every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now", animation="ava_ultimate_anim", type="attack", cooldown=6)
@@ -1443,6 +1441,7 @@ label battle_engine(bm):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_generic
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+            "Order's damage increased by [intent.damage]"
                 "[enemy.name] damage increased by [intent.damage]"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
@@ -2588,6 +2587,7 @@ label butter_ava_battle(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss1
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+            "Order's damage increased by [intent.damage]"
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
@@ -2681,9 +2681,10 @@ label butter_ava_battle(skill_overrides=None):
                 $ renpy.show("ava_attack", tag="enemy_1", at_list=[Position(xalign=0.75, ypos=0.8, yanchor=1.0)])
                 play sound 'punch-140236.mp3' volume 2.0
                 $ renpy.pause(0.5, hard=True)
-                $ bm.take_damage(5, target='enemy', enemy_idx=0)
-                $ bm.gain_exp(5 * 5, character_type="enemy", enemy_idx=1)
-                'ava attacks butter for 5 damage! (Butter HP: [bm.enemies[0].hp])'
+                $ damage = max(0, 5 + bm.get_total_buff_value("damage", target="enemy", enemy_idx=1) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=1))
+                $ bm.take_damage(damage, target='enemy', enemy_idx=0)
+                $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=1)
+                'ava attacks butter for [damage] damage! (Butter HP: [bm.enemies[0].hp])'
             'butter' 'HOLD ON why are you attacking me?'
             'ava' 'oh wait i forgot you are my ally'
             'ava' 'my bad gang'
@@ -2983,6 +2984,7 @@ label butter_ava_battle2(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+            "Order's damage increased by [intent.damage]"
                 "[enemy.name]'s damage increased by [intent.damage]"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
@@ -3070,6 +3072,7 @@ label butter_ava_battle2(skill_overrides=None):
                 if enemy.hp < (enemy.max_hp / 2):
                     $ damage *= 2
                 $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
+                $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
                 $ bm.take_damage(damage, target="player")
                 "dealt [damage] damage"
             elif intent.type == "foundation":
@@ -3141,9 +3144,10 @@ label butter_ava_battle2(skill_overrides=None):
                 play sound 'audio/sword-slash-and-swing-185432.mp3' volume 2.0
                 $ renpy.pause(1.0, hard=True)
                 show ava_idle as enemy_1 at Position(xalign=0.85, ypos=0.8, yanchor=1.0)
-                $ bm.take_damage(50, target='player')
-                $ bm.gain_exp(50 * 5, character_type="enemy", enemy_idx=1)
-                'ava attacks for 50 damage'
+                $ damage = max(0, 50 + bm.get_total_buff_value("damage", target="enemy", enemy_idx=1) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=1))
+                $ bm.take_damage(damage, target='player')
+                $ bm.gain_exp(damage * 5, character_type="enemy", enemy_idx=1)
+                'ava attacks for [damage] damage'
         if bm.player_hp <= 0:
             window hide
             jump .boss2_defeat
@@ -3482,9 +3486,11 @@ label order_battle_resolution_core:
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_buffanim
             $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
+            "Order's damage increased by [intent.damage]"
         elif intent.type == "energy":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_energyanim
+            "Order is recovering."
         elif intent.type == "precedent":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_precedent
