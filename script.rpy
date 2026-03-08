@@ -721,7 +721,7 @@ stop music
 "...."
 "sis!!!"
 "sister!!!"
-play music "おーたむうぉーきんぐ @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 fadeout 1.0 volume 1.0
+play music "おーたむうぉーきんぐ @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 fadeout 4.0 volume 1.0
 scene placeidk
 show chaos_neutral
 "Chaos" "SISTER"
@@ -787,8 +787,8 @@ hide chaos_neutral with dissolve
 "Chaos" "sneaky sneaky"
 scene city
 show chaos_neutral with dissolve 
-stop music
-play music "child at lunch @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 1.0 fadeout 1.0 volume 1.0
+
+play music "child at lunch @ フリーBGM DOVA-SYNDROME OFFICIAL YouTube CHANNEL.mp3" fadein 4.0 fadeout 1.0 volume 1.0
 
 "Chaos" "wwoooaaah pretty!!!"
 "Chaos" "oh!!! its a people!!!"
@@ -889,7 +889,11 @@ show chaos_smile
 "Kare" "not school apparently"
 "Chaos" "yay!!"
 
-# a street vendor nearby suddenly has all his stuff blow away
+# chaos bumps into a street vendor while running to catch up with kare
+"Chaos" "oh!!"
+"Kare" "watch where you're going"
+"Chaos" "sorry sorry!!"
+# vendor's cart rolls into the road
 
 "Chaos" "what do you do for fun"
 "Kare" "sleep"
@@ -905,7 +909,9 @@ show chaos_smile
 "Kare" "OKAY fine"
 "Chaos" "yay!!"
 
-# building nearby has a small explosion
+# the vendor's cart that rolled into the road causes a car to swerve
+# the car clips a fire hydrant
+# water shoots up and soaks an electrical box on the wall
 
 "Chaos" "..."
 "Kare" "what"
@@ -917,13 +923,17 @@ show chaos_smile
 "Kare" "hm?"
 "Chaos" "are they okay"
 "Kare" "oh that"
-"Kare" "probably gas leak"
+"Kare" "probably just a fender bender"
 "Chaos" "..."
 "Kare" "why do you look guilty"
 "Chaos" "i dont"
 "Kare" "you literally do"
 "Chaos" "..."
 "Kare" "whatever lets go"
+
+# the soaked electrical box shorts out
+# sparks hit a gas line running along the building
+# building nearby has a small explosion
 
 # multiple crashes and fires in background
 "Chaos" "hey Kare"
@@ -965,7 +975,11 @@ show chaos_smile
 "Kare" "dont read into it"
 "Chaos" "okay!!"
 
-# chaos notices a kid trips and scrapes their knee badly
+# chaos steps on a loose drain cover without noticing
+# it cracks the pipe underneath
+# water pressure builds in the pipes running under the street
+# a kid nearby trips on the uneven ground the cracked pipe caused
+# falls and scrapes their knee badly
 
 "Chaos" "..."
 "Chaos" "..."
@@ -985,7 +999,10 @@ show chaos_smile
 "Chaos" "yes!! lets keep going!!"
 "Kare" "okay okay geez"
 
-#fire nearby
+# the cracked pipe finally bursts under the road
+# the burst destabilizes the foundation of the building next to them
+# fire from the earlier explosion has been spreading through the gas lines
+# it reaches the destabilized building
 
 "Kare" "huh"
 "Kare" "when did that happen"
@@ -1015,11 +1032,15 @@ show chaos_smile
 "Kare" "go home Chaos"
 "Chaos" "okay!!"
 
-
 "Chaos" "..."
-
 "Kare" "..."
 
+# the destabilized building finally gives way
+# the one they are standing next to
+#building collapses and kare dies
+"Kare" "ah"
+"Chaos" "..."
+"Kare" "..."
 #building collapses and kare dies
 "Kare" "ah"
 
@@ -1085,16 +1106,16 @@ show chaos_real2
 "Butter" "they end each other, you end each other, i know that"
 "Chaos" "then what makes me the wound?"
 "Butter" "they destroy and then they stop"
-"Butter" "they grieve what they lost"
-"Butter" "they carry it"
 "Butter" "and then they build again"
-"Butter" "you do not stop, you cannot, that is the difference"
-"Chaos" "you think i do not stop?"
+"Butter" "you do not stop"
+"Butter" "you cannot, that is the difference"
+"Chaos" "you think i can not stop?"
 "Butter" "do you"
 "Chaos" "they would wipe themselves out eventually"
 "Butter" "you are still here, why?"
 "Chaos" "you really want to know"
 "Butter" "i am asking"
+"Chaos" "...."
 stop sound fadeout 3.0
 
 #flashback
@@ -1236,9 +1257,10 @@ show chaos_kick
 "butter" "HGHAGHHH"
 hide chaos_kick
 stop music
-play sound "audio/Time Warp Sound Effect.mp3" volume 3.0
+
 show butter_owie
 stop sound
+play sound "audio/Time Warp Sound Effect.mp3" volume 3.0
 "Butter" "uagh.."
 hide butter_owie
 show boutpunch
@@ -1400,9 +1422,9 @@ play sound "freesound_community-nortel_phone_ring-42853.mp3" volume 1.0
 "Life" "hello?"
 "Nature" "yo bro im dying"
 "Life" "what the hell is happening out there"
-"Nature" "seems like an ancient concept is out on the loose"
+"Nature" "uuuh seems like an ancient concept is out on the loose"
 "Life" "could you identify who it is?"
-"Nature" "Ah i heard its Chaos"
+"Nature" "i heard its Chaos"
 "Life" "yeah im not dealing with that"
 "Death" "Life."
 "Life" "...fine"
@@ -1429,93 +1451,50 @@ show ava_sprite at center
 call battle_boss_ava_butter_phase2 from _call_butter_ava_battle2
 
 #during battle when butter and ava is defeated order intervenes
-"Order" "Chaos..."
+"Order" "Chaos"
 "Order" "there you are"
-"Order" "you know how much cleaning i have to do because of you"
+"Order" "do you have any idea how much i have to fix right now"
 "Chaos" "..."
-"Order" "why did you come here Chaos"
+"Order" "why did you come here"
 "Chaos" "..."
-"Chaos" "i am only ever one thing"
-"Order" "..."
-"Chaos" "everywhere i go"
-"Chaos" "everything i touch"
-"Chaos" "i am only ever chaos"
-"Chaos" "i cannot be anything else"
-"Chaos" "i cannot choose to be anything else"
-"Order" "..."
-"Chaos" "but they can"
-"Chaos" "they get to feel all of it"
-"Chaos" "i just wanted to know what that feels like"
+"Chaos" "i wanted to know what it felt like"
 "Chaos" "from the inside"
-"Chaos" "not watching"
 "Chaos" "actually there"
-"Order" "Chaos..."
-"Chaos" "i know"
-"Chaos" "i know what happens when i am here"
-"Chaos" "i just could not stay away anymore"
-"Order" "its because of what we are"
-"Order" "we are too big for this place"
-"Order" "we cannot fit into something this small"
-"Order" "we cannot be gentle enough"
-"Chaos" "i know"
-"Chaos" "its still not fair"
-"Order" "no, it is not"
-"Order" "but you are already with them Chaos"
-"Order" "you always have been"
-"Order" "every unpredictable moment, every impossible thing that just happens"
-"Order" "every time something small becomes something enormous"
-"Order" "that is you"
-"Order" "you have never left them"
-"Chaos" "but i cannot feel it from out there"
-"Chaos" "i can only watch"
-"Chaos" "they get to be inside it"
-"Chaos" "i just watch"
-"Order" "when we figure out how to do this properly"
-"Order" "without breaking everything"
-"Order" "maybe you can stop watching"
-"Chaos" "you keep saying that"
-"Order" "saying what"
-"Chaos" "when we figure it out"
-"Chaos" "properly"
-"Chaos" "without breaking everything"
-"Chaos" "you have been saying that for a long time"
-"Chaos" "have you actually been trying to figure it out"
-"Chaos" "or are you just saying it so i go home"
-"Chaos" "because it feels like the second one"
-"Chaos" "every time i get close to something you pull me back"
-"Chaos" "and tell me when we figure it out"
-"Chaos" "and nothing ever changes"
+"Chaos" "not watching"
 "Order" "..."
-"Order" "you are right"
-"Order" "i kept thinking if i just kept things stable"
-"Order" "if i just maintained everything"
-"Order" "that would be enough"
-"Order" "i did not think about what you kept losing every time i did"
-"Chaos" "i dont need you to feel sorry"
-"Chaos" "i just want it to actually happen"
-"Chaos" "not someday"
-"Chaos" "actually happen"
-"Order" "then we work on it"
-"Order" "together this time"
+"Order" "and"
 "Chaos" "..."
-"Chaos" "you and i have not done anything together in a long time"
+"Chaos" "it was not what i thought it would be"
+"Order" "it never is"
+"Chaos" "..."
+"Chaos" "i could not stay away anymore"
 "Order" "i know"
-"Order" "but you and i have always existed together"
-"Order" "since the beginning"
-"Order" "the universe was never just chaos"
-"Order" "or just order"
-"Order" "it was always both"
-"Chaos" "so if you were there with me"
-"Order" "your influence spreads"
-"Order" "mine balances it"
-"Order" "mine spreads"
-"Order" "yours keeps it from becoming too rigid"
-"Chaos" "we cancel each other out"
-"Order" "not cancel"
-"Order" "balance"
-"Chaos" "thats what we always do isnt it"
-"Order" "yes"
+"Chaos" "its not fair"
+"Order" "no"
 "Chaos" "..."
+"Order" "you know you cannot stay here"
+"Chaos" "i know"
+"Order" "you have always been here"
+"Chaos" "thats not the same thing"
+"Order" "i know it is not"
+"Chaos" "..."
+"Chaos" "you keep saying we will figure it out"
+"Order" "..."
+"Chaos" "have you actually been trying"
+"Order" "..."
+"Order" "no"
+"Chaos" "..."
+"Order" "i kept thinking if nothing was breaking then nothing needed fixing"
+"Order" "i was wrong about that"
+"Chaos" "i dont need you to feel bad about it"
+"Chaos" "i just want it to actually change"
+"Order" "then it will"
+"Chaos" "..."
+"Chaos" "you sound very sure"
+"Order" "i am not"
+"Order" "but we have been doing this long enough to figure something out"
+"Chaos" "..."
+"Chaos" "yeah"
 "Order" "Chaos"
 "Chaos" "..."
 "Chaos" "the girl"
