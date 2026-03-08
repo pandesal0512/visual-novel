@@ -970,7 +970,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
 
         vbox:
             spacing 11
-            text "your cards":
+            text ("your cards"):
                 style "battle_faint"
 
             hbox:
@@ -999,7 +999,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
 
                                         frame:
                                             xfill True ysize 90 background (_paper + "ee")
-                                            text "?":
+                                            text ("?"):
                                                 xalign 0.5 yalign 0.5 font "CaveatBrush-Regular.ttf" size 60 color _ink
 
                                         frame:
@@ -1028,13 +1028,13 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                     xpadding 10 ypadding 6
                                     vbox:
                                         spacing 2
-                                        text skill.name:
+                                        text (skill.name):
                                             style "battle_cardname"
                                             color _ink
                                         hbox:
                                             xfill True
                                             $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
-                                            text _val:
+                                            text (_val):
                                                 style "battle_cardstat"
                                             if skill.cooldown > 0:
                                                 text ("cd:" + str(skill.cooldown)):
@@ -1044,7 +1044,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                 xoffset -8 yoffset 14
                                 xsize 32 ysize 32
                                 background _ink
-                                text str(skill.cost):
+                                text (str(skill.cost)):
                                     size 19 color _paper xalign 0.5 yalign 0.5
 
 label kare_card_shuffle_anim(bm):
@@ -1169,7 +1169,7 @@ screen battle_screen(bm):
             vbox:
                 spacing 10
                 xsize 600
-                text bm.player_name:
+                text (bm.player_name):
                     style "battle_charname"
                     color _ink
                     if is_chaos:
@@ -1177,7 +1177,7 @@ screen battle_screen(bm):
 
                 hbox:
                     spacing 16 yalign 0.5
-                    text "HP":
+                    text ("HP"):
                         style "battle_label"
                         color _ink_light
                         min_width 84
@@ -1201,7 +1201,7 @@ screen battle_screen(bm):
 
                 hbox:
                     spacing 16 yalign 0.5
-                    text "Energy":
+                    text ("Energy"):
                         style "battle_label"
                         color _ink_light
                         min_width 84
@@ -1245,7 +1245,7 @@ screen battle_screen(bm):
                         text ("Turn " + str(bm.turn_count) + " " + chr(8226) + " " + str(bm.current_max_slots) + " slots"):
                             style "battle_turn_badge"
                             color _ink_light
-                    text "team fight":
+                    text ("team fight"):
                         style "battle_faint" size 18 xalign 0.5 color _ink_faint
             else:
                 null width 100
@@ -1257,7 +1257,7 @@ screen battle_screen(bm):
                     vbox:
                         xalign 1.0
                         spacing 6
-                        text enemy.name:
+                        text (enemy.name):
                             style "battle_charname"
                             size (38 if is_multi else 45)
                             color _ink
@@ -1279,7 +1279,7 @@ screen battle_screen(bm):
                                     else:
                                         background _ink
                                 foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
-                            text "HP":
+                            text ("HP"):
                                 style "battle_label"
                                 color _ink_light
                                 min_width 84 text_align 1.0
@@ -1289,7 +1289,7 @@ screen battle_screen(bm):
                             if enemy.still_standing_triggered:
                                 frame:
                                     background _paper_mid padding (7, 2)
-                                    text "STILL STANDING":
+                                    text ("STILL STANDING"):
                                         style "battle_chip_text" size 16 italic True
                             if enemy.barrier > 0:
                                 frame:
@@ -1305,7 +1305,7 @@ screen battle_screen(bm):
                         if not is_multi:
                             hbox:
                                 xalign 1.0 spacing 12 yalign 0.5
-                                text "skill unlock":
+                                text ("skill unlock"):
                                     style "battle_exp_label"
                                 frame:
                                     xsize 208 ysize 11 yalign 0.5
@@ -1357,7 +1357,7 @@ screen battle_screen(bm):
                     text (_preview_enemy.name + ": " + _intent_preview.name + " " + chr(8212) + " " + str(_intent_preview.damage) + " damage"):
                         style "battle_intent_title"
                         color _ink
-                    text _intent_preview.desc:
+                    text (_intent_preview.desc):
                         style "battle_intent_desc"
                         color _ink_light
 
@@ -1412,11 +1412,11 @@ screen battle_screen(bm):
                                             foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
                                             vbox:
                                                 xalign 0.5 yalign 0.5 spacing 1
-                                                text "ENEMY":
+                                                text ("ENEMY"):
                                                     style "battle_slottag"
                                                     color _ink_light
                                                     xalign 0.5 size 14
-                                                text action.name:
+                                                text (action.name):
                                                     style "battle_slotname"
                                                     color _ink
                                                     xalign 0.5 size 20
@@ -1429,16 +1429,16 @@ screen battle_screen(bm):
                                             foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
                                             vbox:
                                                 xalign 0.5 yalign 0.5 spacing 1
-                                                text "YOU":
+                                                text ("YOU"):
                                                     style "battle_slottag"
                                                     color _ink
                                                     xalign 0.5 size 14
-                                                text action.name:
+                                                text (action.name):
                                                     style "battle_slotname"
                                                     color _ink
                                                     xalign 0.5 size 20
                                             if action.damage > 0:
-                                                text str(action.damage):
+                                                text (str(action.damage)):
                                                     style "battle_slotval"
                                                     xalign 0.95 yalign 0.95 size 16
                                             imagebutton:
@@ -1463,11 +1463,11 @@ screen battle_screen(bm):
             spacing 11
             hbox:
                 xfill True
-                text "your cards":
+                text ("your cards"):
                     style "battle_faint"
                 hbox:
                     xalign 1.0 spacing 12 yalign 0.5
-                    text "next skill:":
+                    text ("next skill:"):
                         style "battle_faint"
                     frame:
                         xsize 416 ysize 11 yalign 0.5
@@ -1508,13 +1508,13 @@ screen battle_screen(bm):
                                     xpadding 10 ypadding 6
                                     vbox:
                                         spacing 2
-                                        text skill.name:
+                                        text (skill.name):
                                             style "battle_cardname"
                                             color _ink
                                         hbox:
                                             xfill True
                                             $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
-                                            text _val:
+                                            text (_val):
                                                 style "battle_cardstat"
                                             if skill.cooldown > 0:
                                                 text ("cd:" + str(skill.cooldown)):
@@ -1526,7 +1526,7 @@ screen battle_screen(bm):
                                 xoffset -8 yoffset 14
                                 xsize 32 ysize 32
                                 background _ink
-                                text str(skill.cost):
+                                text (str(skill.cost)):
                                     size 19 color _paper xalign 0.5 yalign 0.5
 
                             if _sel:
@@ -1537,11 +1537,11 @@ screen battle_screen(bm):
                                     xfill True yfill True
                                     background (_paper + "cc")
                                     if skill.current_cooldown > 0:
-                                        text str(skill.current_cooldown):
+                                        text (str(skill.current_cooldown)):
                                             style "battle_cooldown_num"
                                             xalign 0.5 yalign 0.5
                                     else:
-                                        text "USED":
+                                        text ("USED"):
                                             style "battle_cardname"
                                             color _ink_faint
                                             xalign 0.5 yalign 0.5
@@ -1562,7 +1562,7 @@ screen battle_screen(bm):
             foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
             vbox:
                 spacing 8
-                text s.name:
+                text (s.name):
                     style "battle_intent_title" size 30 color _ink
                 text ("Cost: " + str(s.cost) + " Energy"):
                     style "battle_label" size 22
@@ -1574,14 +1574,14 @@ screen battle_screen(bm):
                         style "battle_label" size 22
                 frame:
                     xfill True ysize 1 background _ink_faint
-                text s.desc:
+                text (s.desc):
                     style "battle_intent_desc" size 19
 
                 if s in bm.used_skills_this_turn:
                     $ _ei, _si = bm.get_skill_slot_info(s)
                     if _ei != -1:
                         textbutton "REMOVE FROM SLOT":
-                            style "battle_confirm_text" size 22
+                            style "battle_confirm_text" text_size 22
                             action Function(bm.remove_from_slot, _ei, _si)
                             background _paper_mid
                             xfill True
@@ -1598,7 +1598,7 @@ screen battle_screen(bm):
                 spacing 5
                 text (getattr(store, "chaos_anim_label", "DAMAGE")):
                     style "battle_faint" size 21 color C_CHAOS_INK_LIGHT xalign 0.5
-                text str(store.chaos_anim_val):
+                text (str(store.chaos_anim_val)):
                     font "CaveatBrush-Regular.ttf" size 80 color C_CHAOS_INK xalign 0.5
 
     # 8. ENERGY WARNING
@@ -1608,14 +1608,14 @@ screen battle_screen(bm):
             background Solid("#ff0000cc")
             padding (40, 20)
             xalign 0.5 yalign 0.4
-            text "NOT ENOUGH ENERGY":
+            text ("NOT ENOUGH ENERGY"):
                 color "#ffffff" size 58 bold True
 
     # Settings button
     textbutton "Settings":
         xpos 16 ypos 16
         action ShowMenu("preferences")
-        style "battle_faint" size 19
+        style "battle_faint" text_size 19
 
 label battle_reset_camera:
     camera:
@@ -2655,7 +2655,8 @@ label simple_battle_graphics(skill_overrides=None):
     $ renpy.pause(0.5, hard=True)
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_butter()
-    $ skill_overrides = skill_overrides or {
+    python:
+        skill_overrides = skill_overrides or {
         "slap":             {"damage": 4, "cost": 1 },
         "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
         "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
@@ -2701,7 +2702,8 @@ label lumpi_battle(skill_overrides=None):
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI
     $ lumpi_intents = get_enemy_intents("lumpi")
     $ lumpi = Enemy('Lumpi', 250, enemy_sprites, lumpi_intents)
-    $ skill_overrides = skill_overrides or {
+    python:
+        skill_overrides = skill_overrides or {
         "slap":             {"damage": 1000, "cost": 1},
         "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
         "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
@@ -2747,7 +2749,8 @@ label lumpiwheelchair_battle(skill_overrides=None):
     # USES THE NEW UNIQUE INTENT SET FOR LUMPI WHEELCHAIR
     $ lumpi_intents = get_enemy_intents("lumpi wheelchair")
     $ lumpi = Enemy('Lumpi (Wheelchair)', 300, enemy_sprites, lumpi_intents)
-    $ skill_overrides = skill_overrides or {
+    python:
+        skill_overrides = skill_overrides or {
         "slap":             {"damage": 1000, "cost": 1},
         "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
         "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
@@ -2790,7 +2793,8 @@ label newenemy_battle(skill_overrides=None):
     $ player_sprites = {'idle': 'kare_idle', 'attack': 'kare_attack', 'hit': 'kare_hit'}
     $ butter = get_serious_butter()
     $ butter.unlocked_intents_count = 11
-    $ skill_overrides = skill_overrides or {
+    python:
+        skill_overrides = skill_overrides or {
         "slap":             {"damage": 4, "cost": 1},
         "punch":            {"damage": 8, "cost": 3,"cooldown": 3},
         "super cool kick":  {"damage": 20, "cost": 5, "cooldown": 4},
