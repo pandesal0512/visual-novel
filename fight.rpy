@@ -894,7 +894,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
         xfill True
         ysize 240
         background (_paper + "f7")
-        xpadding 38
+        padding (38, 0)
         top_padding 16
         bottom_padding 16
 
@@ -955,7 +955,7 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
                                     xfill True ysize 1 background _ink_faint
                                 frame:
                                     xfill True background _paper
-                                    xpadding 10 ypadding 6
+                                    padding (10, 6)
                                     vbox:
                                         spacing 2
                                         text (skill.name):
@@ -1087,17 +1087,17 @@ screen battle_screen(bm):
                 ## Name  (chaos: glitch animation)
                 if _ch:
                     text bm.player_name:
-                        style "battle_charname"
+                        style "battle_charname" color _k
                         at chaos_name_glitch
                 else:
                     text bm.player_name:
-                        style "battle_charname"
+                        style "battle_charname" color _k
 
                 ## HP
                 hbox:
                     spacing 10 yalign 0.5
                     text "HP":
-                        style "battle_label" min_width 60
+                        style "battle_label" min_width 60 color _kl
                     if _ch:
                         text (scramble_hp(bm.player_hp) + " / " + scramble_hp(bm.player_max_hp)):
                             style "battle_big_stat" at chaos_hp_glitch
@@ -1109,13 +1109,13 @@ screen battle_screen(bm):
                                 xsize int(200 * max(0, bm.player_hp) // max(1, bm.player_max_hp))
                                 yfill True background _k
                         text (str(bm.player_hp) + " / " + str(bm.player_max_hp)):
-                            style "battle_stat_nums"
+                            style "battle_stat_nums" color _kl
 
                 ## Energy
                 hbox:
                     spacing 10 yalign 0.5
                     text "Energy":
-                        style "battle_label" min_width 60
+                        style "battle_label" min_width 60 color _kl
                     frame:
                         xsize 200 ysize 14 yalign 0.5
                         background _pm
@@ -1123,7 +1123,7 @@ screen battle_screen(bm):
                             xsize int(200 * max(0, bm.player_energy) // max(1, bm.player_max_energy))
                             yfill True background _k
                     text (str(bm.player_energy) + " / " + str(bm.player_max_energy)):
-                        style "battle_stat_nums"
+                        style "battle_stat_nums" color _kl
 
                 ## Status chips
                 hbox:
@@ -1132,7 +1132,7 @@ screen battle_screen(bm):
                         frame:
                             background _pm padding (10, 2)
                             text ("DEF " + str(bm.player_barrier)):
-                                style "battle_chip"
+                                style "battle_chip" color _kl
                     for _bn, _ba, _bt in bm.player_buffs:
                         frame:
                             background _pm padding (10, 2)
@@ -1146,12 +1146,12 @@ screen battle_screen(bm):
                 frame:
                     xalign 0.5 background _pd padding (16, 4)
                     text ("Turn " + str(bm.turn_count) + " \u00b7 " + str(bm.current_max_slots) + " slots"):
-                        style "battle_turn_badge"
+                        style "battle_turn_badge" color _kl
 
                 if _multi:
                     $ _tnames = " + ".join(e.name for e in _live)
                     text (_tnames + "\nteam fight"):
-                        style "battle_faint" size 13 xalign 0.5 text_align 0.5
+                        style "battle_faint" size 13 xalign 0.5 text_align 0.5 color _kf
 
             ## ── ENEMY column ────────────────────────────────────────────────
             vbox:
@@ -1162,7 +1162,7 @@ screen battle_screen(bm):
                         xalign 1.0 spacing 4
 
                         text _e.name:
-                            style "battle_charname"
+                            style "battle_charname" color _k
                             size (28 if _multi else 34)
                             xalign 1.0
 
@@ -1170,7 +1170,7 @@ screen battle_screen(bm):
                         hbox:
                             xalign 1.0 spacing 10 yalign 0.5
                             text (str(_e.hp) + " / " + str(_e.max_hp)):
-                                style "battle_stat_nums"
+                                style "battle_stat_nums" color _kl
                             frame:
                                 xsize (160 if _multi else 200) ysize 14 yalign 0.5
                                 background _pm
@@ -1182,7 +1182,7 @@ screen battle_screen(bm):
                                         else ("hp_low_hatch_chaos" if _ch else "hp_low_hatch")
                                     )
                             text "HP":
-                                style "battle_label" min_width 36 text_align 1.0
+                                style "battle_label" min_width 36 text_align 1.0 color _kl
 
                         ## Status chips
                         hbox:
@@ -1208,7 +1208,7 @@ screen battle_screen(bm):
                             hbox:
                                 xalign 1.0 spacing 8 yalign 0.5
                                 text "skill unlock":
-                                    style "battle_exp_label"
+                                    style "battle_exp_label" color _kf
                                 frame:
                                     xsize 140 ysize 8 yalign 0.5
                                     background _pm
@@ -1233,7 +1233,7 @@ screen battle_screen(bm):
         yoffset (-_cards_h)
         xfill True ysize _strip_h
         background (_p + "f0")
-        xpadding 0 ypadding 0
+        padding (0, 0)
         if _ch:
             at chaos_slots_shake
 
@@ -1252,19 +1252,21 @@ screen battle_screen(bm):
                             frame:
                                 xfill True ysize 1 background _kf
 
-                        hbox:
+                        frame:
                             xfill True ysize _row_h
-                            left_padding 20 right_padding 8
-                            spacing 10 yalign 0.5
-
-                            ## Row label
-                            text (_e.name.split()[0] + "'s\nrow"):
-                                style "battle_faint"
-                                min_width 72 yalign 0.5 size 14 text_align 0.0
-
-                            ## Slot cells
+                            padding (20, 0, 8, 0)
+                            background None
                             hbox:
-                                xfill True yalign 0.5 spacing 6
+                                spacing 10 yalign 0.5
+
+                                ## Row label
+                                text (_e.name.split()[0] + "'s\nrow"):
+                                    style "battle_faint"
+                                    min_width 72 yalign 0.5 size 14 text_align 0.0
+
+                                ## Slot cells
+                                hbox:
+                                    xfill True yalign 0.5 spacing 6
 
                                 for _si in range(bm.current_max_slots):
                                     $ _slot = _e.slots[_si]
@@ -1298,10 +1300,10 @@ screen battle_screen(bm):
                                                 text "ENEMY":
                                                     style "battle_slot_tag" color _kl xalign 0.5
                                                 text _slot.name:
-                                                    style "battle_slot_name" xalign 0.5
+                                                    style "battle_slot_name" xalign 0.5 color _k
                                             if _slot.damage > 0:
                                                 text str(_slot.damage):
-                                                    style "battle_slot_val" xalign 0.97 yalign 0.92
+                                                    style "battle_slot_val" xalign 0.97 yalign 0.92 color _kl
                                             ## click → toggle intent description bar
                                             imagebutton:
                                                 xfill True yfill True
@@ -1322,10 +1324,10 @@ screen battle_screen(bm):
                                                 text "YOU":
                                                     style "battle_slot_tag" color _k xalign 0.5
                                                 text _slot.name:
-                                                    style "battle_slot_name" xalign 0.5
+                                                    style "battle_slot_name" xalign 0.5 color _k
                                             if _slot.damage > 0:
                                                 text str(_slot.damage):
-                                                    style "battle_slot_val" xalign 0.97 yalign 0.92
+                                                    style "battle_slot_val" xalign 0.97 yalign 0.92 color _kl
                                             ## click → remove from slot
                                             ## (subtle red hover = "this is removable")
                                             imagebutton:
@@ -1369,16 +1371,15 @@ screen battle_screen(bm):
             yalign 1.0 yoffset _iy
             left_margin 24 right_margin 24
             background (_p + "ee")
-            left_padding 18 right_padding 18
-            top_padding 8 bottom_padding 8
+            padding (18, 8, 18, 8)
             foreground ("intent_accent_chaos" if _ch else "intent_accent")
 
             hbox:
                 spacing 14 yalign 0.5
                 text _ititle:
-                    style "battle_intent_title"
+                    style "battle_intent_title" color _k
                 text _si_obj.desc:
-                    style "battle_intent_desc"
+                    style "battle_intent_desc" color _kl
 
     ## ══════════════════════════════════════════════════════════════════════════
     ## 4. CARDS SECTION  (bottom 150 px)
@@ -1386,7 +1387,7 @@ screen battle_screen(bm):
     frame:
         yalign 1.0 xfill True ysize _cards_h
         background (_p + "f7")
-        xpadding 24 ypadding 10
+        padding (24, 10)
 
         vbox:
             spacing 8
@@ -1395,11 +1396,11 @@ screen battle_screen(bm):
             hbox:
                 xfill True yalign 0.5
                 text "your cards":
-                    style "battle_faint"
+                    style "battle_faint" color _kf
                 hbox:
                     xalign 1.0 spacing 8 yalign 0.5
                     text "next skill:":
-                        style "battle_faint"
+                        style "battle_faint" color _kf
                     frame:
                         xsize 260 ysize 8 yalign 0.5
                         background _pm
@@ -1452,14 +1453,14 @@ screen battle_screen(bm):
                                 vbox:
                                     spacing 1
                                     text _skill.name:
-                                        style "battle_card_name"
+                                        style "battle_card_name" color _k
                                     hbox:
                                         xfill True
                                         text (str(_skill.damage) + " dmg" if _skill.damage > 0 else _skill.type):
-                                            style "battle_card_stat"
+                                            style "battle_card_stat" color _kl
                                         if _skill.cooldown > 0:
                                             text ("cd:" + str(_skill.cooldown)):
-                                                style "battle_card_stat" xalign 1.0
+                                                style "battle_card_stat" xalign 1.0 color _kl
 
                         ## Energy cost bubble (top-right corner)
                         frame:
@@ -1523,19 +1524,19 @@ screen battle_screen(bm):
                 spacing 5
 
                 text _hs.name:
-                    style "battle_popup_name"
+                    style "battle_popup_name" color _k
                 text ("Cost: " + str(_hs.cost) + " Energy"):
-                    style "battle_popup_line"
+                    style "battle_popup_line" color _kl
                 if _hs.damage > 0:
                     text ("Damage: " + str(_hs.damage)):
-                        style "battle_popup_line"
+                        style "battle_popup_line" color _kl
                 if _hs.cooldown > 0:
                     text ("Cooldown: " + str(_hs.cooldown) + " turns"):
                         style "battle_popup_line"
                 frame:
                     xfill True ysize 1 background _kf yoffset 2
                 text _hs.desc:
-                    style "battle_intent_desc" size 15
+                    style "battle_intent_desc" size 15 color _kl
 
     ## ══════════════════════════════════════════════════════════════════════════
     ## 6. CHAOS NUMBER BOX
@@ -1556,7 +1557,7 @@ screen battle_screen(bm):
                 text getattr(store, "chaos_anim_label", "DAMAGE"):
                     style "battle_faint" size 18 color "#888888" xalign 0.5
                 text str(store.chaos_anim_val):
-                    font "CaveatBrush-Regular.ttf"
+                    font "CaveatBrush-Regular.ttf" color "#ffffff"
                     size 68 color "#ffffff" xalign 0.5
 
     ## ══════════════════════════════════════════════════════════════════════════
