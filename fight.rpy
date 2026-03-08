@@ -907,31 +907,7 @@ init python:
             ]
         return []
 
-screen slot_machine(reel_items, label_text="", duration=2.0):
-    frame:
-        background Solid("#000000cc")
-        xalign 0.5 yalign 0.3
-        padding (40, 30)
-        xsize 180
-        ysize 140
-        foreground "sketchy_bar_outline"
-        vbox:
-            spacing 6
-            xalign 0.5
-            yalign 0.5
-            text "[label_text]" size 16 color "#aaa" xalign 0.5
-            viewport:
-                xsize 140
-                ysize 60
-                xalign 0.5
-                vbox:
-                    xalign 0.5
-                    spacing 0
-                    at reel_scroll_transform(duration, len(reel_items), 60)
-                    for item in reel_items:
-                        fixed:
-                            xsize 140 ysize 60
-                            text "[item]" size 40 color "#ffffff" bold True xalign 0.5 yalign 0.5
+
 
 label chaos_slot_anim(final_value, label_text=""):
     python:
@@ -947,27 +923,17 @@ label chaos_slot_anim(final_value, label_text=""):
     hide screen slot_machine
     return
 
-screen chaos_number_indicator(label_text=""):
-    frame:
-        background Solid("#000000cc")
-        xpos 0.35 xanchor 0.5 ypos 0.15 yanchor 0.5
-        padding (20, 15)
-        foreground "sketchy_bar_outline"
-        vbox:
-            spacing 5
-            xalign 0.5
-            yalign 0.5
-            text "[label_text]" size 14 color "#aaa" xalign 0.5
-            text "[store.chaos_anim_val]" size 36 color "#ffffff" bold True xalign 0.5
+
 
 # ── The shuffle screen
 screen card_shuffle_screen(bm, shuffling_indices, new_skills):
     # shuffling_indices = list of card positions being replaced (e.g. [2] for kare shuffle, [0,1,2,3,4] for full chaos)
     # new_skills = list of Skill objects landing in those slots
     $ is_chaos = getattr(bm, "is_chaos", False)
-    $ _ink     = C_CHAOS_INK   if is_chaos else C_INK
-    $ _paper   = C_CHAOS_PAPER if is_chaos else C_PAPER
+    $ _ink       = C_CHAOS_INK       if is_chaos else C_INK
+    $ _ink_light = C_CHAOS_INK_LIGHT if is_chaos else C_INK_LIGHT
     $ _ink_faint = C_CHAOS_INK_FAINT if is_chaos else C_INK_FAINT
+    $ _paper     = C_CHAOS_PAPER     if is_chaos else C_PAPER
 
     frame:
         yalign 1.0
@@ -975,8 +941,8 @@ screen card_shuffle_screen(bm, shuffling_indices, new_skills):
         ysize 220
         background (_paper + "f7")
         xpadding 24
-        ypadding 10
         top_padding 10
+        bottom_padding 10
 
         vbox:
             spacing 8
@@ -1165,6 +1131,9 @@ label chaos_number_anim(final_value, label_text=""):
             renpy.restart_interaction()
             renpy.pause(0.04, hard=True)
     $ renpy.pause(0.4, hard=True)
+    python:
+        if hasattr(store, "chaos_anim_val"):
+            delattr(store, "chaos_anim_val")
     # hide screen chaos_number_indicator
     return
 
@@ -1220,9 +1189,9 @@ screen battle_screen(bm):
         ysize 140
         ypos 0
         background (_paper + "f2")
-        bottom_padding 0
         xpadding 24
-        ypadding 12
+        top_padding 12
+        bottom_padding 0
 
         # Turn badge ─ centred
         frame:
@@ -1342,7 +1311,6 @@ screen battle_screen(bm):
 
             # ── CENTRE spacer
             null width 0
-            xfill True
 
             # ── ENEMY STATS (right column, one block per enemy)
             vbox:
@@ -1469,7 +1437,7 @@ screen battle_screen(bm):
 
         hbox:
             xfill True yfill True
-            xpadding 24
+            # xpadding removed from hbox/vbox
 
             # Enemy row column
             vbox:
@@ -1594,7 +1562,7 @@ screen battle_screen(bm):
             # CONFIRM button ─ right side, spans all rows
             vbox:
                 yalign 0.5
-                xpadding 10
+                # xpadding removed from hbox/vbox
                 textbutton "CONFIRM":
                     yalign 0.5
                     xsize 140
@@ -1649,7 +1617,7 @@ screen battle_screen(bm):
                     background _ink
                 hbox:
                     spacing 10
-                    xpadding 10
+                    # xpadding removed from hbox/vbox
                     text (_preview_enemy.name + ": " + _intent_preview.name):
                         style "battle_intent_title"
                         color _ink
@@ -1669,8 +1637,8 @@ screen battle_screen(bm):
         ysize 220
         background (_paper + "f7")
         xpadding 24
-        ypadding 10
         top_padding 10
+        bottom_padding 10
 
         vbox:
             spacing 8
@@ -4535,7 +4503,7 @@ style battle_faint:
 style battle_slottag:
     font "fonts/Caveat-Regular.ttf"
     size 10
-    letter_spacing 1
+    kerning 1
     color "#000000"
 
 style battle_slotname:
