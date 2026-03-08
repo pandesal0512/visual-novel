@@ -1152,7 +1152,7 @@ screen battle_screen(bm):
                                 null height 15
                                 hbox:
                                     xfill True
-                                    xpadding 8
+                                    spacing 8
                                     text (str(skill.damage) + " dmg" if skill.damage > 0 else skill.type) style "battle_cardstat" color ("#888" if is_chaos else "#666") size 12
                                     text "cd:" + str(skill.cooldown) style "battle_cardstat" xalign 1.0 color ("#888" if is_chaos else "#666") size 12
 
@@ -1509,7 +1509,6 @@ label battle_engine(bm):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_generic
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
-            "Order's damage increased by [intent.damage]"
                 "[enemy.name] damage increased by [intent.damage]"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
@@ -2655,7 +2654,6 @@ label butter_ava_battle(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss1
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
-            "Order's damage increased by [intent.damage]"
                 "[enemy.name] activated [intent.name]! Their damage increased by [intent.damage]!"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
@@ -3052,7 +3050,6 @@ label butter_ava_battle2(skill_overrides=None):
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_buff_boss2
                 $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
-            "Order's damage increased by [intent.damage]"
                 "[enemy.name]'s damage increased by [intent.damage]"
             elif intent.type == "energy":
                 $ bm.is_dodged = False
