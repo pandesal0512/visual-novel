@@ -1469,15 +1469,9 @@ screen battle_screen(bm):
                             for s_idx in range(bm.current_max_slots):
                                 $ action = enemy.slots[s_idx]
 
-                                frame:
-                                    xsize 0
-                                    xmaximum 220
-                                    xminimum 80
-                                    ysize 62
-                                    yalign 0.5
-
-                                    # Empty slot
-                                    if action is None:
+                                if action is None:
+                                    frame:
+                                        xsize 180 ysize 62 yalign 0.5
                                         background _paper
                                         foreground Frame(
                                             Composite((4,4),
@@ -1499,8 +1493,9 @@ screen battle_screen(bm):
                                             color _ink_faint
                                             xalign 0.5 yalign 0.5
 
-                                    # Enemy intent slot
-                                    elif isinstance(action, EnemyIntent):
+                                elif isinstance(action, EnemyIntent):
+                                    frame:
+                                        xsize 180 ysize 62 yalign 0.5
                                         background ("slot_enemy_hatch_chaos" if is_chaos else "slot_enemy_hatch")
                                         foreground Frame(
                                             Composite((4,4),
@@ -1530,8 +1525,9 @@ screen battle_screen(bm):
                                                 color _ink_light
                                                 xalign 0.98 yalign 0.92
 
-                                    # Player skill in slot
-                                    elif isinstance(action, Skill):
+                                elif isinstance(action, Skill):
+                                    frame:
+                                        xsize 180 ysize 62 yalign 0.5
                                         background _paper_dark
                                         foreground Frame(
                                             Composite((4,4),
@@ -1593,16 +1589,17 @@ screen battle_screen(bm):
         $ _e_intents = [s for s in _preview_enemy.slots if isinstance(s, EnemyIntent)]
         if _e_intents:
             $ _intent_preview = _e_intents[0]
+            $ _intent_offset = 220 + len(_live) * 78 + 16 + 8
             frame:
                 xpos 24
                 xsize 700
                 yalign 1.0
-                $ _intent_offset = 220 + len(_live) * 78 + 16 + 8
                 yoffset (-_intent_offset)
                 background (_paper + "df")
                 left_padding 4
                 right_padding 12
-                ypadding 7
+                top_padding 7
+                bottom_padding 7
                 foreground Frame(
                     Composite((4,4),
                         (0,0), Solid(_ink, xsize=4, ysize=4),
