@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variant D — Blocking Dialogue with Sprite</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Caveat+Brush&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 16px;
+    font-family: 'Patrick Hand', cursive;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: 'Caveat Brush', cursive;
+    color: #fff;
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-family: 'Caveat', cursive;
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  /* ── BATTLE SCREEN ── */
+  .battle {
+    width: 1000px;
+    height: 420px;
+    background: #fff;
+    position: relative;
+    border: 2px solid #000;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .battle.chaos-mode { background: #000; }
+
+  /* TOP BAR */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 90px;
+    background: rgba(255,255,255,0.95);
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 20px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .top-bar {
+    background: rgba(0,0,0,0.95);
+    border-bottom-color: #222;
+  }
+
+  .char-name { font-family: 'Caveat Brush', cursive; font-size: 24px; color: #000; }
+  .battle.chaos-mode .char-name { color: #fff; }
+  .char-block { display: flex; flex-direction: column; gap: 4px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-label { font-family: 'Caveat', cursive; font-size: 13px; color: #666; min-width: 44px; }
+  .battle.chaos-mode .bar-label { color: #555; }
+  .bar-track { width: 160px; height: 10px; background: #e0e0e0; border: 1.5px solid #000; }
+  .battle.chaos-mode .bar-track { background: #1a1a1a; border-color: #fff; }
+  .bar-fill { height: 100%; background: #000; }
+  .battle.chaos-mode .bar-fill { background: #fff; }
+  .bar-nums { font-family: 'Caveat', cursive; font-size: 12px; color: #666; }
+  .battle.chaos-mode .bar-nums { color: #555; }
+
+  .turn-badge {
+    position: absolute; left: 50%; top: 14px;
+    transform: translateX(-50%);
+    font-family: 'Caveat', cursive; font-size: 13px;
+    color: #666; background: #f0f0f0;
+    border: 1.5px solid #ccc; padding: 2px 12px;
+  }
+
+  .battle.chaos-mode .turn-badge { background: #111; color: #444; border-color: #333; }
+  .enemy-block { margin-left: auto; text-align: right; }
+  .enemy-name { font-family: 'Caveat Brush', cursive; font-size: 20px; color: #000; }
+  .battle.chaos-mode .enemy-name { color: #fff; }
+
+  /* SPRITE AREA — battle sprites */
+  .sprite-area {
+    position: absolute;
+    top: 90px; left: 0; right: 0;
+    height: 190px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 120px 10px;
+    z-index: 1;
+  }
+
+  .sprite-placeholder {
+    width: 90px; height: 140px;
+    border: 2px dashed #ccc;
+    background: rgba(0,0,0,0.04);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive; font-size: 11px; color: #aaa;
+    text-align: center; line-height: 1.4;
+  }
+
+  .battle.chaos-mode .sprite-placeholder {
+    border-color: #333; background: rgba(255,255,255,0.02); color: #444;
+  }
+
+  /* SLOT STRIP */
+  .slot-strip {
+    position: absolute;
+    bottom: 155px; left: 0; right: 0;
+    height: 72px;
+    background: rgba(255,255,255,0.92);
+    border-top: 2px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px; gap: 8px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .slot-strip { background: rgba(0,0,0,0.92); border-color: #222; }
+
+  .slot {
+    flex: 1; height: 52px;
+    border: 2px solid #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive;
+    background: #f0f0f0; font-size: 12px; position: relative;
+  }
+
+  .battle.chaos-mode .slot { border-color: #fff; background: #111; }
+  .slot.empty { border: 2px dashed #ccc; background: #fff; color: #aaa; }
+  .battle.chaos-mode .slot.empty { border-color: #333; background: #000; color: #444; }
+  .slot.enemy-slot { background: repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(0,0,0,0.06) 4px, rgba(0,0,0,0.06) 5px); }
+  .battle.chaos-mode .slot.enemy-slot { background: repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(255,255,255,0.06) 4px, rgba(255,255,255,0.06) 5px); }
+  .slot-tag { font-size: 9px; letter-spacing: 1px; color: #666; }
+  .battle.chaos-mode .slot-tag { color: #555; }
+  .slot-name { font-family: 'Caveat Brush', cursive; font-size: 13px; color: #000; }
+  .battle.chaos-mode .slot-name { color: #fff; }
+  .slot-dmg { font-size: 10px; color: #888; position: absolute; bottom: 3px; right: 5px; }
+  .confirm-btn {
+    background: #000; color: #fff;
+    font-family: 'Caveat Brush', cursive; font-size: 18px;
+    padding: 10px 18px; border: none; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .battle.chaos-mode .confirm-btn { background: #fff; color: #000; }
+
+  /* CARDS */
+  .cards-section {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 155px;
+    background: rgba(255,255,255,0.97);
+    border-top: 2px solid #ddd;
+    padding: 10px 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .cards-section { background: rgba(0,0,0,0.97); border-top-color: #222; }
+  .cards-label { font-family: 'Caveat', cursive; font-size: 12px; color: #aaa; }
+  .battle.chaos-mode .cards-label { color: #444; }
+  .cards-row { display: flex; gap: 10px; }
+  .card {
+    width: 100px; height: 105px;
+    border: 2px solid #000;
+    display: flex; flex-direction: column;
+    background: #fff; position: relative; flex-shrink: 0;
+  }
+  .battle.chaos-mode .card { border-color: #fff; background: #000; }
+  .card-type-bar { height: 5px; background: #000; flex-shrink: 0; }
+  .battle.chaos-mode .card-type-bar { background: #fff; }
+  .card-type-bar.dodge { background: repeating-linear-gradient(45deg, #000 0, #000 2px, #fff 2px, #fff 4px); }
+  .card-icon { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .card-divider { height: 1px; background: #ddd; }
+  .battle.chaos-mode .card-divider { background: #222; }
+  .card-body { padding: 3px 5px; }
+  .card-name { font-family: 'Caveat Brush', cursive; font-size: 12px; display: block; color: #000; }
+  .battle.chaos-mode .card-name { color: #fff; }
+  .card-stats { font-family: 'Caveat', cursive; font-size: 10px; color: #666; }
+  .card-cost {
+    position: absolute; top: 7px; right: 4px;
+    width: 18px; height: 18px;
+    background: #000; color: #fff;
+    font-family: 'Caveat', cursive; font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .battle.chaos-mode .card-cost { background: #fff; color: #000; }
+
+  /* ══════════════════════════════════════════
+     VARIANT D — BLOCKING DIALOGUE WITH SPRITE
+  ══════════════════════════════════════════ */
+
+  /* Full dim overlay */
+  .dialogue-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    background: rgba(0,0,0,0.0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+  }
+
+  .dialogue-overlay.visible {
+    background: rgba(0,0,0,0.52);
+    pointer-events: all;
+  }
+
+  /* The dialogue panel — bottom third */
+  .dialogue-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.22s ease;
+  }
+
+  .dialogue-panel.visible {
+    transform: translateY(0);
+  }
+
+  /* Speaker sprite strip — sits above the text box */
+  .dialogue-sprite-strip {
+    position: relative;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 40px;
+    pointer-events: none;
+  }
+
+  /* The actual speaker sprite box */
+  .dialogue-sprite {
+    width: 110px;
+    height: 150px;
+    border: 2px solid #000;
+    background: rgba(255,255,255,0.96);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    position: relative;
+    bottom: 0;
+  }
+
+  .dialogue-sprite.dark {
+    background: rgba(0,0,0,0.96);
+    border-color: #fff;
+  }
+
+  .dialogue-sprite-icon {
+    font-size: 52px;
+    filter: grayscale(100%);
+  }
+
+  .dialogue-sprite-name {
+    font-family: 'Caveat', cursive;
+    font-size: 11px;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .dialogue-sprite.dark .dialogue-sprite-name { color: #555; }
+
+  /* Text box */
+  .dialogue-textbox {
+    background: rgba(255,255,255,0.98);
+    border-top: 3px solid #000;
+    padding: 16px 24px 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-height: 88px;
+  }
+
+  .dialogue-textbox.dark {
+    background: rgba(0,0,0,0.98);
+    border-top-color: #fff;
+  }
+
+  .dialogue-textbox-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-left: 130px; /* offset so text doesn't go under sprite */
+  }
+
+  /* when sprite is right-aligned */
+  .dialogue-sprite-strip.right .dialogue-textbox-inner {
+    padding-left: 24px;
+    padding-right: 130px;
+  }
+
+  .dialogue-speaker {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 20px;
+    color: #000;
+  }
+
+  .dialogue-textbox.dark .dialogue-speaker { color: #fff; }
+
+  .dialogue-line {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 15px;
+    color: #222;
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  .dialogue-textbox.dark .dialogue-line { color: #bbb; }
+
+  .dialogue-hint {
+    font-family: 'Caveat', cursive;
+    font-size: 12px;
+    color: #aaa;
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-end;
+    padding-bottom: 2px;
+  }
+
+  .dialogue-textbox.dark .dialogue-hint { color: #444; }
+
+  /* Sprite absolute positioning — bottom-left corner of the strip */
+  .dialogue-sprite-strip .dialogue-sprite {
+    position: absolute;
+    left: 40px;
+    bottom: 0;
+  }
+
+  /* Right-side variant */
+  .dialogue-sprite-strip.right .dialogue-sprite {
+    left: auto;
+    right: 40px;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+
+  .ctrl-btn {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 15px;
+    padding: 7px 16px;
+    border: 2px solid #fff;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .ctrl-btn:hover, .ctrl-btn.active {
+    background: #fff;
+    color: #000;
+  }
+
+  .note {
+    font-family: 'Caveat', cursive;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Variant D — Blocking Dialogue with Sprite</h1>
+<p class="subtitle">Critical story moments. Click the screen to dismiss.</p>
+
+<div class="controls">
+  <button class="ctrl-btn active" onclick="setScene('butter-sorry', event)">Butter — sorry, Kare</button>
+  <button class="ctrl-btn" onclick="setScene('order-justice', event)">Order — Justice speech</button>
+  <button class="ctrl-btn" onclick="setScene('ava-civilization', event)">Ava — End of an Era</button>
+  <button class="ctrl-btn" onclick="setScene('chaos-surfaces', event)">Chaos surfaces</button>
+</div>
+
+<div class="battle" id="battle" onclick="toggleDialogue()">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="char-block">
+      <div class="char-name" id="player-name">Chaos</div>
+      <div class="bar-row">
+        <div class="bar-label">HP</div>
+        <div class="bar-track"><div class="bar-fill" id="player-hp" style="width:22%"></div></div>
+        <div class="bar-nums" id="player-hp-txt">110 / 500</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Energy</div>
+        <div class="bar-track"><div class="bar-fill" style="width:40%"></div></div>
+        <div class="bar-nums">20 / 50</div>
+      </div>
+    </div>
+    <div class="turn-badge" id="turn-badge">Turn 9 · 5 slots</div>
+    <div class="char-block enemy-block">
+      <div class="enemy-name" id="enemy-name">Butter</div>
+      <div class="bar-row" style="flex-direction:row-reverse">
+        <div class="bar-label" style="text-align:right">HP</div>
+        <div class="bar-track"><div class="bar-fill" id="enemy-hp" style="width:8%"></div></div>
+        <div class="bar-nums" id="enemy-hp-txt">42 / 500</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATTLE SPRITES -->
+  <div class="sprite-area">
+    <div class="sprite-placeholder" id="player-sprite">chaos_idle.png</div>
+    <div class="sprite-placeholder" id="enemy-sprite">seriousbutter_idle.png</div>
+  </div>
+
+  <!-- SLOT STRIP (dimmed behind overlay) -->
+  <div class="slot-strip">
+    <div class="slot enemy-slot">
+      <div class="slot-tag">ENEMY</div>
+      <div class="slot-name">SENTENCE</div>
+      <div class="slot-dmg">25 dmg</div>
+    </div>
+    <div class="slot empty">— open —</div>
+    <div class="slot empty">— open —</div>
+    <div class="confirm-btn">CONFIRM</div>
+  </div>
+
+  <!-- CARDS (dimmed behind overlay) -->
+  <div class="cards-section">
+    <div class="cards-label">your cards</div>
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-type-bar"></div>
+        <div class="card-cost">7</div>
+        <div class="card-icon">⚡</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name">Cataclysm</span>
+          <span class="card-stats">??? dmg</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar dodge"></div>
+        <div class="card-cost">6</div>
+        <div class="card-icon">⊘</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name">dissolutum</span>
+          <span class="card-stats">dodge</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIM OVERLAY -->
+  <div class="dialogue-overlay visible" id="overlay"></div>
+
+  <!-- DIALOGUE PANEL -->
+  <div class="dialogue-panel visible" id="dialogue-panel">
+
+    <!-- Speaker sprite strip -->
+    <div class="dialogue-sprite-strip" id="sprite-strip">
+      <div class="dialogue-sprite dark" id="dialogue-sprite">
+        <div class="dialogue-sprite-icon" id="sprite-icon">⚖️</div>
+        <div class="dialogue-sprite-name" id="sprite-label">BUTTER</div>
+      </div>
+    </div>
+
+    <!-- Text box -->
+    <div class="dialogue-textbox dark" id="dialogue-textbox">
+      <div class="dialogue-textbox-inner" id="textbox-inner">
+        <div class="dialogue-speaker" id="dialogue-speaker">Butter</div>
+        <div class="dialogue-line" id="dialogue-line">sorry, Kare.</div>
+      </div>
+      <div class="dialogue-hint">click to continue ▾</div>
+    </div>
+
+  </div>
+
+</div>
+
+<p class="note">Click anywhere on the screen to toggle the dialogue open/closed. In Ren'Py this is a regular <em>say</em> statement — the battle_screen stays shown underneath automatically.</p>
+
+<script>
+  let dialogueOpen = true;
+
+  const scenes = {
+    'butter-sorry': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      playerHp: '110 / 500',
+      playerHpPct: '22%',
+      enemyName: 'Butter',
+      enemySprite: 'seriousbutter_idle.png',
+      enemyHp: '42 / 500',
+      enemyHpPct: '8%',
+      spriteIcon: '⚖️',
+      spriteLabel: 'BUTTER',
+      spriteDark: true,
+      spriteRight: false,
+      speaker: 'Butter',
+      line: 'sorry, Kare.',
+      textboxDark: true,
+    },
+    'order-justice': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      playerHp: '88 / 500',
+      playerHpPct: '18%',
+      enemyName: 'Order',
+      enemySprite: 'order_idle.png',
+      enemyHp: '310 / 600',
+      enemyHpPct: '52%',
+      spriteIcon: '⚡',
+      spriteLabel: 'ORDER',
+      spriteDark: false,
+      spriteRight: true,
+      speaker: 'Order',
+      line: 'you fascinate yourself with humans but you do not actually see them.',
+      textboxDark: true,
+    },
+    'ava-civilization': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      playerHp: '200 / 500',
+      playerHpPct: '40%',
+      enemyName: 'Ava',
+      enemySprite: 'ava_idle.png',
+      enemyHp: '999K / 999K',
+      enemyHpPct: '100%',
+      spriteIcon: '🏛️',
+      spriteLabel: 'AVA',
+      spriteDark: false,
+      spriteRight: true,
+      speaker: 'Ava',
+      line: 'every civilization must fall before a new one rises. unfortunately for you, you are the civilization right now.',
+      textboxDark: true,
+    },
+    'chaos-surfaces': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      playerHp: '1 / 200',
+      playerHpPct: '1%',
+      enemyName: 'Butter',
+      enemySprite: 'seriousbutter_idle.png',
+      enemyHp: '280 / 500',
+      enemyHpPct: '56%',
+      spriteIcon: '🌀',
+      spriteLabel: 'CHAOS',
+      spriteDark: true,
+      spriteRight: false,
+      speaker: 'Chaos',
+      line: 'oh. there you are.',
+      textboxDark: true,
+    },
+  };
+
+  function setScene(key, e) {
+    const s = scenes[key];
+    const battle = document.getElementById('battle');
+
+    battle.classList.toggle('chaos-mode', s.chaos);
+
+    document.getElementById('player-name').textContent = s.playerName;
+    document.getElementById('player-sprite').textContent = s.playerSprite;
+    document.getElementById('player-hp-txt').textContent = s.playerHp;
+    document.getElementById('player-hp').style.width = s.playerHpPct;
+    document.getElementById('enemy-name').textContent = s.enemyName;
+    document.getElementById('enemy-sprite').textContent = s.enemySprite;
+    document.getElementById('enemy-hp-txt').textContent = s.enemyHp;
+    document.getElementById('enemy-hp').style.width = s.enemyHpPct;
+
+    // sprite
+    document.getElementById('sprite-icon').textContent = s.spriteIcon;
+    document.getElementById('sprite-label').textContent = s.spriteLabel;
+    const sprite = document.getElementById('dialogue-sprite');
+    sprite.className = 'dialogue-sprite' + (s.spriteDark ? ' dark' : '');
+    const strip = document.getElementById('sprite-strip');
+    strip.className = 'dialogue-sprite-strip' + (s.spriteRight ? ' right' : '');
+
+    // adjust textbox inner padding based on sprite side
+    const inner = document.getElementById('textbox-inner');
+    if (s.spriteRight) {
+      inner.style.paddingLeft = '24px';
+      inner.style.paddingRight = '130px';
+    } else {
+      inner.style.paddingLeft = '130px';
+      inner.style.paddingRight = '0';
+    }
+
+    // textbox
+    const tb = document.getElementById('dialogue-textbox');
+    tb.className = 'dialogue-textbox' + (s.textboxDark ? ' dark' : '');
+    document.getElementById('dialogue-speaker').textContent = s.speaker;
+    document.getElementById('dialogue-line').textContent = s.line;
+
+    // show dialogue
+    dialogueOpen = true;
+    document.getElementById('overlay').classList.add('visible');
+    document.getElementById('dialogue-panel').classList.add('visible');
+
+    document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+
+  function toggleDialogue() {
+    dialogueOpen = !dialogueOpen;
+    document.getElementById('overlay').classList.toggle('visible', dialogueOpen);
+    document.getElementById('dialogue-panel').classList.toggle('visible', dialogueOpen);
+  }
+</script>
+</body>
+</html>

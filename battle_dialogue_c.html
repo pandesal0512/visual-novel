@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variant C — Taunt Bubble</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Caveat+Brush&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 16px;
+    font-family: 'Patrick Hand', cursive;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: 'Caveat Brush', cursive;
+    color: #fff;
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-family: 'Caveat', cursive;
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  /* ── BATTLE SCREEN ── */
+  .battle {
+    width: 1000px;
+    height: 420px;
+    background: #fff;
+    position: relative;
+    border: 2px solid #000;
+    overflow: hidden;
+  }
+
+  .battle.chaos-mode {
+    background: #000;
+  }
+
+  /* TOP BAR */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 90px;
+    background: rgba(255,255,255,0.95);
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 20px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .top-bar {
+    background: rgba(0,0,0,0.95);
+    border-bottom-color: #222;
+  }
+
+  .char-name {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 24px; color: #000;
+  }
+
+  .battle.chaos-mode .char-name { color: #fff; }
+
+  .char-block { display: flex; flex-direction: column; gap: 4px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-label { font-family: 'Caveat', cursive; font-size: 13px; color: #666; min-width: 44px; }
+  .battle.chaos-mode .bar-label { color: #555; }
+  .bar-track { width: 160px; height: 10px; background: #e0e0e0; border: 1.5px solid #000; }
+  .battle.chaos-mode .bar-track { background: #1a1a1a; border-color: #fff; }
+  .bar-fill { height: 100%; background: #000; }
+  .battle.chaos-mode .bar-fill { background: #fff; }
+  .bar-nums { font-family: 'Caveat', cursive; font-size: 12px; color: #666; }
+  .battle.chaos-mode .bar-nums { color: #555; }
+
+  .turn-badge {
+    position: absolute; left: 50%; top: 14px;
+    transform: translateX(-50%);
+    font-family: 'Caveat', cursive; font-size: 13px;
+    color: #666;
+    background: #f0f0f0;
+    border: 1.5px solid #ccc;
+    padding: 2px 12px;
+  }
+
+  .battle.chaos-mode .turn-badge {
+    background: #111; color: #444; border-color: #333;
+  }
+
+  .enemy-block { margin-left: auto; text-align: right; }
+  .enemy-name { font-family: 'Caveat Brush', cursive; font-size: 20px; color: #000; }
+  .battle.chaos-mode .enemy-name { color: #fff; }
+
+  /* SPRITE AREA */
+  .sprite-area {
+    position: absolute;
+    top: 90px; left: 0; right: 0;
+    height: 190px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 120px 10px;
+    z-index: 1;
+  }
+
+  .sprite-placeholder {
+    width: 90px; height: 140px;
+    border: 2px dashed #ccc;
+    background: rgba(0,0,0,0.04);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive; font-size: 11px; color: #aaa;
+    text-align: center; line-height: 1.4;
+  }
+
+  .battle.chaos-mode .sprite-placeholder {
+    border-color: #333; background: rgba(255,255,255,0.02); color: #444;
+  }
+
+  /* SLOT STRIP */
+  .slot-strip {
+    position: absolute;
+    bottom: 155px; left: 0; right: 0;
+    height: 72px;
+    background: rgba(255,255,255,0.92);
+    border-top: 2px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 8px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .slot-strip {
+    background: rgba(0,0,0,0.92);
+    border-color: #222;
+  }
+
+  .slot {
+    flex: 1; height: 52px;
+    border: 2px solid #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive;
+    background: #f0f0f0;
+    font-size: 12px;
+    position: relative;
+  }
+
+  .battle.chaos-mode .slot {
+    border-color: #fff;
+    background: #111;
+  }
+
+  .slot.empty {
+    border: 2px dashed #ccc;
+    background: #fff;
+    color: #aaa;
+  }
+
+  .battle.chaos-mode .slot.empty {
+    border-color: #333;
+    background: #000;
+    color: #444;
+  }
+
+  .slot.enemy-slot {
+    background: repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(0,0,0,0.06) 4px, rgba(0,0,0,0.06) 5px);
+  }
+
+  .battle.chaos-mode .slot.enemy-slot {
+    background: repeating-linear-gradient(-45deg, transparent 0, transparent 4px, rgba(255,255,255,0.06) 4px, rgba(255,255,255,0.06) 5px);
+  }
+
+  .slot-tag { font-size: 9px; letter-spacing: 1px; color: #666; }
+  .battle.chaos-mode .slot-tag { color: #555; }
+  .slot-name { font-family: 'Caveat Brush', cursive; font-size: 13px; color: #000; }
+  .battle.chaos-mode .slot-name { color: #fff; }
+  .slot-dmg { font-size: 10px; color: #888; position: absolute; bottom: 3px; right: 5px; }
+
+  .confirm-btn {
+    background: #000; color: #fff;
+    font-family: 'Caveat Brush', cursive; font-size: 18px;
+    padding: 10px 18px; border: none; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .battle.chaos-mode .confirm-btn { background: #fff; color: #000; }
+
+  /* CARDS */
+  .cards-section {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 155px;
+    background: rgba(255,255,255,0.97);
+    border-top: 2px solid #ddd;
+    padding: 10px 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    z-index: 3;
+  }
+
+  .battle.chaos-mode .cards-section {
+    background: rgba(0,0,0,0.97);
+    border-top-color: #222;
+  }
+
+  .cards-label {
+    font-family: 'Caveat', cursive; font-size: 12px; color: #aaa;
+  }
+
+  .battle.chaos-mode .cards-label { color: #444; }
+
+  .cards-row { display: flex; gap: 10px; }
+
+  .card {
+    width: 100px; height: 105px;
+    border: 2px solid #000;
+    display: flex; flex-direction: column;
+    background: #fff; position: relative; flex-shrink: 0;
+  }
+
+  .battle.chaos-mode .card {
+    border-color: #fff;
+    background: #000;
+  }
+
+  .card-type-bar { height: 5px; background: #000; flex-shrink: 0; }
+  .battle.chaos-mode .card-type-bar { background: #fff; }
+  .card-type-bar.dodge { background: repeating-linear-gradient(45deg, #000 0, #000 2px, #fff 2px, #fff 4px); }
+  .card-type-bar.energy { background: repeating-linear-gradient(90deg, #000 0, #000 2px, #fff 2px, #fff 4px); }
+  .card-type-bar.barrier { background: repeating-linear-gradient(90deg, #000 0, #000 4px, #fff 4px, #fff 8px); }
+  .battle.chaos-mode .card-type-bar.dodge { background: repeating-linear-gradient(45deg, #fff 0, #fff 2px, #000 2px, #000 4px); }
+  .battle.chaos-mode .card-type-bar.energy { background: repeating-linear-gradient(90deg, #fff 0, #fff 2px, #000 2px, #000 4px); }
+  .battle.chaos-mode .card-type-bar.barrier { background: repeating-linear-gradient(90deg, #fff 0, #fff 4px, #000 4px, #000 8px); }
+
+  .card-icon { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .card-divider { height: 1px; background: #ddd; }
+  .battle.chaos-mode .card-divider { background: #222; }
+  .card-body { padding: 3px 5px; }
+  .card-name { font-family: 'Caveat Brush', cursive; font-size: 12px; display: block; color: #000; }
+  .battle.chaos-mode .card-name { color: #fff; }
+  .card-stats { font-family: 'Caveat', cursive; font-size: 10px; color: #666; }
+  .battle.chaos-mode .card-stats { color: #444; }
+  .card-cost {
+    position: absolute; top: 7px; right: 4px;
+    width: 18px; height: 18px;
+    background: #000; color: #fff;
+    font-family: 'Caveat', cursive; font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .battle.chaos-mode .card-cost { background: #fff; color: #000; }
+
+  /* ══════════════════════════════
+     TAUNT BUBBLE
+  ══════════════════════════════ */
+  .taunt-bubble {
+    position: absolute;
+    z-index: 10;
+    background: #000;
+    padding: 10px 14px;
+    max-width: 220px;
+    animation: tauntIn 0.15s ease forwards;
+  }
+
+  /* tail triangle */
+  .taunt-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 22px;
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 8px solid #000;
+  }
+
+  /* chaos inverted */
+  .taunt-bubble.chaos {
+    background: #fff;
+  }
+  .taunt-bubble.chaos::after {
+    border-top-color: #fff;
+  }
+
+  /* single enemy — right side */
+  .taunt-bubble.pos-single {
+    right: 108px;
+    top: 95px;
+  }
+
+  /* multi-enemy — butter position */
+  .taunt-bubble.pos-butter {
+    right: 220px;
+    top: 95px;
+  }
+
+  /* multi-enemy — ava position */
+  .taunt-bubble.pos-ava {
+    right: 60px;
+    top: 95px;
+  }
+
+  .taunt-speaker {
+    font-family: 'Caveat', cursive;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 3px;
+  }
+
+  .taunt-bubble.chaos .taunt-speaker {
+    color: rgba(0,0,0,0.45);
+  }
+
+  .taunt-text {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .taunt-bubble.chaos .taunt-text { color: #000; }
+
+  @keyframes tauntIn {
+    from { transform: translateY(-6px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  /* ── TOGGLE CONTROLS ── */
+  .controls {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+
+  .ctrl-btn {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 15px;
+    padding: 7px 16px;
+    border: 2px solid #fff;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .ctrl-btn:hover, .ctrl-btn.active {
+    background: #fff;
+    color: #000;
+  }
+
+  .note {
+    font-family: 'Caveat', cursive;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Variant C — Taunt Bubble</h1>
+<p class="subtitle">Enemy one-liners. Auto-dismisses. No click needed.</p>
+
+<div class="controls">
+  <button class="ctrl-btn active" onclick="setScene('single-kare')">Kare vs Butter</button>
+  <button class="ctrl-btn" onclick="setScene('single-chaos')">Chaos vs Butter</button>
+  <button class="ctrl-btn" onclick="setScene('multi-butter')">Multi — Butter taunts</button>
+  <button class="ctrl-btn" onclick="setScene('multi-ava')">Multi — Ava taunts</button>
+</div>
+
+<div class="battle" id="battle">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="char-block">
+      <div class="char-name" id="player-name">Kare</div>
+      <div class="bar-row">
+        <div class="bar-label">HP</div>
+        <div class="bar-track"><div class="bar-fill" id="player-hp" style="width:45%"></div></div>
+        <div class="bar-nums" id="player-hp-num">90 / 200</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Energy</div>
+        <div class="bar-track"><div class="bar-fill" id="player-en" style="width:60%"></div></div>
+        <div class="bar-nums">12 / 20</div>
+      </div>
+    </div>
+    <div class="turn-badge">Turn 5 · 4 slots</div>
+    <div class="char-block enemy-block" id="enemy-block-1">
+      <div class="enemy-name" id="enemy1-name">Butter</div>
+      <div class="bar-row" style="flex-direction:row-reverse">
+        <div class="bar-label" style="text-align:right">HP</div>
+        <div class="bar-track"><div class="bar-fill" style="width:75%"></div></div>
+        <div class="bar-nums">150 / 200</div>
+      </div>
+    </div>
+    <div class="char-block enemy-block" id="enemy-block-2" style="display:none; margin-left:16px;">
+      <div class="enemy-name" id="enemy2-name">Ava</div>
+      <div class="bar-row" style="flex-direction:row-reverse">
+        <div class="bar-label" style="text-align:right">HP</div>
+        <div class="bar-track"><div class="bar-fill" style="width:88%"></div></div>
+        <div class="bar-nums">880K / 999K</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRITES -->
+  <div class="sprite-area">
+    <div class="sprite-placeholder" id="player-sprite">kare_idle.png</div>
+    <div class="sprite-placeholder" id="enemy1-sprite">butter_idle.png</div>
+    <div class="sprite-placeholder" id="enemy2-sprite" style="display:none">ava_idle.png</div>
+  </div>
+
+  <!-- TAUNT BUBBLE -->
+  <div class="taunt-bubble pos-single" id="taunt">
+    <div class="taunt-speaker" id="taunt-speaker">Butter</div>
+    <div class="taunt-text" id="taunt-text">haha!! no way you are surviving this</div>
+  </div>
+
+  <!-- SLOT STRIP -->
+  <div class="slot-strip">
+    <div class="slot enemy-slot">
+      <div class="slot-tag">ENEMY</div>
+      <div class="slot-name">PUNCH!</div>
+      <div class="slot-dmg">20 dmg</div>
+    </div>
+    <div class="slot enemy-slot">
+      <div class="slot-tag">ENEMY</div>
+      <div class="slot-name" id="slot2-name">kick</div>
+      <div class="slot-dmg" id="slot2-dmg">10 dmg</div>
+    </div>
+    <div class="slot empty">— open —</div>
+    <div class="slot empty">— open —</div>
+    <div class="confirm-btn">CONFIRM</div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-section">
+    <div class="cards-label">your cards</div>
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-type-bar" id="card1-bar"></div>
+        <div class="card-cost" id="card1-cost">2</div>
+        <div class="card-icon">👋</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name" id="card1-name">slap</span>
+          <span class="card-stats">6 dmg</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar barrier" id="card2-bar"></div>
+        <div class="card-cost">3</div>
+        <div class="card-icon">⛊</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name" id="card2-name">Defense</span>
+          <span class="card-stats">8 def</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar dodge" id="card3-bar"></div>
+        <div class="card-cost">4</div>
+        <div class="card-icon">💨</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name">evade</span>
+          <span class="card-stats">dodge · cd:4</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-type-bar energy"></div>
+        <div class="card-cost">0</div>
+        <div class="card-icon">🍔</div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <span class="card-name">yummers</span>
+          <span class="card-stats">+10 nrg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="note">The bubble appears above the enemy that speaks. Auto-fades after ~2.5s. No player interaction needed — battle continues underneath.</p>
+
+<script>
+  const scenes = {
+    'single-kare': {
+      chaos: false,
+      playerName: 'Kare',
+      playerSprite: 'kare_idle.png',
+      enemy1Name: 'Butter',
+      enemy1Sprite: 'butter_idle.png',
+      showEnemy2: false,
+      tauntPos: 'pos-single',
+      tauntSpeaker: 'Butter',
+      tauntText: 'haha!! no way you are surviving this',
+      tauntChaos: false,
+    },
+    'single-chaos': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      enemy1Name: 'Butter',
+      enemy1Sprite: 'seriousbutter_idle.png',
+      showEnemy2: false,
+      tauntPos: 'pos-single',
+      tauntSpeaker: 'Butter',
+      tauntText: 'the verdict has been decided. there is no appeal.',
+      tauntChaos: false,
+    },
+    'multi-butter': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      enemy1Name: 'Butter',
+      enemy1Sprite: 'seriousbutter_idle.png',
+      showEnemy2: true,
+      tauntPos: 'pos-butter',
+      tauntSpeaker: 'Butter',
+      tauntText: 'sorry, Kare.',
+      tauntChaos: false,
+    },
+    'multi-ava': {
+      chaos: true,
+      playerName: 'Chaos',
+      playerSprite: 'chaos_idle.png',
+      enemy1Name: 'Butter',
+      enemy1Sprite: 'seriousbutter_idle.png',
+      showEnemy2: true,
+      tauntPos: 'pos-ava',
+      tauntSpeaker: 'Ava',
+      tauntText: 'every civilization must fall before a new one rises.',
+      tauntChaos: false,
+    },
+  };
+
+  function setScene(key) {
+    const s = scenes[key];
+    const battle = document.getElementById('battle');
+
+    // mode
+    battle.classList.toggle('chaos-mode', s.chaos);
+
+    // player
+    document.getElementById('player-name').textContent = s.playerName;
+    document.getElementById('player-sprite').textContent = s.playerSprite;
+
+    // enemies
+    document.getElementById('enemy1-name').textContent = s.enemy1Name;
+    document.getElementById('enemy1-sprite').textContent = s.enemy1Sprite;
+    document.getElementById('enemy-block-2').style.display = s.showEnemy2 ? '' : 'none';
+    document.getElementById('enemy2-sprite').style.display = s.showEnemy2 ? '' : 'none';
+
+    // taunt
+    const taunt = document.getElementById('taunt');
+    taunt.className = 'taunt-bubble ' + s.tauntPos + (s.tauntChaos ? ' chaos' : '');
+    document.getElementById('taunt-speaker').textContent = s.tauntSpeaker;
+    document.getElementById('taunt-text').textContent = s.tauntText;
+
+    // replay animation
+    taunt.style.animation = 'none';
+    taunt.offsetHeight;
+    taunt.style.animation = '';
+
+    // active button
+    document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
