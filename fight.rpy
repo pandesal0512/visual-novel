@@ -306,23 +306,6 @@ transform card_land_flash(is_chaos=False):
     linear 0.05 alpha (0.7 if is_chaos else 0.5)
     linear 0.2  alpha 0.0
 
-transform chaos_glitch:
-    alpha 1.0
-    choice:
-        pause 4.5
-    choice:
-        pause 6.0
-    choice:
-        pause 8.0
-    parallel:
-        linear 0.04 alpha 0.6
-        linear 0.04 alpha 1.0
-    parallel:
-        linear 0.04 xoffset 2
-        linear 0.04 xoffset -2
-        linear 0.04 xoffset 0
-    repeat
-
 
 
 
@@ -349,33 +332,18 @@ init python:
     C_CHAOS_INK_LIGHT  = "#888888"
     C_CHAOS_INK_FAINT  = "#333333"
 
-    def ink(is_chaos):
-        return C_CHAOS_INK if is_chaos else C_INK
 
-    def paper(is_chaos):
-        return C_CHAOS_PAPER if is_chaos else C_PAPER
 
-    def ink_light(is_chaos):
-        return C_CHAOS_INK_LIGHT if is_chaos else C_INK_LIGHT
 
-    def ink_faint(is_chaos):
-        return C_CHAOS_INK_FAINT if is_chaos else C_INK_FAINT
 
-    def paper_dark(is_chaos):
-        return C_CHAOS_PAPER_DARK if is_chaos else C_PAPER_DARK
 
-    def paper_mid(is_chaos):
-        return C_CHAOS_PAPER_MID if is_chaos else C_PAPER_MID
 
-    def get_typebar(skill_type, is_chaos):
-        suffix = "_chaos" if is_chaos else ""
-        if skill_type == "attack": return "typebar_attack"
-        if skill_type == "ultimate": return "typebar_ultimate"
-        if skill_type == "barrier": return "typebar_barrier" + suffix
-        if skill_type == "energy": return "typebar_energy" + suffix
-        if skill_type == "dodge": return "typebar_dodge" + suffix
-        if skill_type == "buff": return "typebar_buff" + suffix
-        return "typebar_attack"
+
+
+
+
+
+
 
     def get_chaos_random_value(bm, skill):
         # If it's not Chaos mode and not a Chaos skill, return standard damage
@@ -425,16 +393,6 @@ init python:
         intents = get_enemy_intents("law")
         return Enemy("Butter (Law)", 100, enemy_sprites, intents)
 
-    def scramble_hp(hp):
-        symbols = "$#%^&*@!Fa~?<>"
-        result = str(hp)
-        scrambled = ""
-        for ch in result:
-            if random.random() < 0.6:
-                scrambled += random.choice(symbols)
-            else:
-                scrambled += ch
-        return scrambled
 
     class Skill:
         def __init__(self, name, cost=0, damage=0, energy_regen=0, cooldown=0, type="attack", desc="", animation=None, buff_type=None, buff_duration=0, card_image=None, is_chaos_skill=False, icon=""):
@@ -541,6 +499,7 @@ init python:
             self.selected_slot_index = -1
             self.selected_enemy_index = -1
             self.hovered_skill = None
+            self.hovered_card_idx = -1
             self.show_energy_warning = False
             self.is_dodged = False
             self.last_targeted_enemy_idx = 0
@@ -688,6 +647,7 @@ init python:
             self.selected_enemy_index = -1
             self.selected_slot_index = -1
             self.hovered_skill = None
+            self.hovered_card_idx = -1
             self.show_energy_warning = False
 
             # REGENERATE PLAYER ENERGY PER TURN
@@ -1107,513 +1067,804 @@ label chaos_number_anim(final_value, label_text=""):
 
 
 # ── CHAOS HP glitch └ apply to HP text in chaos mode
-transform chaos_hp_glitch:
-    pause 4.5
-    linear 0.04 xoffset -4 alpha 0.6
-    linear 0.04 xoffset  3 alpha 1.0
-    linear 0.03 xoffset -1
-    linear 0.03 xoffset  0
-    pause 0.1
-    linear 0.02 xoffset -6 yoffset -1 alpha 0.4
-    linear 0.02 xoffset  0 yoffset  0 alpha 1.0
-    repeat
+
 
 # ── CHAOS slot strip shake └ apply to the slot strip frame in chaos mode
-transform chaos_slots_shake:
-    pause 8.0
-    linear 0.04 xoffset  1 yoffset -1
-    linear 0.04 xoffset -1 yoffset  1
-    linear 0.04 xoffset  1 yoffset  0
-    linear 0.04 xoffset  0 yoffset  0
-    repeat
+
 
 # ── CHAOS general glitch └ apply to character name text in chaos mode
-transform chaos_name_glitch:
-    pause 7.0
-    linear 0.05 xoffset -3
-    linear 0.05 xoffset  3
-    linear 0.05 xoffset -1
-    linear 0.05 xoffset  0
-    repeat
 
 screen battle_screen(bm):
-    $ is_chaos = getattr(bm, "is_chaos", False)
-    $ _ink       = ink(is_chaos)
-    $ _ink_light = ink_light(is_chaos)
-    $ _ink_faint = ink_faint(is_chaos)
-    $ _paper     = paper(is_chaos)
-    $ _paper_dark= paper_dark(is_chaos)
-    $ _paper_mid = paper_mid(is_chaos)
 
-    $ live_enemies = [e for e in bm.enemies if not e.is_dead]
-    $ is_multi = len(live_enemies) > 1
+    ## ── colour shortcuts ──────────────────────────────────────────────────────
+    $ _ch  = getattr(bm, "is_chaos", False)
+    $ _k   = ink(_ch)
+    $ _kl  = ink_light(_ch)
+    $ _kf  = ink_faint(_ch)
+    $ _p   = paper(_ch)
+    $ _pd  = paper_dark(_ch)
+    $ _pm  = paper_mid(_ch)
 
-    if is_chaos:
-        timer 0.05 repeat True action [renpy.restart_interaction]
+    ## ── layout helpers ────────────────────────────────────────────────────────
+    $ _live    = [e for e in bm.enemies if not e.is_dead]
+    $ _multi   = len(_live) > 1
+    $ _row_h   = 70 if _multi else 80    ## height per slot row in px
+    $ _n_rows  = len(_live)
+    $ _strip_h = _row_h * _n_rows + 4   ## total slot-strip height
+    $ _cards_h = 150                     ## cards section height
 
-    # 1. TOP BAR
+    ## keep chaos animations refreshing
+    if _ch:
+        timer 0.05 repeat True action NullAction()
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 1. TOP BAR
+    ##    zorder 5  →  always above scene sprites (zorder ~0)
+    ## ══════════════════════════════════════════════════════════════════════════
     frame:
         xfill True
-        ysize (380 if is_multi else 240)
         ypos 0
-        background (_paper + "f2")
-        xpadding 38
-        top_padding 22
-        bottom_padding 20
+        ysize (310 if _multi else 195)
+        background (_p + "ff")
+        xpadding 24
+        top_padding 14 bottom_padding 12
+        zorder 5
 
         hbox:
-            xfill True
-            # COLUMN 1: PLAYER BLOCK
-            vbox:
-                spacing 10
-                xsize 600
-                text (bm.player_name):
-                    style "battle_charname"
-                    color _ink
-                    if is_chaos:
-                        at chaos_name_glitch
+            xfill True yalign 0.0
 
+            ## ── PLAYER column ───────────────────────────────────────────────
+            vbox:
+                xsize 560 spacing 7
+
+                ## Name  (chaos: glitch animation)
+                if _ch:
+                    text bm.player_name:
+                        style "battle_charname"
+                        at chaos_name_glitch
+                else:
+                    text bm.player_name:
+                        style "battle_charname"
+
+                ## HP
                 hbox:
-                    spacing 16 yalign 0.5
-                    text ("HP"):
-                        style "battle_label"
-                        color _ink_light
-                        min_width 84
-                    if is_chaos:
+                    spacing 10 yalign 0.5
+                    text "HP":
+                        style "battle_label" min_width 60
+                    if _ch:
                         text (scramble_hp(bm.player_hp) + " / " + scramble_hp(bm.player_max_hp)):
-                            font "CaveatBrush-Regular.ttf"
-                            size 45
-                            color _ink
-                            at chaos_hp_glitch
+                            style "battle_big_stat" at chaos_hp_glitch
                     else:
                         frame:
-                            xsize 336 ysize 22 yalign 0.5
-                            background _paper_mid
+                            xsize 200 ysize 14 yalign 0.5
+                            background _pm
                             frame:
-                                xsize int(336 * bm.player_hp // bm.player_max_hp)
-                                yfill True background _ink
-                            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
+                                xsize int(200 * max(0, bm.player_hp) // max(1, bm.player_max_hp))
+                                yfill True background _k
                         text (str(bm.player_hp) + " / " + str(bm.player_max_hp)):
                             style "battle_stat_nums"
-                            color _ink_light
 
+                ## Energy
                 hbox:
-                    spacing 16 yalign 0.5
-                    text ("Energy"):
-                        style "battle_label"
-                        color _ink_light
-                        min_width 84
+                    spacing 10 yalign 0.5
+                    text "Energy":
+                        style "battle_label" min_width 60
                     frame:
-                        xsize 336 ysize 22 yalign 0.5
-                        background _paper_mid
+                        xsize 200 ysize 14 yalign 0.5
+                        background _pm
                         frame:
-                            xsize int(336 * bm.player_energy // bm.player_max_energy)
-                            yfill True background _ink
-                        foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
+                            xsize int(200 * max(0, bm.player_energy) // max(1, bm.player_max_energy))
+                            yfill True background _k
                     text (str(bm.player_energy) + " / " + str(bm.player_max_energy)):
                         style "battle_stat_nums"
-                        color _ink_light
 
+                ## Status chips
                 hbox:
-                    spacing 10 yoffset 4
+                    spacing 6 yoffset 2
                     if bm.player_barrier > 0:
                         frame:
-                            background _paper_mid
-                            padding (14, 3)
+                            background _pm padding (10, 2)
                             text ("DEF " + str(bm.player_barrier)):
-                                style "battle_chip_text"
-                    for buff in bm.player_buffs:
+                                style "battle_chip"
+                    for _bn, _ba, _bt in bm.player_buffs:
                         frame:
-                            background _paper_mid
-                            padding (14, 3)
-                            text (str(buff[0]) + " +" + str(buff[1]) + " (" + str(buff[2]) + "t)"):
-                                style "battle_chip_text"
-                                color _ink_mid
+                            background _pm padding (10, 2)
+                            text (_bn + " +" + str(_ba) + " (" + str(_bt) + "t)"):
+                                style "battle_chip" color _kl
 
-            if is_multi:
-                vbox:
-                    xalign 0.5
-                    yalign 0.1
-                    spacing 8
-                    frame:
-                        xalign 0.5
-                        background _paper_dark
-                        padding (22, 4)
-                        foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
-                        text ("Turn " + str(bm.turn_count) + " " + chr(8226) + " " + str(bm.current_max_slots) + " slots"):
-                            style "battle_turn_badge"
-                            color _ink_light
-                    text ("team fight"):
-                        style "battle_faint" size 18 xalign 0.5 color _ink_faint
-            else:
-                null width 100
-
+            ## ── CENTER column (turn badge) ───────────────────────────────────
             vbox:
-                xalign 1.0
-                spacing 10
-                for enemy in live_enemies:
+                xsize 200 yalign 0.0 xalign 0.5 spacing 5
+
+                frame:
+                    xalign 0.5 background _pd padding (16, 4)
+                    text ("Turn " + str(bm.turn_count) + " \u00b7 " + str(bm.current_max_slots) + " slots"):
+                        style "battle_turn_badge"
+
+                if _multi:
+                    $ _tnames = " + ".join(e.name for e in _live)
+                    text (_tnames + "\nteam fight"):
+                        style "battle_faint" size 13 xalign 0.5 text_align 0.5
+
+            ## ── ENEMY column ────────────────────────────────────────────────
+            vbox:
+                xalign 1.0 spacing 8
+
+                for _ei, _e in enumerate(_live):
                     vbox:
-                        xalign 1.0
-                        spacing 6
-                        text (enemy.name):
+                        xalign 1.0 spacing 4
+
+                        text _e.name:
                             style "battle_charname"
-                            size (38 if is_multi else 45)
-                            color _ink
+                            size (28 if _multi else 34)
                             xalign 1.0
 
+                        ## HP bar (right-to-left)
                         hbox:
-                            xalign 1.0 spacing 16 yalign 0.5
-                            text (str(enemy.hp) + " / " + str(enemy.max_hp)):
+                            xalign 1.0 spacing 10 yalign 0.5
+                            text (str(_e.hp) + " / " + str(_e.max_hp)):
                                 style "battle_stat_nums"
-                                color _ink_light
                             frame:
-                                xsize (224 if is_multi else 336) ysize 20 yalign 0.5
-                                background _paper_mid
+                                xsize (160 if _multi else 200) ysize 14 yalign 0.5
+                                background _pm
                                 frame:
-                                    xsize int((224 if is_multi else 336) * enemy.hp // enemy.max_hp)
+                                    xsize int((160 if _multi else 200) * max(0, _e.hp) // max(1, _e.max_hp))
                                     xalign 1.0 yfill True
-                                    background (("hp_bar_hatch_chaos" if is_chaos else "hp_bar_hatch") if enemy.hp < enemy.max_hp * 0.3 else _ink)
-                                foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
-                            text ("HP"):
-                                style "battle_label"
-                                color _ink_light
-                                min_width 84 text_align 1.0
+                                    background (
+                                        _k if _e.hp > _e.max_hp * 0.3
+                                        else ("hp_low_hatch_chaos" if _ch else "hp_low_hatch")
+                                    )
+                            text "HP":
+                                style "battle_label" min_width 36 text_align 1.0
 
+                        ## Status chips
                         hbox:
-                            xalign 1.0 spacing 5
-                            if enemy.still_standing_triggered:
+                            xalign 1.0 spacing 4
+                            if _e.still_standing_triggered:
                                 frame:
-                                    background _paper_mid padding (7, 2)
-                                    text ("STILL STANDING"):
-                                        style "battle_chip_text" size 16 italic True
-                            if enemy.barrier > 0:
+                                    background _pm padding (6, 2)
+                                    text "STILL STANDING":
+                                        style "battle_chip" size 12 italic True
+                            if _e.barrier > 0:
                                 frame:
-                                    background _paper_mid padding (7, 2)
-                                    text ("DEF " + str(enemy.barrier)):
-                                        style "battle_chip_text" size 16
-                            for buff in enemy.buffs:
+                                    background _pm padding (6, 2)
+                                    text ("DEF " + str(_e.barrier)):
+                                        style "battle_chip" size 12
+                            for _bn, _ba, _bt in _e.buffs:
                                 frame:
-                                    background _paper_mid padding (7, 2)
-                                    text (str(buff[0]) + " +" + str(buff[1])):
-                                        style "battle_chip_text" size 16
+                                    background _pm padding (6, 2)
+                                    text (_bn + " +" + str(_ba) + " (" + str(_bt) + "t)"):
+                                        style "battle_chip" size 12
 
-                        if not is_multi:
+                        ## Skill unlock exp bar (single-enemy mode only)
+                        if not _multi:
                             hbox:
-                                xalign 1.0 spacing 12 yalign 0.5
-                                text ("skill unlock"):
+                                xalign 1.0 spacing 8 yalign 0.5
+                                text "skill unlock":
                                     style "battle_exp_label"
                                 frame:
-                                    xsize 208 ysize 11 yalign 0.5
-                                    background _paper_mid
+                                    xsize 140 ysize 8 yalign 0.5
+                                    background _pm
                                     frame:
-                                        xsize int(208 * enemy.skill_exp // enemy.skill_exp_max)
-                                        yfill True background _ink
-                                    foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
+                                        xsize int(140 * max(0, _e.skill_exp) // max(1, _e.skill_exp_max))
+                                        yfill True background _k
 
-                        if is_multi and enemy != live_enemies[-1]:
+                        ## Divider between enemies in multi-enemy mode
+                        if _multi and _ei < len(_live) - 1:
                             frame:
-                                xalign 1.0 xsize 400 ysize 1
-                                background _ink_faint
-                                yoffset 5
+                                xalign 1.0 xsize 360 ysize 1
+                                background _kf yoffset 4
 
-    if not is_multi:
-        frame:
-            xalign 0.5 ypos 25
-            background _paper_dark
-            padding (22, 4)
-            foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
-            text ("Turn " + str(bm.turn_count) + " " + chr(8226) + " " + str(bm.current_max_slots) + " slots"):
-                style "battle_turn_badge"
-                color _ink_light
 
-    # 3. INTENT BAR
-    $ _target_idx = getattr(bm, "last_targeted_enemy_idx", 0)
-    if _target_idx < len(bm.enemies) and not bm.enemies[_target_idx].is_dead:
-        $ _preview_enemy = bm.enemies[_target_idx]
-        $ _e_intents = [s for s in _preview_enemy.slots if isinstance(s, EnemyIntent)]
-        if _e_intents:
-            $ _intent_preview = _e_intents[0]
-            $ _v_offset = (410 + (len(live_enemies)-1)*110) if is_multi else 410
-            frame:
-                xfill True left_margin 38 right_margin 38
-                yalign 1.0 yoffset -(_v_offset)
-                background (_paper + "e0")
-                left_padding 22 right_padding 22 top_padding 11 bottom_padding 11
-                foreground Frame(
-                    Composite((10,10),
-                        (0,0), Solid(_ink, xsize=6, ysize=10),
-                        (6,0), Solid(_ink_faint, xsize=4, ysize=1),
-                        (6,9), Solid(_ink_faint, xsize=4, ysize=1),
-                        (9,0), Solid(_ink_faint, xsize=1, ysize=10),
-                    ), 6,1,1,1
-                )
-                hbox:
-                    spacing 16
-                    text (_preview_enemy.name + ": " + _intent_preview.name + " " + chr(8212) + " " + str(_intent_preview.damage) + " damage"):
-                        style "battle_intent_title"
-                        color _ink
-                    text (_intent_preview.desc):
-                        style "battle_intent_desc"
-                        color _ink_light
-
-    # 4. SLOT STRIP
-    $ _strip_h = (len(live_enemies) * 110 + 32) if is_multi else 140
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 2. SLOT STRIP
+    ##    Anchored yalign 1.0 so it floats just above the cards section.
+    ##    One row per live enemy, each _row_h pixels tall.
+    ##    CONFIRM button is a fixed-width column on the right.
+    ## ══════════════════════════════════════════════════════════════════════════
     frame:
-        yalign 1.0 yoffset -240
+        yalign 1.0
+        yoffset (-_cards_h)
         xfill True ysize _strip_h
-        background (_paper + "e6")
-        xpadding 38 ypadding 16
-        if is_chaos:
+        background (_p + "f0")
+        xpadding 0 ypadding 0
+        zorder 5
+        if _ch:
             at chaos_slots_shake
 
         hbox:
-            spacing 22 xfill True
+            xfill True yfill True
 
+            ## ── one row per live enemy ───────────────────────────────────────
             vbox:
-                spacing 0
-                for e_idx, enemy in enumerate(bm.enemies):
-                    if not enemy.is_dead:
-                        if e_idx > 0:
+                xfill True yfill True spacing 0
+
+                for _ei, _e in enumerate(bm.enemies):
+                    if not _e.is_dead:
+
+                        ## row divider (not before the first row)
+                        if _ei > 0:
                             frame:
-                                xfill True ysize 1 background _ink_faint
+                                xfill True ysize 1 background _kf
 
                         hbox:
-                            spacing 22 xfill True ysize 110
-                            text (enemy.name.split()[0] + "'s\nrow"):
-                                style "battle_faint"
-                                min_width 160 yalign 0.5 size 19
+                            xfill True ysize _row_h
+                            left_padding 20 right_padding 8
+                            spacing 10 yalign 0.5
 
+                            ## Row label
+                            text (_e.name.split()[0] + "'s\nrow"):
+                                style "battle_faint"
+                                min_width 72 yalign 0.5 size 14 text_align 0.0
+
+                            ## Slot cells
                             hbox:
-                                spacing 12 yalign 0.5
-                                for s_idx in range(bm.current_max_slots):
-                                    $ action = enemy.slots[s_idx]
-                                    $ slot_w = int(1400 // bm.current_max_slots)
+                                xfill True yalign 0.5 spacing 6
+
+                                for _si in range(bm.current_max_slots):
+                                    $ _slot = _e.slots[_si]
 
                                     frame:
-                                        xsize slot_w ysize 96
-                                        if action is None:
-                                            background _paper
-                                            foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
-                                            if bm.selected_skill:
+                                        xsize int(1050 // bm.current_max_slots)
+                                        ysize (_row_h - 12)
+                                        yalign 0.5
+
+                                        ## ── EMPTY ──────────────────────────
+                                        if _slot is None:
+                                            background _p
+                                            foreground ("slot_dashed_chaos" if _ch else "slot_dashed")
+                                            text (u"\u2014 open \u2014"):
+                                                style "battle_faint" size 13
+                                                xalign 0.5 yalign 0.5
+                                            if bm.selected_skill is not None:
                                                 imagebutton:
-                                                    idle Solid("#00000000")
-                                                    hover Solid(_ink + "22")
-                                                    action Function(bm.add_to_slot, bm.selected_skill, e_idx, s_idx)
-                                            text (chr(8212) + " open " + chr(8212)):
-                                                style "battle_faint"
-                                                size 18 xalign 0.5 yalign 0.5
-                                        elif isinstance(action, EnemyIntent):
-                                            background ("slot_enemy_hatch_chaos" if is_chaos else "slot_enemy_hatch")
-                                            xfill True yfill True
-                                            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
+                                                    xfill True yfill True
+                                                    idle   Solid("#00000000")
+                                                    hover  Solid(_k + "22")
+                                                    action Function(bm.add_to_slot, bm.selected_skill, _ei, _si)
+                                                    insensitive Solid("#00000000")
+
+                                        ## ── ENEMY INTENT ───────────────────
+                                        elif isinstance(_slot, EnemyIntent):
+                                            background ("slot_hatch_chaos" if _ch else "slot_hatch")
+                                            foreground ("slot_border_chaos" if _ch else "slot_border")
                                             vbox:
-                                                xalign 0.5 yalign 0.5 spacing 1
-                                                text ("ENEMY"):
-                                                    style "battle_slottag"
-                                                    color _ink_light
-                                                    xalign 0.5 size 14
-                                                text (action.name):
-                                                    style "battle_slotname"
-                                                    color _ink
-                                                    xalign 0.5 size 20
-                                            if action.damage > 0:
-                                                text (str(action.damage)):
-                                                    style "battle_slotval"
-                                                    xalign 0.95 yalign 0.95 size 16
-                                        elif isinstance(action, Skill):
-                                            background _paper_dark
-                                            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
-                                            vbox:
-                                                xalign 0.5 yalign 0.5 spacing 1
-                                                text ("YOU"):
-                                                    style "battle_slottag"
-                                                    color _ink
-                                                    xalign 0.5 size 14
-                                                text (action.name):
-                                                    style "battle_slotname"
-                                                    color _ink
-                                                    xalign 0.5 size 20
-                                            if action.damage > 0:
-                                                text (str(action.damage)):
-                                                    style "battle_slotval"
-                                                    xalign 0.95 yalign 0.95 size 16
+                                                xalign 0.5 yalign 0.5 spacing 0
+                                                text "ENEMY":
+                                                    style "battle_slot_tag" color _kl xalign 0.5
+                                                text _slot.name:
+                                                    style "battle_slot_name" xalign 0.5
+                                            if _slot.damage > 0:
+                                                text str(_slot.damage):
+                                                    style "battle_slot_val" xalign 0.97 yalign 0.92
+                                            ## click → toggle intent description bar
                                             imagebutton:
-                                                idle Solid("#00000000")
-                                                action Function(bm.select_skill, action)
+                                                xfill True yfill True
+                                                idle  Solid("#00000000")
+                                                hover Solid(_k + "14")
+                                                action If(
+                                                    bm.selected_intent is _slot,
+                                                    true  = SetField(bm, "selected_intent", None),
+                                                    false = SetField(bm, "selected_intent", _slot)
+                                                )
 
-            textbutton "CONFIRM":
-                text_style "battle_confirm_text"
-                padding (32, 22)
-                background _ink
-                text_color _paper
-                hover_background _paper_mid
-                action Return("execute")
-                yalign 0.5
+                                        ## ── PLAYER SKILL ───────────────────
+                                        elif isinstance(_slot, Skill):
+                                            background _pd
+                                            foreground ("slot_border_chaos" if _ch else "slot_border")
+                                            vbox:
+                                                xalign 0.5 yalign 0.5 spacing 0
+                                                text "YOU":
+                                                    style "battle_slot_tag" color _k xalign 0.5
+                                                text _slot.name:
+                                                    style "battle_slot_name" xalign 0.5
+                                            if _slot.damage > 0:
+                                                text str(_slot.damage):
+                                                    style "battle_slot_val" xalign 0.97 yalign 0.92
+                                            ## click → remove from slot
+                                            ## (subtle red hover = "this is removable")
+                                            imagebutton:
+                                                xfill True yfill True
+                                                idle  Solid("#00000000")
+                                                hover Solid("#ff000018")
+                                                action Function(bm.remove_from_slot, _ei, _si)
 
-    # 5. CARDS SECTION
-    frame:
-        yalign 1.0 xfill True ysize 240
-        background (_paper + "f7")
-        xpadding 38 ypadding 16
-        vbox:
-            spacing 11
+            ## ── CONFIRM button ───────────────────────────────────────────────
+            frame:
+                xsize 140 yfill True
+                background _p
+                padding (10, 0)
+
+                textbutton "CONFIRM":
+                    style "battle_confirm_btn"
+                    background        Solid(_k)
+                    hover_background  Solid(_pm)
+                    text_color        _p
+                    text_hover_color  _k
+                    insensitive_background Solid(_k + "55")
+                    action Return("execute")
+                    xalign 0.5 yalign 0.5
+                    xsize 118
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 3. INTENT BAR
+    ##    Only visible when bm.selected_intent is not None.
+    ##    Appears just above the slot strip.
+    ## ══════════════════════════════════════════════════════════════════════════
+    if bm.selected_intent is not None:
+        $ _si_obj = bm.selected_intent
+        $ _iy = -(_cards_h + _strip_h + 2)
+        $ _ititle = (
+            _si_obj.name
+            + (u" \u2014 " + str(_si_obj.damage) + " damage" if _si_obj.damage > 0 else "")
+        )
+
+        frame:
+            xfill True
+            yalign 1.0 yoffset _iy
+            left_margin 24 right_margin 24
+            background (_p + "ee")
+            left_padding 18 right_padding 18
+            top_padding 8 bottom_padding 8
+            foreground ("intent_accent_chaos" if _ch else "intent_accent")
+            zorder 4
+
             hbox:
-                xfill True
-                text ("your cards"):
+                spacing 14 yalign 0.5
+                text _ititle:
+                    style "battle_intent_title"
+                text _si_obj.desc:
+                    style "battle_intent_desc"
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 4. CARDS SECTION  (bottom 150 px)
+    ## ══════════════════════════════════════════════════════════════════════════
+    frame:
+        yalign 1.0 xfill True ysize _cards_h
+        background (_p + "f7")
+        xpadding 24 ypadding 10
+        zorder 5
+
+        vbox:
+            spacing 8
+
+            ## Header: "your cards"  +  skill exp bar
+            hbox:
+                xfill True yalign 0.5
+                text "your cards":
                     style "battle_faint"
                 hbox:
-                    xalign 1.0 spacing 12 yalign 0.5
-                    text ("next skill:"):
+                    xalign 1.0 spacing 8 yalign 0.5
+                    text "next skill:":
                         style "battle_faint"
                     frame:
-                        xsize 416 ysize 11 yalign 0.5
-                        background _paper_mid
+                        xsize 260 ysize 8 yalign 0.5
+                        background _pm
                         frame:
-                            xsize int(416 * bm.skill_exp // bm.skill_exp_max)
-                            yfill True background _ink
-                        foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
+                            xsize int(260 * max(0, bm.skill_exp) // max(1, bm.skill_exp_max))
+                            yfill True background _k
 
+            ## Card row
             hbox:
-                spacing 16
-                if not getattr(bm, "is_shuffling", False):
-                    for skill in bm.player_skills:
-                        $ _on_cd = skill.current_cooldown > 0 or skill in bm.used_skills_this_turn
-                        $ _sel = bm.selected_skill == skill
-                        $ _tb = get_typebar(skill.type, is_chaos)
+                spacing 12
 
-                        frame:
-                            xsize 173 ysize 160
-                            yoffset (-16 if _sel else 0)
-                            background _paper
-                            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
+                for _ci in range(len(bm.player_skills)):
+                    $ _skill = bm.player_skills[_ci]
+                    $ _oncd  = _skill.current_cooldown > 0 or _skill in bm.used_skills_this_turn
+                    $ _sel   = bm.selected_skill is _skill
+                    $ _hov   = bm.hovered_card_idx == _ci
 
-                            vbox:
-                                xfill True
-                                add _tb xsize 173
-                                frame:
-                                    xfill True ysize 70
-                                    background _paper
-                                    text (skill.icon if skill.icon else "?"):
-                                        size 36 color _ink xalign 0.5 yalign 0.5
+                    frame:
+                        xsize 108 ysize 100
+                        ## Lift when selected or hovered (matches the CSS)
+                        yoffset (-10 if (_sel or _hov) else 0)
+                        background _p
+                        foreground (
+                            ("card_selected_chaos" if _ch else "card_selected") if _sel
+                            else ("card_hover_chaos"  if _ch else "card_hover")  if _hov
+                            else None
+                        )
 
-                                frame:
-                                    xfill True ysize 1 background _ink_faint
-
-                                frame:
-                                    xfill True background _paper
-                                    xpadding 10 ypadding 6
-                                    vbox:
-                                        spacing 2
-                                        text (skill.name):
-                                            style "battle_cardname"
-                                            color _ink
-                                        hbox:
-                                            xfill True
-                                            $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
-                                            text (_val):
-                                                style "battle_cardstat"
-                                            if skill.cooldown > 0:
-                                                text ("cd:" + str(skill.cooldown)):
-                                                    style "battle_cardstat"
-                                                    xalign 1.0
-
-                            frame:
-                                xalign 1.0 yalign 0.0
-                                xoffset -8 yoffset 14
-                                xsize 32 ysize 32
-                                background _ink
-                                text (str(skill.cost)):
-                                    size 19 color _paper xalign 0.5 yalign 0.5
-
-                            if _sel:
-                                add Solid(_ink + "22")
-
-                            if _on_cd:
-                                frame:
-                                    xfill True yfill True
-                                    background (_paper + "cc")
-                                    if skill.current_cooldown > 0:
-                                        text (str(skill.current_cooldown)):
-                                            style "battle_cooldown_num"
-                                            xalign 0.5 yalign 0.5
-                                    else:
-                                        text ("USED"):
-                                            style "battle_cardname"
-                                            color _ink_faint
-                                            xalign 0.5 yalign 0.5
-
-                            imagebutton:
-                                idle Solid("#00000000")
-                                hover Solid(_ink + "11")
-                                hovered SetField(bm, "hovered_skill", skill)
-                                unhovered SetField(bm, "hovered_skill", None)
-                                action Function(bm.select_skill, skill)
-
-    # 6. SKILL POPUP
-    if bm.hovered_skill:
-        $ s = bm.hovered_skill
-        frame:
-            xpos 38 yalign 1.0 yoffset -260
-            xsize 300
-            background _paper_dark
-            padding (22, 22)
-            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
-            vbox:
-                spacing 8
-                text (s.name):
-                    style "battle_intent_title" size 30 color _ink
-                text ("Cost: " + str(s.cost) + " Energy"):
-                    style "battle_label" size 22
-                if s.damage > 0:
-                    text ("Damage: " + str(s.damage)):
-                        style "battle_label" size 22
-                if s.cooldown > 0:
-                    text ("Cooldown: " + str(s.cooldown) + " turns"):
-                        style "battle_label" size 22
-                frame:
-                    xfill True ysize 1 background _ink_faint
-                text (s.desc):
-                    style "battle_intent_desc" size 19
-
-                if s in bm.used_skills_this_turn:
-                    $ _ei, _si = bm.get_skill_slot_info(s)
-                    if _ei != -1:
-                        textbutton "REMOVE FROM SLOT":
-                            text_style "battle_confirm_text" text_size 22
-                            action Function(bm.remove_from_slot, _ei, _si)
-                            background _paper_mid
+                        vbox:
                             xfill True
 
-    # 7. CHAOS NUMBER BOX
-    if is_chaos and hasattr(store, "chaos_anim_val"):
+                            ## Type stripe
+                            add get_typebar(_skill.type, _ch) xsize 108 ysize (8 if _skill.type == "ultimate" else 5)
+
+                            ## Icon
+                            frame:
+                                xfill True ysize 52 background _p
+                                text (_skill.icon if _skill.icon else "?"):
+                                    size 26 xalign 0.5 yalign 0.5 color _k
+
+                            ## Separator line
+                            frame:
+                                xfill True ysize 1 background _kf
+
+                            ## Name + stats
+                            frame:
+                                xfill True background _p
+                                left_padding 6 right_padding 6
+                                top_padding 4 bottom_padding 4
+                                vbox:
+                                    spacing 1
+                                    text _skill.name:
+                                        style "battle_card_name"
+                                    hbox:
+                                        xfill True
+                                        text (str(_skill.damage) + " dmg" if _skill.damage > 0 else _skill.type):
+                                            style "battle_card_stat"
+                                        if _skill.cooldown > 0:
+                                            text ("cd:" + str(_skill.cooldown)):
+                                                style "battle_card_stat" xalign 1.0
+
+                        ## Energy cost bubble (top-right corner)
+                        frame:
+                            xalign 1.0 yalign 0.0
+                            xoffset -5 yoffset 8
+                            xsize 20 ysize 20
+                            background _k
+                            text str(_skill.cost):
+                                size 13 xalign 0.5 yalign 0.5 color _p
+
+                        ## Selected tint
+                        if _sel:
+                            add Solid(_k + "1a")
+
+                        ## Cooldown / used overlay
+                        if _oncd:
+                            frame:
+                                xfill True yfill True
+                                background (_p + "cc")
+                                if _skill.current_cooldown > 0:
+                                    text str(_skill.current_cooldown):
+                                        style "battle_cooldown_num"
+                                        xalign 0.5 yalign 0.5
+                                else:
+                                    text "USED":
+                                        style "battle_card_name" color _kf
+                                        xalign 0.5 yalign 0.5
+
+                        ## Interactive overlay (hover + click)
+                        if not _oncd:
+                            imagebutton:
+                                xfill True yfill True
+                                idle        Solid("#00000000")
+                                hover       Solid(_k + "14")
+                                hovered     [SetField(bm, "hovered_card_idx", _ci),
+                                             SetField(bm, "hovered_skill",    _skill)]
+                                unhovered   [If(bm.hovered_card_idx == _ci,
+                                               true = SetField(bm, "hovered_card_idx", -1)),
+                                             If(bm.hovered_skill is _skill,
+                                               true = SetField(bm, "hovered_skill",    None))]
+                                action      Function(bm.select_skill, _skill)
+                                insensitive Solid("#00000000")
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 5. SKILL POPUP
+    ##    Shown only while a card is hovered.
+    ##    Anchored just above the cards section on the left side.
+    ## ══════════════════════════════════════════════════════════════════════════
+    if bm.hovered_skill is not None:
+        $ _hs = bm.hovered_skill
+
         frame:
-            xalign 0.35 yalign 0.34
-            background C_CHAOS_PAPER
-            padding (35, 16)
-            foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
-            at chaos_glitch
+            xpos 24
+            yalign 1.0 yoffset (-_cards_h - 8)
+            xsize 200
+            background _pd
+            padding (16, 14)
+            foreground ("card_popup_chaos" if _ch else "card_popup")
+            zorder 8
+
             vbox:
                 spacing 5
-                text (getattr(store, "chaos_anim_label", "DAMAGE")):
-                    style "battle_faint" size 21 color C_CHAOS_INK_LIGHT xalign 0.5
-                text (str(store.chaos_anim_val)):
-                    font "CaveatBrush-Regular.ttf" size 80 color C_CHAOS_INK xalign 0.5
 
-    # 8. ENERGY WARNING
+                text _hs.name:
+                    style "battle_popup_name"
+                text ("Cost: " + str(_hs.cost) + " Energy"):
+                    style "battle_popup_line"
+                if _hs.damage > 0:
+                    text ("Damage: " + str(_hs.damage)):
+                        style "battle_popup_line"
+                if _hs.cooldown > 0:
+                    text ("Cooldown: " + str(_hs.cooldown) + " turns"):
+                        style "battle_popup_line"
+                frame:
+                    xfill True ysize 1 background _kf yoffset 2
+                text _hs.desc:
+                    style "battle_intent_desc" size 15
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 6. CHAOS NUMBER BOX
+    ##    Only during execution phase (store.chaos_anim_val is set by
+    ##    your chaos_number_anim label).  Cleared at turn start so it
+    ##    never appears during the selection phase.
+    ## ══════════════════════════════════════════════════════════════════════════
+    if _ch and getattr(store, "chaos_anim_val", None) is not None:
+        frame:
+            xalign 0.35 yalign 0.34
+            background "#000000"
+            padding (28, 12)
+            foreground "chaos_box_border"
+            at chaos_glitch
+            zorder 10
+
+            vbox:
+                spacing 4
+                text getattr(store, "chaos_anim_label", "DAMAGE"):
+                    style "battle_faint" size 18 color "#888888" xalign 0.5
+                text str(store.chaos_anim_val):
+                    font "CaveatBrush-Regular.ttf"
+                    size 68 color "#ffffff" xalign 0.5
+
+
+    ## ══════════════════════════════════════════════════════════════════════════
+    ## 7. ENERGY WARNING
+    ## ══════════════════════════════════════════════════════════════════════════
     if bm.show_energy_warning:
         timer 2.0 action SetField(bm, "show_energy_warning", False)
         frame:
-            background Solid("#ff0000cc")
-            padding (40, 20)
-            xalign 0.5 yalign 0.4
-            text ("NOT ENOUGH ENERGY"):
-                color "#ffffff" size 58 bold True
+            background Solid("#cc0000ee")
+            padding (36, 14)
+            xalign 0.5 yalign 0.36
+            zorder 10
+            text "NOT ENOUGH ENERGY":
+                color "#ffffff" size 48 bold True
 
-    # Settings button
+    ## ── Settings / pause ─────────────────────────────────────────────────────
     textbutton "Settings":
-        xpos 16 ypos 16
+        xpos 12 ypos 12
         action ShowMenu("preferences")
-        text_style "battle_faint" text_size 19
+        style "battle_settings_btn"
+        zorder 5
+
+
+################################################################################
+##  STYLES
+##  All prefixed b_  to avoid collisions with your existing styles.
+##  Change font paths to match your project layout.
+################################################################################
+
+define FONT_BRUSH  = "CaveatBrush-Regular.ttf"
+define FONT_CAVEAT = "Caveat-Regular.ttf"
+define FONT_HAND   = "PatrickHand-Regular.ttf"
+
+style battle_charname:
+    font  FONT_BRUSH
+    size  34
+    color "#000000"
+
+style battle_label:
+    font  FONT_CAVEAT
+    size  15
+    color "#666666"
+
+style battle_stat_nums:
+    font  FONT_CAVEAT
+    size  14
+    color "#666666"
+
+style battle_big_stat:
+    font  FONT_BRUSH
+    size  38
+    color "#ffffff"
+
+style battle_turn_badge:
+    font  FONT_CAVEAT
+    size  14
+    color "#666666"
+
+style battle_faint:
+    font  FONT_CAVEAT
+    size  13
+    color "#aaaaaa"
+
+style battle_chip:
+    font  FONT_CAVEAT
+    size  13
+    color "#333333"
+
+style battle_exp_label:
+    font  FONT_CAVEAT
+    size  12
+    color "#aaaaaa"
+
+style battle_slot_tag:
+    font   FONT_CAVEAT
+    size   10
+    color  "#aaaaaa"
+    bold   True
+    kerning 1
+
+style battle_slot_name:
+    font  FONT_BRUSH
+    size  14
+    color "#000000"
+
+style battle_slot_val:
+    font  FONT_CAVEAT
+    size  11
+    color "#666666"
+
+style battle_intent_title:
+    font  FONT_BRUSH
+    size  17
+    color "#000000"
+
+style battle_intent_desc:
+    font   FONT_HAND
+    size   13
+    color  "#666666"
+    italic True
+
+style battle_card_name:
+    font  FONT_BRUSH
+    size  13
+    color "#000000"
+
+style battle_card_stat:
+    font  FONT_CAVEAT
+    size  11
+    color "#666666"
+
+style battle_cooldown_num:
+    font  FONT_BRUSH
+    size  30
+    color "#000000"
+
+style battle_popup_name:
+    font  FONT_BRUSH
+    size  20
+    color "#000000"
+
+style battle_popup_line:
+    font  FONT_CAVEAT
+    size  14
+    color "#333333"
+
+style battle_confirm_btn:
+    font  FONT_BRUSH
+    size  20
+    color "#ffffff"
+
+style battle_settings_btn is default:
+    font  FONT_CAVEAT
+    size  15
+    color "#aaaaaa"
+
+
+################################################################################
+##  TRANSFORMS
+##  Only new ones added here.  Keep all your existing transforms.
+################################################################################
+
+transform chaos_name_glitch:
+    ## Player name flickers in chaos mode
+    block:
+        alpha 1.0
+        pause 4.5
+        alpha 0.4
+        pause 0.08
+        alpha 1.0
+        pause 0.07
+        alpha 0.7
+        pause 0.05
+        alpha 1.0
+        repeat
+
+transform chaos_hp_glitch:
+    ## HP number briefly shifts sideways in chaos mode
+    block:
+        xoffset 0
+        pause 5.0
+        xoffset -3
+        pause 0.06
+        xoffset 2
+        pause 0.04
+        xoffset 0
+        repeat
+
+transform chaos_slots_shake:
+    ## Slot strip gentle wobble during chaos selection
+    block:
+        xoffset 0 yoffset 0
+        pause 7.0
+        xoffset  1  yoffset -1
+        pause 0.06
+        xoffset -1  yoffset  1
+        pause 0.05
+        xoffset  0  yoffset  0
+        repeat
+
+transform chaos_glitch:
+    ## Chaos number box glitch during execution phase
+    block:
+        xoffset 0
+        pause 0.4
+        xoffset -4
+        pause 0.06
+        xoffset  3
+        pause 0.04
+        xoffset  0
+        repeat
+
+
+################################################################################
+##  COLOUR HELPERS
+##  Un-comment ONLY if you don't already have your own versions.
+################################################################################
+
+define ink        = lambda c: "#ffffff" if c else "#000000"
+define paper      = lambda c: "#000000" if c else "#ffffff"
+define ink_light  = lambda c: "#888888" if c else "#666666"
+define ink_faint  = lambda c: "#333333" if c else "#aaaaaa"
+define paper_dark = lambda c: "#111111" if c else "#f0f0f0"
+define paper_mid  = lambda c: "#1a1a1a" if c else "#e0e0e0"
+
+## scramble_hp — un-comment if you don't already have one
+init python:
+    import random as _rng
+    _SC = "0123456789#$@?!"
+    def scramble_hp(val):
+        return "".join(_rng.choice(_SC) if _rng.random() < 0.35 else ch for ch in str(val))
+
+
+################################################################################
+##  DISPLAYABLE HELPERS
+##
+##  Each image is a simple Solid/Frame fallback so the screen works
+##  immediately without any image assets.  Replace each one with your
+##  own image file once you've made the artwork.
+##
+##  For the border/dashed effects you probably want:
+##    slot_dashed   → a Frame() with a dashed CSS-like border image
+##    slot_hatch    → a diagonal hatch pattern image
+##    intent_accent → a Frame() with a thick left border only
+##    card_popup    → a Frame() with a 2-px solid border
+################################################################################
+
+image slot_dashed        = Frame(Solid("#aaaaaa"), 1, 1)
+image slot_dashed_chaos  = Frame(Solid("#333333"), 1, 1)
+image slot_hatch         = Solid("#00000008")
+image slot_hatch_chaos   = Solid("#ffffff08")
+image slot_border        = Frame(Solid("#000000"), 2, 2)
+image slot_border_chaos  = Frame(Solid("#ffffff"), 2, 2)
+image intent_accent      = Frame(Solid("#000000"), 4, 0, 0, 0)
+image intent_accent_chaos= Frame(Solid("#ffffff"), 4, 0, 0, 0)
+image card_popup         = Frame(Solid("#000000"), 2, 2)
+image card_popup_chaos   = Frame(Solid("#ffffff"), 2, 2)
+image card_selected      = Frame(Solid("#000000"), 2, 2)
+image card_selected_chaos= Frame(Solid("#ffffff"), 2, 2)
+image card_hover         = Frame(Solid("#00000033"), 2, 2)
+image card_hover_chaos   = Frame(Solid("#ffffff33"), 2, 2)
+image chaos_box_border   = Frame(Solid("#ffffff"), 2, 2)
+image hp_low_hatch       = Solid("#000000")
+image hp_low_hatch_chaos = Solid("#ffffff")
+
+
+################################################################################
+##  get_typebar  helper
+##
+##  Returns the coloured stripe displayed at the top of each card.
+##  Replace Solid() calls with your actual stripe image assets.
+################################################################################
+
+init python:
+    def get_typebar(skill_type, is_chaos):
+        suffix = "_chaos" if is_chaos else ""
+        if skill_type == "attack": return "typebar_attack"
+        if skill_type == "ultimate": return "typebar_ultimate"
+        if skill_type == "barrier": return "typebar_barrier" + suffix
+        if skill_type == "energy": return "typebar_energy" + suffix
+        if skill_type == "dodge": return "typebar_dodge" + suffix
+        if skill_type == "buff": return "typebar_buff" + suffix
+        return "typebar_attack"
 
 label battle_reset_camera:
     camera:
@@ -1632,6 +1883,7 @@ label battle_engine(bm):
 
     label .engine_start_logic:
         $ bm.prepare_turn()
+        $ store.chaos_anim_val = None
 
         if getattr(bm, "tutorial", False) and bm.turn_count == 2:
             "kare" "augh..."
@@ -2841,6 +3093,7 @@ label butter_ava_battle(skill_overrides=None):
 
     label .boss1_start_logic:
         $ bm.prepare_turn()
+        $ store.chaos_anim_val = None
         show expression bm.player_sprites["idle"] as player at fight_left
         python:
             for i, enemy in enumerate(bm.enemies):
@@ -3250,6 +3503,7 @@ label butter_ava_battle2(skill_overrides=None):
 
     label .boss2_start_logic:
         $ bm.prepare_turn()
+        $ store.chaos_anim_val = None
         $ e_count = sum(1 for e in bm.enemies if not e.is_dead)
         if e_count > 1:
             show expression bm.player_sprites["idle"] as player at fight_left_multi
@@ -3783,6 +4037,7 @@ label order_battle:
 
 label order_battle_turn_start:
     $ bm.prepare_turn()
+    $ store.chaos_anim_val = None
     show screen battle_screen(bm)
     if getattr(bm, "is_chaos", False):
         call chaos_card_shuffle_anim(bm) from _call_chaos_card_shuffle_order
@@ -4193,105 +4448,7 @@ label battle_boss_ava_butter_phase2(skill_overrides=None):
     call butter_ava_battle2(skill_overrides) from _call_butter_ava_battle2_alias_2
     return
 
-style battle_charname:
-    font "CaveatBrush-Regular.ttf"
-    size 45
 
-style battle_label:
-    font "Caveat-Regular.ttf"
-    size 24
-    color "#666666"
-
-style battle_stat_nums:
-    font "Caveat-Regular.ttf"
-    size 22
-    color "#666666"
-
-style battle_cardname:
-    font "CaveatBrush-Regular.ttf"
-    size 22
-
-style battle_cardstat:
-    font "Caveat-Regular.ttf"
-    size 18
-    color "#666666"
-
-style battle_faint:
-    font "Caveat-Regular.ttf"
-    size 21
-    color "#aaaaaa"
-
-style battle_slottag:
-    font "Caveat-Regular.ttf"
-    size 16
-    kerning 1
-    bold True
-
-style battle_slotname:
-    font "CaveatBrush-Regular.ttf"
-    size 24
-
-style battle_slotval:
-    font "Caveat-Regular.ttf"
-    size 18
-    color "#666666"
-
-style battle_cooldown_num:
-    font "CaveatBrush-Regular.ttf"
-    size 74
-    color "#aaaaaa"
-
-style battle_intent_title:
-    font "CaveatBrush-Regular.ttf"
-    size 27
-
-style battle_intent_desc:
-    font "PatrickHand-Regular.ttf"
-    size 21
-    italic True
-
-style battle_turn_badge:
-    font "Caveat-Regular.ttf"
-    size 22
-    color "#666666"
-
-style battle_chip_text:
-    font "Caveat-Regular.ttf"
-    size 21
-    color "#333333"
-
-style battle_exp_label:
-    font "Caveat-Regular.ttf"
-    size 19
-    color "#aaaaaa"
-
-style battle_confirm_text:
-    font "CaveatBrush-Regular.ttf"
-    size 32
-    kerning 2
-
-# Wobbly procedural frames
-
-# Low HP hatched fill
-image hp_bar_hatch = Tile(
-    Composite((8, 8),
-        (0, 0), Solid("#000000", xsize=4, ysize=4),
-        (4, 4), Solid("#000000", xsize=4, ysize=4),
-        (4, 0), Solid("#ffffff", xsize=4, ysize=4),
-        (0, 4), Solid("#ffffff", xsize=4, ysize=4),
-    ),
-    xsize=500, ysize=40
-)
-
-image hp_bar_hatch_chaos = Tile(
-    Composite((8, 8),
-        (0, 0), Solid("#ffffff", xsize=4, ysize=4),
-        (4, 4), Solid("#ffffff", xsize=4, ysize=4),
-        (4, 0), Solid("#000000", xsize=4, ysize=4),
-        (0, 4), Solid("#000000", xsize=4, ysize=4),
-    ),
-    xsize=500, ysize=40
-)
 
 # Wobbly procedural frames (Refined for Sketchy look)
 image frame_wobbly = Frame(
