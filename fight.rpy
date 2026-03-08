@@ -1393,7 +1393,7 @@ label battle_engine(bm):
                     "Overload! [enemy.name] took [dmg] damage from their own barrier!"
                 else:
                     "Overload failed: [enemy.name] has no barrier."
-elif isinstance(action, EnemyIntent):
+        elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
@@ -1474,7 +1474,7 @@ elif isinstance(action, EnemyIntent):
                         if s.type == "barrier":
                             s.current_cooldown = max(s.current_cooldown, 2)
                 "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
-elif intent.type == "the_bill":
+            elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_generic_bill
@@ -2538,7 +2538,7 @@ label butter_ava_battle(skill_overrides=None):
                     "Overload! [enemy.name] took [dmg] damage from their own barrier!"
                 else:
                     "Overload failed: [enemy.name] has no barrier."
-elif isinstance(action, EnemyIntent):
+        elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
@@ -2619,7 +2619,7 @@ elif isinstance(action, EnemyIntent):
                         if s.type == "barrier":
                             s.current_cooldown = max(s.current_cooldown, 2)
                 "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
-elif intent.type == "the_bill":
+            elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss1_bill
@@ -2933,7 +2933,7 @@ label butter_ava_battle2(skill_overrides=None):
                     "[enemy.name] took [dmg] damage from their own barrier"
                 else:
                     "Overload failed: [enemy.name] has no barrier."
-elif isinstance(action, EnemyIntent):
+        elif isinstance(action, EnemyIntent):
             $ intent = action
             $ intent.current_cooldown = intent.cooldown
             $ bm.enemy_intent = intent
@@ -3014,7 +3014,7 @@ elif isinstance(action, EnemyIntent):
                         if s.type == "barrier":
                             s.current_cooldown = max(s.current_cooldown, 2)
                 "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
-elif intent.type == "the_bill":
+            elif intent.type == "the_bill":
                 $ bm.is_dodged = False
                 if intent.animation:
                     call expression intent.animation pass (bm) from _call_intent_anim_generic_boss2_bill
@@ -3436,7 +3436,7 @@ label order_battle_resolution_core:
                 "Overload! Order took [dmg] damage from their own barrier!"
             else:
                 "Overload failed: Order has no barrier."
-elif isinstance(action, EnemyIntent):
+    elif isinstance(action, EnemyIntent):
         $ intent = action
         $ intent.current_cooldown = intent.cooldown
 
@@ -3509,7 +3509,7 @@ elif isinstance(action, EnemyIntent):
                     if s.type == "barrier":
                         s.current_cooldown = max(s.current_cooldown, 2)
             "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
-elif intent.type == "the_bill":
+        elif intent.type == "the_bill":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_bill
             $ damage = bm.total_skills_used_this_battle
