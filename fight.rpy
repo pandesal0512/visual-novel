@@ -1022,7 +1022,7 @@ screen battle_screen(bm):
         xfill True
         ysize 250
         background ("#00000000")
-        xpadding 80
+        spacing 80
         if is_chaos:
             at chaos_glitch
 
@@ -1610,7 +1610,7 @@ label battle_engine(bm):
             $ renpy.pause(0.4, hard=True)
             $ renpy.show(bm.enemies[0].sprites["idle"], tag="enemy_0")
             $ bm.take_damage(5, target="enemy", enemy_idx=0)
-            "Dobe kicks the crippled lady for 5 damage"
+                "Dobe kicks the crippled lady for 5 damage"
             show dobe_attack:
                 xanchor 0.5 yanchor 1.0
                 xpos 0.75 ypos 0.8
@@ -3449,7 +3449,6 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_unravel_anim_order
             $ enemy.buffs = []
-            "You stripped Order of all buffs!"
         elif skill.type == "fracture":
             $ bm.is_dodged = False
             if skill.animation:
@@ -3465,7 +3464,7 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_corrode_anim_order
             $ bm.add_buff("corrosion", 5, store.locked_skill_value, target="enemy", enemy_idx=e_idx)
-            "You applied corrosion to Order for [store.locked_skill_value] turns!"
+                "You applied corrosion to Order for [store.locked_skill_value] turns!"
         elif skill.type == "inversion":
             $ bm.is_dodged = False
             if skill.animation:
@@ -3483,7 +3482,7 @@ label order_battle_resolution_core:
             if skill.animation:
                 call expression skill.animation pass (bm) from _call_chaos_collapse_anim_order
             $ enemy.collapsed = True
-            "You collapsed Order's reality! Their next action is nullified."
+                "You collapsed Order's reality! Their next action is nullified."
         elif skill.type == "leech":
             $ bm.is_dodged = False
             if skill.animation:
@@ -3511,7 +3510,7 @@ label order_battle_resolution_core:
 
         if enemy.collapsed:
             $ enemy.collapsed = False
-            "Order's action was nullified by Collapse!"
+                "Order's action was nullified by Collapse!"
             $ e_idx += 1
             jump order_battle_resolution_core
 
@@ -3541,7 +3540,6 @@ label order_battle_resolution_core:
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_barrier
             $ bm.add_barrier(intent.damage, target="enemy", enemy_idx=e_idx)
-            "Order gains [intent.damage] Defense"
         elif intent.type == "dodge":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_dodgeanim
@@ -3551,11 +3549,9 @@ label order_battle_resolution_core:
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_buffanim
             $ bm.add_buff(intent.buff_type, intent.damage, intent.buff_duration, target="enemy", enemy_idx=e_idx)
-            "Order's damage increased by [intent.damage]"
         elif intent.type == "energy":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_energyanim
-            "Order is recovering."
         elif intent.type == "precedent":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_precedent
@@ -3568,7 +3564,6 @@ label order_battle_resolution_core:
             $ damage = 8 if triggered else 3
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
-            "[enemy.name] deals [damage] damage with PRECEDENT!"
         elif intent.type == "sentence_passed":
             $ bm.is_dodged = False
             if intent.animation:
@@ -3579,14 +3574,12 @@ label order_battle_resolution_core:
                 for s in bm.player_skills:
                     if s.type == "barrier":
                         s.current_cooldown = max(s.current_cooldown, 2)
-            "[enemy.name] deals [damage] damage and forces your barrier skills on cooldown for 2 turns!"
         elif intent.type == "the_bill":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_bill
             $ damage = bm.total_skills_used_this_battle
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
-            "[enemy.name] deals [damage] damage with THE BILL!"
         elif intent.type == "recidivism":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_recidivism
@@ -3594,14 +3587,13 @@ label order_battle_resolution_core:
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
             $ bm.rolled_one_last_turn = False
-            "[enemy.name] deals [damage] flat damage with RECIDIVISM!"
         elif intent.type == "accumulated_weight":
             if intent.animation:
                 call expression intent.animation pass (bm) from _call_intent_order_default_accumulated
             $ damage = bm.turn_count
             $ damage = max(0, damage + bm.get_total_buff_value("damage", target="enemy", enemy_idx=e_idx) - bm.get_total_buff_value("corrosion", target="enemy", enemy_idx=e_idx))
             $ bm.take_damage(damage, target="player")
-            "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
+                "[enemy.name] deals [damage] damage with ACCUMULATED WEIGHT!"
 
     if bm.enemies[0].is_dead:
         window hide
