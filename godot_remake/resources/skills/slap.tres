@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/SkillData.gd" id="1_x"]
+
+[resource]
+script = ExtResource("1_x")
+skill_name = "slap"
+icon = "W"
+description = "Standard strike."
+cost = 2
+damage = 6
+energy_regen = 1
+cooldown = 0
+skill_type = "attack"
+animation_name = "kare_normal_anim"
+is_chaos_skill = false
