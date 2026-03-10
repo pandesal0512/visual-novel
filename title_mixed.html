@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>anytime — title screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Caveat+Brush&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background:#111;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    min-height:100vh; gap:16px; padding:30px;
+    font-family:'Patrick Hand',cursive;
+  }
+
+  .hint {
+    color:#444; font-family:'Caveat',cursive;
+    font-size:13px; letter-spacing:2px; text-align:center;
+  }
+
+  /* ══════════════════════════════════════
+     SCREEN SHELL
+  ══════════════════════════════════════ */
+  .screen {
+    width:1200px; height:680px;
+    position:relative; overflow:hidden;
+    transition:background 0.05s;
+    flex-shrink:0;
+  }
+
+  /* ── BASE STATE (A aesthetic) ── */
+  .screen.state-a {
+    background:#fff;
+  }
+  /* ── GLITCH STATE (D aesthetic) ── */
+  .screen.state-d {
+    background:#000;
+  }
+
+  /* ── GRAIN — A (light) ── */
+  .grain-a {
+    position:absolute; inset:0; z-index:2; pointer-events:none;
+    background-image:repeating-linear-gradient(
+      45deg, transparent, transparent 3px,
+      rgba(0,0,0,0.018) 3px, rgba(0,0,0,0.018) 4px
+    );
+    transition:opacity 0.05s;
+  }
+  .state-d .grain-a { opacity:0; }
+
+  /* ── GRAIN — D (scanlines) ── */
+  .grain-d {
+    position:absolute; inset:0; z-index:2; pointer-events:none;
+    background-image:
+      repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px),
+      repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px);
+    opacity:0; transition:opacity 0.05s;
+  }
+  .state-d .grain-d { opacity:1; }
+
+  /* ── NOTEBOOK LINES (C layout) ── */
+  .notebook-lines {
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image:repeating-linear-gradient(
+      to bottom, transparent 0, transparent 35px, rgba(200,200,220,0.5) 35px, rgba(200,200,220,0.5) 36px
+    );
+    background-position:0 52px;
+    transition:opacity 0.05s;
+  }
+  .state-d .notebook-lines { opacity:0.06; }
+
+  /* ── MARGIN LINE (C layout) ── */
+  .margin-line {
+    position:absolute; left:80px; top:0; bottom:0; width:2px; z-index:3;
+    background:rgba(255,100,100,0.22);
+    transition:background 0.05s;
+  }
+  .state-d .margin-line { background:rgba(255,80,80,0.1); }
+
+  /* ── HOLE PUNCHES (C layout) ── */
+  .hole {
+    position:absolute; left:54px; width:22px; height:22px;
+    border-radius:50%; z-index:10;
+    transition:background 0.05s, box-shadow 0.05s;
+  }
+  .state-a .hole { background:#e8e8e8; box-shadow:inset 0 0 0 2px #ccc; }
+  .state-d .hole { background:#000; box-shadow:inset 0 0 0 1px #333, 0 0 6px rgba(255,255,255,0.05); }
+
+  /* ── CORNER MARKS ── */
+  .crn { position:absolute; width:26px; height:26px; z-index:10; }
+  .crn::before,.crn::after { content:''; position:absolute; transition:background 0.05s; }
+  .crn::before { width:100%; height:2.5px; top:0; left:0; }
+  .crn::after  { width:2.5px; height:100%; top:0; left:0; }
+  .crn.tl { top:18px; left:18px; }
+  .crn.tr { top:18px; right:18px; transform:scaleX(-1); }
+  .crn.bl { bottom:18px; left:18px; transform:scaleY(-1); }
+  .crn.br { bottom:18px; right:18px; transform:scale(-1); }
+  .state-a .crn::before,.state-a .crn::after { background:#000; }
+  .state-d .crn::before,.state-d .crn::after { background:#fff; }
+
+  /* ── GLITCH BARS (D) ── */
+  .glitch-bar {
+    position:absolute; left:0; right:0; z-index:3; pointer-events:none;
+    background:rgba(255,255,255,0.06);
+    opacity:0; transition:opacity 0.04s;
+  }
+  .state-d .glitch-bar { opacity:1; }
+
+  /* ── TYPEBAR STRIP ── */
+  .typebar-strip {
+    position:absolute; bottom:168px; left:0; right:0;
+    height:5px; z-index:5;
+    transition:background-image 0.05s;
+  }
+  .state-a .typebar-strip {
+    background-image:repeating-linear-gradient(90deg,#000 0,#000 2px,transparent 2px,transparent 4px);
+  }
+  .state-d .typebar-strip {
+    background-image:repeating-linear-gradient(90deg,#fff 0,#fff 2px,#000 2px,#000 4px);
+  }
+
+  /* ── TOP STAMP ── */
+  .top-stamp {
+    position:absolute; top:26px; left:50%; transform:translateX(-50%);
+    font-family:'Caveat',cursive; font-size:13px;
+    letter-spacing:5px; text-transform:uppercase;
+    z-index:10; white-space:nowrap; transition:color 0.05s;
+  }
+  .state-a .top-stamp { color:#ccc; }
+  .state-d .top-stamp { color:#333; }
+
+  /* ── TITLE AREA (C layout — left aligned) ── */
+  .title-wrap {
+    position:absolute; top:72px; left:120px; z-index:10;
+  }
+
+  .title-label {
+    font-family:'Caveat',cursive; font-size:13px;
+    letter-spacing:4px; margin-bottom:2px;
+    transition:color 0.05s;
+  }
+  .state-a .title-label { color:#aaa; }
+  .state-d .title-label { color:#444; }
+
+  .title-main {
+    font-family:'Caveat Brush',cursive;
+    font-size:160px; line-height:0.9;
+    letter-spacing:-3px; position:relative;
+    transition:color 0.05s;
+  }
+  .state-a .title-main { color:#111; }
+  .state-d .title-main { color:#fff; }
+
+  /* D-style glitch ghost layers on title */
+  .title-main::before {
+    content:'anytime'; position:absolute;
+    left:-4px; top:3px; z-index:-1;
+    opacity:0; transition:opacity 0.05s;
+    color:rgba(255,255,255,0.12);
+  }
+  .title-main::after {
+    content:'anytime'; position:absolute;
+    left:4px; top:-3px; z-index:-1;
+    opacity:0; transition:opacity 0.05s;
+    color:rgba(255,255,255,0.08);
+  }
+  .state-d .title-main::before { opacity:1; }
+  .state-d .title-main::after  { opacity:1; }
+
+  .title-underline {
+    margin-top:4px; height:3px; width:440px;
+    transition:background 0.05s;
+  }
+  .state-a .title-underline { background:#111; }
+  .state-d .title-underline { background:#fff; }
+
+  .title-sub {
+    font-family:'Caveat',cursive; font-size:15px;
+    font-style:italic; margin-top:8px;
+    transition:color 0.05s;
+  }
+  .state-a .title-sub { color:#888; }
+  .state-d .title-sub { color:#444; }
+
+  /* ── RIGHT DECO — vertical ghost title (C) ── */
+  .right-deco {
+    position:absolute; right:60px; top:50%;
+    transform:translateY(-50%); z-index:4;
+    font-family:'Caveat Brush',cursive; font-size:78px;
+    writing-mode:vertical-rl; line-height:1;
+    pointer-events:none; transition:color 0.05s;
+    user-select:none;
+  }
+  .state-a .right-deco { color:rgba(0,0,0,0.04); }
+  .state-d .right-deco { color:rgba(255,255,255,0.03); }
+
+  /* ── STAMP DECO (top right) ── */
+  .stamp-deco {
+    position:absolute; top:28px; right:50px;
+    text-align:right; z-index:10;
+  }
+  .stamp-big {
+    font-family:'Caveat Brush',cursive; font-size:18px;
+    letter-spacing:4px; transition:color 0.05s;
+  }
+  .stamp-date {
+    font-family:'Caveat',cursive; font-size:13px;
+    margin-top:4px; transition:color 0.05s;
+  }
+  .state-a .stamp-big,.state-a .stamp-date { color:#ccc; }
+  .state-d .stamp-big,.state-d .stamp-date { color:#333; }
+
+  /* ── VERSION ── */
+  .version {
+    position:absolute; bottom:22px; right:24px;
+    font-family:'Caveat',cursive; font-size:13px;
+    z-index:10; transition:color 0.05s;
+  }
+  .state-a .version { color:#ccc; }
+  .state-d .version { color:#333; }
+
+  /* ══════════════════════════════════════
+     MAIN MENU (C layout — numbered rows)
+  ══════════════════════════════════════ */
+  .menu {
+    position:absolute; bottom:55px; left:120px;
+    display:flex; flex-direction:column; gap:0;
+    z-index:10;
+  }
+  .menu-row {
+    display:flex; align-items:baseline; gap:16px;
+    height:38px; border-bottom:1px solid;
+    cursor:pointer; transition:padding-left 0.12s;
+  }
+  .menu-row:hover { padding-left:6px; }
+  .state-a .menu-row { border-color:rgba(0,0,0,0.1); }
+  .state-d .menu-row { border-color:rgba(255,255,255,0.08); }
+
+  .menu-num {
+    font-family:'Caveat',cursive; font-size:13px;
+    min-width:22px; transition:color 0.05s;
+  }
+  .state-a .menu-num { color:#bbb; }
+  .state-d .menu-num { color:#444; }
+
+  .menu-item {
+    font-family:'Caveat Brush',cursive; font-size:26px;
+    transition:color 0.05s;
+  }
+  .state-a .menu-item       { color:#111; }
+  .state-a .menu-item.dim   { color:#bbb; }
+  .state-a .menu-item.active{ text-decoration:underline; text-underline-offset:4px; color:#000; }
+  .state-d .menu-item       { color:#fff; }
+  .state-d .menu-item.dim   { color:#333; }
+  .state-d .menu-item.active{ text-decoration:underline; text-underline-offset:4px; color:#fff; }
+
+  /* ══════════════════════════════════════
+     SETTINGS PANEL
+  ══════════════════════════════════════ */
+  .settings-panel {
+    position:absolute; inset:0; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.18s;
+  }
+  .settings-panel.open { opacity:1; pointer-events:all; }
+
+  /* backdrop */
+  .settings-backdrop {
+    position:absolute; inset:0;
+    transition:background 0.1s;
+  }
+  .state-a .settings-backdrop { background:rgba(255,255,255,0.88); }
+  .state-d .settings-backdrop { background:rgba(0,0,0,0.88); }
+
+  /* panel card */
+  .settings-card {
+    position:relative; z-index:2;
+    width:560px;
+    padding:36px 40px 32px;
+    border:2px solid; transition:border-color 0.05s, background 0.05s;
+  }
+  .state-a .settings-card { background:#fff; border-color:rgba(0,0,0,0.2); }
+  .state-d .settings-card { background:#000; border-color:rgba(255,255,255,0.15); }
+
+  /* card notebook lines */
+  .settings-card::after {
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:-1;
+    background-image:repeating-linear-gradient(
+      to bottom, transparent 0, transparent 35px, rgba(200,200,220,0.4) 35px, rgba(200,200,220,0.4) 36px
+    );
+    background-position:0 8px;
+  }
+  .state-d .settings-card::after { opacity:0.12; }
+
+  .settings-title {
+    font-family:'Caveat Brush',cursive; font-size:36px;
+    margin-bottom:4px; transition:color 0.05s;
+  }
+  .state-a .settings-title { color:#000; }
+  .state-d .settings-title { color:#fff; }
+
+  .settings-label-row {
+    font-family:'Caveat',cursive; font-size:11px;
+    letter-spacing:4px; margin-bottom:20px;
+    transition:color 0.05s;
+  }
+  .state-a .settings-label-row { color:#bbb; }
+  .state-d .settings-label-row { color:#444; }
+
+  .settings-divider {
+    height:2px; margin-bottom:22px; transition:background 0.05s;
+  }
+  .state-a .settings-divider { background:#000; }
+  .state-d .settings-divider { background:#fff; }
+
+  /* settings rows */
+  .s-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-bottom:1px solid;
+    transition:border-color 0.05s;
+  }
+  .s-row:last-of-type { border-bottom:none; }
+  .state-a .s-row { border-color:rgba(0,0,0,0.08); }
+  .state-d .s-row { border-color:rgba(255,255,255,0.06); }
+
+  .s-num {
+    font-family:'Caveat',cursive; font-size:11px;
+    min-width:22px; transition:color 0.05s;
+  }
+  .state-a .s-num { color:#bbb; }
+  .state-d .s-num { color:#444; }
+
+  .s-label {
+    font-family:'Caveat Brush',cursive; font-size:20px;
+    flex:1; margin-left:12px; transition:color 0.05s;
+  }
+  .state-a .s-label { color:#111; }
+  .state-d .s-label { color:#ddd; }
+
+  .s-control { display:flex; align-items:center; gap:10px; }
+
+  /* slider */
+  .s-slider {
+    -webkit-appearance:none; appearance:none;
+    width:140px; height:6px; outline:none;
+    cursor:pointer; border:1px solid;
+    background:transparent;
+    transition:border-color 0.05s;
+  }
+  .state-a .s-slider { border-color:rgba(0,0,0,0.3); }
+  .state-d .s-slider { border-color:rgba(255,255,255,0.2); }
+  .s-slider::-webkit-slider-thumb {
+    -webkit-appearance:none; width:14px; height:14px;
+    cursor:pointer; transition:background 0.05s;
+  }
+  .state-a .s-slider::-webkit-slider-thumb { background:#000; }
+  .state-d .s-slider::-webkit-slider-thumb { background:#fff; }
+  .state-a .s-slider::-webkit-slider-runnable-track { background:rgba(0,0,0,0.1); }
+  .state-d .s-slider::-webkit-slider-runnable-track { background:rgba(255,255,255,0.08); }
+
+  .s-val {
+    font-family:'Caveat',cursive; font-size:14px;
+    min-width:30px; text-align:right; transition:color 0.05s;
+  }
+  .state-a .s-val { color:#888; }
+  .state-d .s-val { color:#555; }
+
+  /* toggle switch */
+  .s-toggle {
+    width:42px; height:20px; position:relative; cursor:pointer;
+  }
+  .s-toggle input { opacity:0; width:0; height:0; position:absolute; }
+  .s-toggle-track {
+    position:absolute; inset:0; border:1.5px solid;
+    transition:background 0.15s, border-color 0.05s;
+  }
+  .state-a .s-toggle-track { border-color:#000; background:#fff; }
+  .state-d .s-toggle-track { border-color:#fff; background:#000; }
+  .s-toggle input:checked + .s-toggle-track {
+    transition:background 0.15s;
+  }
+  .state-a .s-toggle input:checked + .s-toggle-track { background:#000; }
+  .state-d .s-toggle input:checked + .s-toggle-track { background:#fff; }
+  .s-toggle-thumb {
+    position:absolute; top:2px; left:2px;
+    width:12px; height:12px;
+    transition:transform 0.15s, background 0.05s;
+    pointer-events:none;
+  }
+  .state-a .s-toggle-thumb { background:#000; }
+  .state-d .s-toggle-thumb { background:#fff; }
+  .s-toggle input:checked ~ .s-toggle-thumb { transform:translateX(22px); }
+  .state-a .s-toggle input:checked ~ .s-toggle-thumb { background:#fff; }
+  .state-d .s-toggle input:checked ~ .s-toggle-thumb { background:#000; }
+
+  /* select dropdown */
+  .s-select {
+    font-family:'Caveat',cursive; font-size:15px;
+    padding:2px 8px; border:1.5px solid; background:transparent;
+    cursor:pointer; outline:none; transition:color 0.05s, border-color 0.05s;
+  }
+  .state-a .s-select { color:#111; border-color:rgba(0,0,0,0.3); }
+  .state-d .s-select { color:#ddd; border-color:rgba(255,255,255,0.2); background:#000; }
+
+  /* back button */
+  .settings-back {
+    display:flex; align-items:center; gap:8px;
+    margin-top:20px; cursor:pointer; width:fit-content;
+    padding:6px 0; transition:opacity 0.1s;
+    font-family:'Caveat Brush',cursive; font-size:18px;
+    border:none; background:none;
+  }
+  .settings-back:hover { opacity:0.6; }
+  .state-a .settings-back { color:#000; }
+  .state-d .settings-back { color:#fff; }
+
+  /* ── GLITCH KEYFRAMES ── */
+  @keyframes title-glitch {
+    0%,88%,100% { transform:none; opacity:1; }
+    89% { transform:translateX(-3px) skewX(-1deg); opacity:0.9; }
+    91% { transform:translateX(3px); }
+    93% { transform:translateX(-1px); }
+    95% { transform:none; opacity:0.7; }
+    97% { transform:translateX(2px) skewX(0.5deg); opacity:1; }
+  }
+  @keyframes scanline-sweep {
+    0%   { transform:translateY(-100%); }
+    100% { transform:translateY(100vh); }
+  }
+  @keyframes border-flicker {
+    0%,92%,100% { opacity:1; }
+    93% { opacity:0.2; }
+    95% { opacity:0.8; }
+  }
+
+  .glitch-active .title-main { animation:title-glitch 0.4s; }
+  .glitch-active { animation:border-flicker 0.4s; }
+
+  .scanline-sweep {
+    position:absolute; left:0; right:0; height:60px;
+    background:linear-gradient(to bottom, transparent, rgba(255,255,255,0.04), transparent);
+    z-index:6; pointer-events:none; top:-60px;
+    animation:scanline-sweep 1.2s linear;
+  }
+</style>
+</head>
+<body>
+
+<div class="hint">glitch happens randomly · click Options to open settings</div>
+
+<div class="screen state-a" id="screen">
+  <!-- layers -->
+  <div class="notebook-lines"></div>
+  <div class="grain-a"></div>
+  <div class="grain-d"></div>
+  <div class="margin-line"></div>
+
+  <!-- hole punches (C) -->
+  <div class="hole" style="top:110px;"></div>
+  <div class="hole" style="top:290px;"></div>
+  <div class="hole" style="top:470px;"></div>
+
+  <!-- corner marks (A + D) -->
+  <div class="crn tl"></div>
+  <div class="crn tr"></div>
+  <div class="crn bl"></div>
+  <div class="crn br"></div>
+
+  <!-- glitch bars (D) -->
+  <div class="glitch-bar" style="top:175px;height:7px;"></div>
+  <div class="glitch-bar" style="top:415px;height:3px;"></div>
+  <div class="glitch-bar" style="top:555px;height:5px;"></div>
+
+  <!-- typebar strip -->
+  <div class="typebar-strip"></div>
+
+  <!-- top stamp -->
+  <div class="top-stamp">A VISUAL NOVEL</div>
+
+  <!-- stamp deco top right -->
+  <div class="stamp-deco">
+    <div class="stamp-big">DRAFT</div>
+    <div class="stamp-date">v0.1 — 2026</div>
+  </div>
+
+  <!-- title (C layout — left aligned) -->
+  <div class="title-wrap">
+    <div class="title-label">TITLE :</div>
+    <div class="title-main">anytime</div>
+    <div class="title-underline"></div>
+    <div class="title-sub">a story about chaos, order, and one very bad day</div>
+  </div>
+
+  <!-- right ghost deco -->
+  <div class="right-deco">anytime</div>
+
+  <!-- main menu (C numbered rows) -->
+  <div class="menu" id="main-menu">
+    <div class="menu-row" onclick="selectItem(0)">
+      <span class="menu-num">01.</span>
+      <span class="menu-item active" id="mi-0">Start New Game</span>
+    </div>
+    <div class="menu-row" onclick="selectItem(1)">
+      <span class="menu-num">02.</span>
+      <span class="menu-item" id="mi-1">Continue</span>
+    </div>
+    <div class="menu-row" onclick="openSettings()">
+      <span class="menu-num">03.</span>
+      <span class="menu-item" id="mi-2">Options</span>
+    </div>
+    <div class="menu-row" onclick="selectItem(3)">
+      <span class="menu-num">04.</span>
+      <span class="menu-item dim" id="mi-3">Quit</span>
+    </div>
+  </div>
+
+  <div class="version">v0.1</div>
+
+  <!-- ══ SETTINGS PANEL ══ -->
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-backdrop" onclick="closeSettings()"></div>
+    <div class="settings-card">
+      <div class="settings-title">Options</div>
+      <div class="settings-label-row">GAME SETTINGS</div>
+      <div class="settings-divider"></div>
+
+      <!-- text speed -->
+      <div class="s-row">
+        <span class="s-num">01.</span>
+        <span class="s-label">Text Speed</span>
+        <div class="s-control">
+          <input class="s-slider" type="range" min="1" max="10" value="7"
+            oninput="this.nextElementSibling.textContent=this.value">
+          <span class="s-val">7</span>
+        </div>
+      </div>
+
+      <!-- music volume -->
+      <div class="s-row">
+        <span class="s-num">02.</span>
+        <span class="s-label">Music Volume</span>
+        <div class="s-control">
+          <input class="s-slider" type="range" min="0" max="100" value="80"
+            oninput="this.nextElementSibling.textContent=this.value+'%'">
+          <span class="s-val">80%</span>
+        </div>
+      </div>
+
+      <!-- sfx volume -->
+      <div class="s-row">
+        <span class="s-num">03.</span>
+        <span class="s-label">SFX Volume</span>
+        <div class="s-control">
+          <input class="s-slider" type="range" min="0" max="100" value="100"
+            oninput="this.nextElementSibling.textContent=this.value+'%'">
+          <span class="s-val">100%</span>
+        </div>
+      </div>
+
+      <!-- fullscreen -->
+      <div class="s-row">
+        <span class="s-num">04.</span>
+        <span class="s-label">Fullscreen</span>
+        <div class="s-control">
+          <label class="s-toggle">
+            <input type="checkbox" id="fs-toggle" onchange="handleFullscreen(this)">
+            <div class="s-toggle-track"></div>
+            <div class="s-toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- skip seen text -->
+      <div class="s-row">
+        <span class="s-num">05.</span>
+        <span class="s-label">Skip Read Text</span>
+        <div class="s-control">
+          <label class="s-toggle">
+            <input type="checkbox" checked>
+            <div class="s-toggle-track"></div>
+            <div class="s-toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- language -->
+      <div class="s-row">
+        <span class="s-num">06.</span>
+        <span class="s-label">Language</span>
+        <div class="s-control">
+          <select class="s-select">
+            <option>English</option>
+            <option>Filipino</option>
+            <option>日本語</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="settings-back" onclick="closeSettings()">← Back</button>
+    </div>
+  </div>
+
+</div><!-- .screen -->
+
+<script>
+  const screen = document.getElementById('screen');
+  let isD = false;
+  let glitchTimeout;
+  let nextGlitchTimeout;
+
+  /* ── GLITCH ENGINE ── */
+  function triggerGlitch() {
+    // flash to D
+    isD = true;
+    screen.classList.replace('state-a','state-d');
+    screen.classList.add('glitch-active');
+
+    // add scanline sweep
+    const sweep = document.createElement('div');
+    sweep.className = 'scanline-sweep';
+    screen.appendChild(sweep);
+    setTimeout(()=>{ if(sweep.parentNode) sweep.parentNode.removeChild(sweep); }, 1200);
+
+    // hold D for a short glitch moment
+    const holdTime = 120 + Math.random()*280;
+    clearTimeout(glitchTimeout);
+    glitchTimeout = setTimeout(()=>{
+      // flash back to A
+      isD = false;
+      screen.classList.replace('state-d','state-a');
+      screen.classList.remove('glitch-active');
+      scheduleNextGlitch();
+    }, holdTime);
+  }
+
+  function scheduleNextGlitch() {
+    // glitch again in 4–10 seconds
+    const delay = 4000 + Math.random() * 6000;
+    clearTimeout(nextGlitchTimeout);
+    nextGlitchTimeout = setTimeout(triggerGlitch, delay);
+  }
+
+  // start glitch cycle
+  scheduleNextGlitch();
+
+  /* ── MENU SELECTION ── */
+  function selectItem(idx) {
+    document.querySelectorAll('.menu-item').forEach((el,i)=>{
+      el.classList.toggle('active', i===idx);
+      el.classList.remove('dim');
+    });
+    document.getElementById('mi-3').classList.add('dim');
+  }
+
+  /* ── SETTINGS ── */
+  function openSettings() {
+    selectItem(2);
+    document.getElementById('settings-panel').classList.add('open');
+  }
+  function closeSettings() {
+    document.getElementById('settings-panel').classList.remove('open');
+    selectItem(2);
+  }
+  function handleFullscreen(cb) {
+    if(cb.checked) {
+      document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen && document.exitFullscreen();
+    }
+  }
+</script>
+</body>
+</html>

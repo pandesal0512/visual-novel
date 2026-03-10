@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anytime — Dialogue Screen Alternatives</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Caveat:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    font-family: 'Patrick Hand', sans-serif;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .label {
+    color: #888;
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+
+  .screen {
+    width: 1200px;
+    height: 680px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #e8e8e8;
+  }
+
+  /* ── shared paper grain ── */
+  .grain::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent, transparent 3px,
+      rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── shared typebar strip ── */
+  .typebar {
+    height: 5px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      #000 0px, #000 2px,
+      transparent 2px, transparent 4px
+    );
+  }
+  .typebar.white {
+    background-image: repeating-linear-gradient(
+      90deg,
+      #fff 0px, #fff 2px,
+      transparent 2px, transparent 4px
+    );
+  }
+
+  /* ── placeholder sprite shapes ── */
+  .sprite-placeholder {
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .sprite-body {
+    border-radius: 2px;
+  }
+
+  /* ══════════════════════════════════════════════
+     VARIANT A — Classic Bottom Bar
+     Standard VN layout, paper textbox, 
+     character name on a tab, sprite bottom-left
+  ══════════════════════════════════════════════ */
+  .a {
+    background: #f0ede6;
+  }
+
+  .a .bg-scene {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #ddd 0%, #ccc 60%, #bbb 100%);
+    z-index: 0;
+  }
+
+  .a .bg-lines {
+    position: absolute; inset: 0;
+    background-image: 
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 60px);
+    z-index: 0;
+  }
+
+  /* sprite */
+  .a .sprite-kare {
+    position: absolute;
+    bottom: 200px;
+    left: 180px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .a .sprite-kare .head {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: #555;
+    margin-bottom: -4px;
+  }
+  .a .sprite-kare .body {
+    width: 120px; height: 200px;
+    background: #444;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .a .sprite-butter {
+    position: absolute;
+    bottom: 200px;
+    right: 200px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.45;
+  }
+
+  .a .sprite-butter .head {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: #777;
+    margin-bottom: -4px;
+  }
+  .a .sprite-butter .body {
+    width: 120px; height: 200px;
+    background: #666;
+    border-radius: 4px 4px 0 0;
+  }
+
+  /* textbox */
+  .a .textbox {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: rgba(255,255,255,0.97);
+    z-index: 10;
+    border-top: 2px solid #000;
+  }
+
+  .a .textbox .typebar {
+    width: 100%;
+  }
+
+  .a .name-tab {
+    position: absolute;
+    top: -40px;
+    left: 40px;
+    background: #000;
+    color: #fff;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 22px;
+    padding: 6px 20px 6px 16px;
+    z-index: 11;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+  }
+
+  .a .dialogue-text {
+    padding: 24px 48px 24px 48px;
+    font-family: 'Patrick Hand', sans-serif;
+    font-size: 22px;
+    color: #111;
+    line-height: 1.6;
+    position: relative;
+    z-index: 11;
+  }
+
+  .a .dialogue-text .cursor {
+    display: inline-block;
+    width: 10px; height: 18px;
+    background: #000;
+    margin-left: 3px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .a .advance-arrow {
+    position: absolute;
+    bottom: 18px; right: 24px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 24px;
+    color: #000;
+    z-index: 11;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  .a .corner-reg {
+    position: absolute;
+    width: 20px; height: 20px;
+    z-index: 20;
+  }
+  .a .corner-reg::before, .a .corner-reg::after {
+    content: ''; position: absolute; background: #000;
+  }
+  .a .corner-reg.tl { top: 12px; left: 12px; }
+  .a .corner-reg.tl::before { width: 100%; height: 2px; top: 0; }
+  .a .corner-reg.tl::after  { width: 2px; height: 100%; left: 0; }
+  .a .corner-reg.tr { top: 12px; right: 12px; }
+  .a .corner-reg.tr::before { width: 100%; height: 2px; top: 0; right: 0; }
+  .a .corner-reg.tr::after  { width: 2px; height: 100%; right: 0; top: 0; }
+
+  /* ══════════════════════════════════════════════
+     VARIANT B — Side Panel Dialogue
+     Sprite takes center stage, dialogue slides
+     in from the right as a vertical panel
+  ══════════════════════════════════════════════ */
+  .b {
+    background: #f0ede6;
+  }
+
+  .b .bg-scene {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #d5d0c8 0%, #c0bbb4 60%, #b0aba4 100%);
+  }
+
+  .b .bg-lines {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 60px);
+  }
+
+  .b .sprite-kare {
+    position: absolute;
+    bottom: 0;
+    left: 120px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .b .sprite-kare .head {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: #555;
+    margin-bottom: -4px;
+  }
+  .b .sprite-kare .body {
+    width: 150px; height: 380px;
+    background: #444;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .b .side-panel {
+    position: absolute;
+    top: 0; right: 0;
+    width: 500px; height: 100%;
+    background: rgba(255,255,255,0.96);
+    border-left: 3px solid #000;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .b .side-panel .panel-typebar {
+    height: 5px;
+    background-image: repeating-linear-gradient(
+      90deg, #000 0px, #000 2px, transparent 2px, transparent 4px
+    );
+    flex-shrink: 0;
+  }
+
+  .b .side-name {
+    padding: 24px 32px 12px 32px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 32px;
+    color: #000;
+    border-bottom: 2px solid #000;
+    flex-shrink: 0;
+  }
+
+  .b .side-dialogue {
+    padding: 24px 32px;
+    font-family: 'Patrick Hand', sans-serif;
+    font-size: 21px;
+    color: #111;
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .b .side-meta {
+    padding: 12px 32px 20px 32px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .b .side-meta .scene-info {
+    font-family: 'Caveat', cursive;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  .b .side-meta .advance {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 20px;
+    color: #000;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  /* ══════════════════════════════════════════════
+     VARIANT C — Floating Speech Bubble
+     No textbox — dialogue floats near the
+     speaking character as a handwritten bubble
+  ══════════════════════════════════════════════ */
+  .c {
+    background: #f0ede6;
+  }
+
+  .c .bg-scene {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #ddd 0%, #ccc 60%, #bbb 100%);
+  }
+
+  .c .bg-lines {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 80px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 80px);
+  }
+
+  .c .sprite-kare {
+    position: absolute;
+    bottom: 0; left: 100px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .c .sprite-kare .head {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: #555;
+    margin-bottom: -4px;
+  }
+  .c .sprite-kare .body {
+    width: 140px; height: 360px;
+    background: #444;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .c .speech-bubble {
+    position: absolute;
+    top: 80px;
+    left: 280px;
+    width: 580px;
+    background: rgba(255,255,255,0.97);
+    border: 2.5px solid #000;
+    padding: 28px 32px;
+    z-index: 10;
+    border-radius: 2px;
+  }
+
+  /* tail */
+  .c .speech-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    left: 40px;
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 22px solid #000;
+  }
+  .c .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 42px;
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 19px solid rgba(255,255,255,0.97);
+  }
+
+  .c .bubble-name {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 20px;
+    color: #000;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .c .bubble-text {
+    font-family: 'Patrick Hand', sans-serif;
+    font-size: 22px;
+    color: #111;
+    line-height: 1.6;
+  }
+
+  .c .bubble-advance {
+    position: absolute;
+    bottom: 12px; right: 16px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 18px;
+    color: #aaa;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .c .c-corner { position: absolute; width: 20px; height: 20px; z-index: 20; }
+  .c .c-corner::before, .c .c-corner::after { content: ''; position: absolute; background: #000; }
+  .c .c-corner.tl { top: 12px; left: 12px; }
+  .c .c-corner.tl::before { width: 100%; height: 2px; top: 0; }
+  .c .c-corner.tl::after  { width: 2px; height: 100%; left: 0; }
+  .c .c-corner.tr { top: 12px; right: 12px; }
+  .c .c-corner.tr::before { width: 100%; height: 2px; top: 0; right: 0; }
+  .c .c-corner.tr::after  { width: 2px; height: 100%; right: 0; top: 0; }
+
+  .c .scene-label {
+    position: absolute;
+    bottom: 14px; left: 20px;
+    font-family: 'Caveat', cursive;
+    font-size: 13px;
+    color: rgba(0,0,0,0.25);
+    z-index: 20;
+  }
+
+  /* ══════════════════════════════════════════════
+     VARIANT D — Cinematic / Letterbox
+     Thin widescreen bars top and bottom,
+     subtitles-style text, big sprites
+  ══════════════════════════════════════════════ */
+  .d {
+    background: #f0ede6;
+  }
+
+  .d .bg-scene {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #ccc 0%, #bbb 50%, #aaa 100%);
+  }
+
+  .d .bg-lines {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.035) 0px, rgba(0,0,0,0.035) 1px, transparent 1px, transparent 80px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.035) 0px, rgba(0,0,0,0.035) 1px, transparent 1px, transparent 80px);
+  }
+
+  .d .sprite-kare {
+    position: absolute;
+    bottom: 100px;
+    left: 80px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .d .sprite-kare .head {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: #444;
+    margin-bottom: -4px;
+  }
+  .d .sprite-kare .body {
+    width: 180px; height: 420px;
+    background: #333;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .d .sprite-butter {
+    position: absolute;
+    bottom: 100px;
+    right: 80px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    filter: brightness(0.7);
+  }
+  .d .sprite-butter .head {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: #777;
+    margin-bottom: -4px;
+  }
+  .d .sprite-butter .body {
+    width: 180px; height: 420px;
+    background: #666;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .d .letterbox-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 90px;
+    background: rgba(255,255,255,0.94);
+    border-bottom: 2px solid #000;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 24px;
+  }
+
+  .d .letterbox-top .scene-num {
+    font-family: 'Caveat', cursive;
+    font-size: 13px;
+    color: #aaa;
+    min-width: 40px;
+  }
+
+  .d .letterbox-top .scene-title {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 28px;
+    color: #000;
+  }
+
+  .d .letterbox-top .top-typebar {
+    flex: 1;
+    height: 5px;
+    background-image: repeating-linear-gradient(
+      90deg, #000 0px, #000 2px, transparent 2px, transparent 4px
+    );
+  }
+
+  .d .letterbox-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 110px;
+    background: rgba(255,255,255,0.96);
+    border-top: 2px solid #000;
+    z-index: 10;
+  }
+
+  .d .letterbox-bottom .typebar {
+    width: 100%;
+  }
+
+  .d .name-inline {
+    position: absolute;
+    left: 40px;
+    top: 16px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 18px;
+    color: #aaa;
+    z-index: 11;
+  }
+
+  .d .subtitle-text {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    padding: 0 48px;
+    z-index: 11;
+  }
+
+  .d .subtitle-text p {
+    font-family: 'Patrick Hand', sans-serif;
+    font-size: 24px;
+    color: #111;
+    line-height: 1.5;
+    text-align: center;
+    width: 100%;
+  }
+
+  .d .d-advance {
+    position: absolute;
+    bottom: 18px; right: 24px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 22px;
+    color: #000;
+    z-index: 12;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  /* ══════════════════════════════════════════════
+     VARIANT E — Chaos / Dark Mode Dialogue
+     Black paper, white ink, glitch on name,
+     for scenes where Chaos is speaking/present
+  ══════════════════════════════════════════════ */
+  .e {
+    background: #000;
+  }
+
+  .e .bg-scene {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #0a0a0a 0%, #111 60%, #0d0d0d 100%);
+  }
+
+  .e .bg-lines {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 60px);
+  }
+
+  .e .sprite-chaos {
+    position: absolute;
+    bottom: 0; left: 140px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .e .sprite-chaos .head {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: #eee;
+    margin-bottom: -4px;
+  }
+  .e .sprite-chaos .body {
+    width: 140px; height: 360px;
+    background: #ddd;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .e .textbox-dark {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: rgba(0,0,0,0.97);
+    border-top: 2px solid #fff;
+    z-index: 10;
+  }
+
+  .e .typebar-white {
+    width: 100%;
+    height: 5px;
+    background-image: repeating-linear-gradient(
+      90deg, #fff 0px, #fff 2px, transparent 2px, transparent 4px
+    );
+  }
+
+  .e .name-tab-dark {
+    position: absolute;
+    top: -40px; left: 40px;
+    background: #fff;
+    color: #000;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 22px;
+    padding: 6px 20px 6px 16px;
+    z-index: 11;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+  }
+
+  .e .dialogue-dark {
+    padding: 24px 48px;
+    font-family: 'Patrick Hand', sans-serif;
+    font-size: 22px;
+    color: #eee;
+    line-height: 1.6;
+    z-index: 11;
+    position: relative;
+  }
+
+  .e .e-advance {
+    position: absolute;
+    bottom: 18px; right: 24px;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 24px;
+    color: #fff;
+    z-index: 11;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .e .e-corner { position: absolute; width: 20px; height: 20px; z-index: 20; }
+  .e .e-corner::before, .e .e-corner::after { content: ''; position: absolute; background: #fff; }
+  .e .e-corner.tl { top: 12px; left: 12px; }
+  .e .e-corner.tl::before { width: 100%; height: 2px; top: 0; }
+  .e .e-corner.tl::after  { width: 2px; height: 100%; left: 0; }
+  .e .e-corner.tr { top: 12px; right: 12px; }
+  .e .e-corner.tr::before { width: 100%; height: 2px; top: 0; right: 0; }
+  .e .e-corner.tr::after  { width: 2px; height: 100%; right: 0; top: 0; }
+
+  .e .e-scanlines {
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 3px,
+      rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .e .glitch-name {
+    position: relative;
+    display: inline-block;
+  }
+
+  .e .glitch-name::before {
+    content: 'Chaos';
+    position: absolute;
+    left: -3px; top: 2px;
+    color: rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ VARIANT A ══ -->
+<div class="label">A — Classic Bottom Bar (refined)</div>
+<div class="screen a grain">
+  <div class="bg-scene"></div>
+  <div class="bg-lines"></div>
+  <div class="corner-reg tl"></div>
+  <div class="corner-reg tr"></div>
+
+  <!-- dimmed background sprite -->
+  <div class="sprite-butter">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <!-- active speaker -->
+  <div class="sprite-kare">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <!-- textbox -->
+  <div class="textbox">
+    <div class="typebar"></div>
+    <div class="name-tab">Kare</div>
+    <div class="dialogue-text">
+      wait, hold on — you want me to fight you?<br>
+      right now? i haven't even had lunch yet.<span class="cursor"></span>
+    </div>
+    <div class="advance-arrow">▼</div>
+  </div>
+</div>
+
+<!-- ══ VARIANT B ══ -->
+<div class="label">B — Side Panel (dialogue slides in from right)</div>
+<div class="screen b grain">
+  <div class="bg-scene"></div>
+  <div class="bg-lines"></div>
+
+  <div class="sprite-kare">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-typebar"></div>
+    <div class="side-name">Kare</div>
+    <div class="side-dialogue">
+      wait, hold on — you want me to fight you?<br><br>
+      right now? i haven't even had lunch yet.
+    </div>
+    <div class="side-meta">
+      <span class="scene-info">ch.01 — schoolyard</span>
+      <span class="advance">▼</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VARIANT C ══ -->
+<div class="label">C — Floating Speech Bubble (no textbox, more natural)</div>
+<div class="screen c">
+  <div class="bg-scene"></div>
+  <div class="bg-lines"></div>
+  <div class="c-corner tl"></div>
+  <div class="c-corner tr"></div>
+
+  <div class="sprite-kare">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <div class="speech-bubble">
+    <div class="bubble-name">Kare</div>
+    <div class="bubble-text">
+      wait, hold on — you want me to fight you?
+      right now? i haven't even had lunch yet.
+    </div>
+    <div class="bubble-advance">▼</div>
+  </div>
+
+  <div class="scene-label">ch.01 — schoolyard · click to advance</div>
+</div>
+
+<!-- ══ VARIANT D ══ -->
+<div class="label">D — Cinematic Letterbox (big sprites, top + bottom bars)</div>
+<div class="screen d">
+  <div class="bg-scene"></div>
+  <div class="bg-lines"></div>
+
+  <div class="sprite-kare">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <div class="sprite-butter">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <!-- top bar: scene label -->
+  <div class="letterbox-top">
+    <span class="scene-num">01.</span>
+    <span class="scene-title">schoolyard — after class</span>
+    <div class="top-typebar"></div>
+  </div>
+
+  <!-- bottom bar: dialogue -->
+  <div class="letterbox-bottom">
+    <div class="typebar"></div>
+    <div class="name-inline">Kare</div>
+    <div class="subtitle-text">
+      <p>wait — you want me to fight you? right now?</p>
+    </div>
+    <div class="d-advance">▼</div>
+  </div>
+</div>
+
+<!-- ══ VARIANT E ══ -->
+<div class="label">E — Chaos Mode Dialogue (black paper, white ink)</div>
+<div class="screen e">
+  <div class="bg-scene"></div>
+  <div class="bg-lines"></div>
+  <div class="e-scanlines"></div>
+  <div class="e-corner tl"></div>
+  <div class="e-corner tr"></div>
+
+  <div class="sprite-chaos">
+    <div class="head"></div>
+    <div class="body"></div>
+  </div>
+
+  <div class="textbox-dark">
+    <div class="typebar-white"></div>
+    <div class="name-tab-dark">
+      <span class="glitch-name">Chaos</span>
+    </div>
+    <div class="dialogue-dark">
+      i did not mean to stay.<br>
+      but you were already gone. and i panicked.
+    </div>
+    <div class="e-advance">▼</div>
+  </div>
+</div>
+
+</body>
+</html>
