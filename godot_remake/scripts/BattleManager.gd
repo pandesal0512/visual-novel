@@ -2,12 +2,25 @@ extends Node
 class_name BattleManager
 
 # --- Signals ---
+# Emitted when a new turn begins. Use this to refresh UI buttons and labels.
 signal turn_started(turn_count: int)
+
+# Emitted when the "CONFIRM" button is pressed and skills start resolving.
 signal execution_started()
+
+# Emitted when all skills in the current turn have finished animating.
 signal execution_finished()
+
+# Emitted whenever the player takes damage or heals. Connect to your Player HP ProgressBar.
 signal player_hp_changed(new_hp: int)
+
+# Emitted when an enemy takes damage. 'enemy_index' identifies which health bar to update.
 signal enemy_hp_changed(enemy_index: int, new_hp: int)
+
+# Emitted when all enemies are defeated. Use to transition to the next story beat.
 signal battle_won()
+
+# Emitted when the player HP reaches 0. Use to show a "Retry" or "Game Over" menu.
 signal battle_lost()
 
 # --- Runtime Classes ---
