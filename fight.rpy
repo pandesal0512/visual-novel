@@ -1154,12 +1154,12 @@ screen battle_screen(bm):
     # 1. TOP BAR
     frame:
         xfill True
-        ysize (380 if is_multi else 240)
+        ysize (240 if is_multi else 150)
         ypos 0
         background (_paper + "f2")
-        xpadding 38
-        top_padding 22
-        bottom_padding 20
+        xpadding 24
+        top_padding 10
+        bottom_padding 10
 
         hbox:
             xfill True
@@ -1333,7 +1333,7 @@ screen battle_screen(bm):
         $ _e_intents = [s for s in _preview_enemy.slots if isinstance(s, EnemyIntent)]
         if _e_intents:
             $ _intent_preview = _e_intents[0]
-            $ _v_offset = (410 + (len(live_enemies)-1)*110) if is_multi else 410
+            $ _v_offset = (270 + (len(live_enemies)-1)*90) if is_multi else 270
             frame:
                 xfill True left_margin 38 right_margin 38
                 yalign 1.0 yoffset -(_v_offset)
@@ -1357,12 +1357,12 @@ screen battle_screen(bm):
                         color _ink_light
 
     # 4. SLOT STRIP
-    $ _strip_h = (len(live_enemies) * 110 + 32) if is_multi else 140
+    $ _strip_h = (len(live_enemies) * 75 + 15) if is_multi else 90
     frame:
-        yalign 1.0 yoffset -240
+        yalign 1.0 yoffset -165
         xfill True ysize _strip_h
         background (_paper + "e6")
-        xpadding 38 ypadding 16
+        xpadding 24 ypadding 8
         if is_chaos:
             at chaos_slots_shake
 
@@ -1378,7 +1378,7 @@ screen battle_screen(bm):
                                 xfill True ysize 1 background _ink_faint
 
                         hbox:
-                            spacing 22 xfill True ysize 110
+                            spacing 22 xfill True ysize 80
                             text (enemy.name.split()[0] + "'s\nrow"):
                                 style "battle_faint"
                                 min_width 160 yalign 0.5 size 19
@@ -1390,7 +1390,7 @@ screen battle_screen(bm):
                                     $ slot_w = int(1400 // bm.current_max_slots)
 
                                     frame:
-                                        xsize slot_w ysize 96
+                                        xsize slot_w ysize 70
                                         if action is None:
                                             background _paper
                                             foreground ("frame_wobbly_faint_chaos" if is_chaos else "frame_wobbly_faint")
@@ -1447,14 +1447,16 @@ screen battle_screen(bm):
                 background _ink
                 text_color _paper
                 hover_background _paper_mid
+                text_hover_color _ink
+                focus_mask True
                 action Return("execute")
                 yalign 0.5
 
     # 5. CARDS SECTION
     frame:
-        yalign 1.0 xfill True ysize 240
+        yalign 1.0 xfill True ysize 160
         background (_paper + "f7")
-        xpadding 38 ypadding 16
+        xpadding 24 ypadding 8
         vbox:
             spacing 11
             hbox:
@@ -1482,48 +1484,51 @@ screen battle_screen(bm):
                         $ _tb = get_typebar(skill.type, is_chaos)
 
                         frame:
-                            xsize 173 ysize 160
-                            yoffset (-16 if _sel else 0)
+                            xsize 135 ysize 115
+                            yoffset (-8 if _sel else 0)
                             background _paper
                             foreground ("frame_wobbly_chaos" if is_chaos else "frame_wobbly")
 
                             vbox:
                                 xfill True
-                                add _tb xsize 173
+                                add _tb xsize 135
                                 frame:
-                                    xfill True ysize 70
+                                    xfill True ysize 40
                                     background _paper
                                     text (skill.icon if skill.icon else "?"):
-                                        size 36 color _ink xalign 0.5 yalign 0.5
+                                        size 24 color _ink xalign 0.5 yalign 0.5
 
                                 frame:
                                     xfill True ysize 1 background _ink_faint
 
                                 frame:
                                     xfill True background _paper
-                                    xpadding 10 ypadding 6
+                                    xpadding 6 ypadding 4
                                     vbox:
-                                        spacing 2
+                                        spacing 1
                                         text (skill.name):
                                             style "battle_cardname"
+                                            size 18
                                             color _ink
                                         hbox:
                                             xfill True
                                             $ _val = (str(skill.damage) + " dmg") if skill.damage > 0 else skill.type
                                             text (_val):
                                                 style "battle_cardstat"
+                                                size 14
                                             if skill.cooldown > 0:
                                                 text ("cd:" + str(skill.cooldown)):
                                                     style "battle_cardstat"
+                                                    size 14
                                                     xalign 1.0
 
                             frame:
                                 xalign 1.0 yalign 0.0
-                                xoffset -8 yoffset 14
-                                xsize 32 ysize 32
+                                xoffset -6 yoffset 8
+                                xsize 26 ysize 26
                                 background _ink
                                 text (str(skill.cost)):
-                                    size 19 color _paper xalign 0.5 yalign 0.5
+                                    size 15 color _paper xalign 0.5 yalign 0.5
 
                             if _sel:
                                 add Solid(_ink + "22")
@@ -1544,7 +1549,8 @@ screen battle_screen(bm):
 
                             imagebutton:
                                 idle Solid("#00000000")
-                                hover Solid(_ink + "11")
+                                hover Solid(_ink + "22")
+                                selected_hover Solid(_ink + "44")
                                 hovered SetField(bm, "hovered_skill", skill)
                                 unhovered SetField(bm, "hovered_skill", None)
                                 action Function(bm.select_skill, skill)
@@ -1614,6 +1620,7 @@ screen battle_screen(bm):
         xpos 16 ypos 16
         action ShowMenu("preferences")
         text_style "battle_faint" text_size 19
+        text_hover_color _ink
 
 label battle_reset_camera:
     camera:
